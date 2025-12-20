@@ -224,31 +224,31 @@ export const rateLimitMiddleware = (
 export const rateLimitConfigs = {
   login: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxAttempts: 5,           // 5 tentatives
+    maxAttempts: 10,           // 10 tentatives
     scope: 'email' as const,  // Par email
     message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.'
   },
   register: {
     windowMs: 60 * 60 * 1000, // 1 heure
-    maxAttempts: 3,           // 3 tentatives
+    maxAttempts: 10,           // 10 tentatives
     scope: 'ip' as const,     // Par IP
     message: 'Trop de tentatives d\'inscription. Veuillez réessayer dans 1 heure.'
   },
   verifyEmail: {
     windowMs: 5 * 60 * 1000,  // 5 minutes
-    maxAttempts: 5,           // 5 tentatives
+    maxAttempts: 10,           // 10 tentatives
     scope: 'email' as const,  // Par email
     message: 'Trop de tentatives de vérification. Veuillez réessayer dans 5 minutes.'
   },
   forgotPassword: {
     windowMs: 60 * 60 * 1000, // 1 heure
-    maxAttempts: 3,           // 3 tentatives
+    maxAttempts: 10,           // 10 tentatives
     scope: 'email' as const,  // Par email
     message: 'Trop de demandes de réinitialisation. Veuillez réessayer dans 1 heure.'
   },
   resetPassword: {
     windowMs: 5 * 60 * 1000,  // 5 minutes
-    maxAttempts: 3,           // 3 tentatives
+    maxAttempts: 10,           // 10 tentatives
     scope: 'email' as const,  // Par email
     message: 'Trop de tentatives de réinitialisation. Veuillez réessayer dans 5 minutes.'
   },
@@ -358,7 +358,7 @@ export const rateLimitInfoMiddleware = (req: Request, res: Response, next: NextF
  * Utilitaire pour gérer les tentatives de connexion
  */
 export class LoginAttemptManager {
-  private static readonly MAX_ATTEMPTS = 5;
+  private static readonly MAX_ATTEMPTS = 10;
   private static readonly WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
   private static attempts = new Map<string, {

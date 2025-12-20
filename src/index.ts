@@ -105,10 +105,7 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Allow specific Koyeb URL
-    if (origin === 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app') {
-      return callback(null, true);
-    }
+
 
     // Allow usage on Koyeb (add your domain here)
     if (origin.includes('.koyeb.app')) {
