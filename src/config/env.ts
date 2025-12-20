@@ -8,11 +8,7 @@ dotenv.config();
 const requiredEnvVars = [
   'DATABASE_URL',
   'JWT_SECRET',
-  'PORT',
-  'SMTP_HOST',
-  'SMTP_USER',
-  'SMTP_PASS',
-  'EMAIL_FROM'
+  'PORT'
 ];
 
 for (const envVar of requiredEnvVars) {
