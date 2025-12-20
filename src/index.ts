@@ -91,8 +91,16 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
+    // Allow wildcard
+    if (config.corsOrigin === '*') return callback(null, true);
+
     // Allow any localhost origin for development
-    if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || origin === config.corsOrigin) {
+    if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      return callback(null, true);
+    }
+
+    // Allow usage on Koyeb (add your domain here)
+    if (origin.includes('.koyeb.app')) {
       return callback(null, true);
     }
 
@@ -101,6 +109,8 @@ app.use(cors({
       return callback(null, true);
     }
 
+    // Log the blocked origin for debugging
+    console.log('Blocked by CORS:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
