@@ -11,6 +11,31 @@ const router = express.Router();
 
 // ==================== ROUTES PUBLIQUES ====================
 
+/**
+ * @swagger
+ * tags:
+ *   name: Bets
+ *   description: Betting management
+ */
+
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   get:
+ *     summary: Get bet details
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet details
+ *       404:
+ *         description: Bet not found
+ */
 // Obtenir les détails d'un pari
 router.get(
   '/:betId',
@@ -23,6 +48,26 @@ router.get(
   asyncHandler(BetController.getBet)
 );
 
+/**
+ * @swagger
+ * /api/bets:
+ *   get:
+ *     summary: List bets with filters
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, ACCEPTED, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of bets
+ */
 // Liste des paris avec filtres
 router.get(
   '/',
@@ -50,6 +95,22 @@ router.get(
   asyncHandler(BetController.listBets)
 );
 
+/**
+ * @swagger
+ * /api/bets/available/{fightId}:
+ *   get:
+ *     summary: Get available bets for a fight
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: fightId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Available bets
+ */
 // Obtenir les paris disponibles pour un combat
 router.get(
   '/available/:fightId',
@@ -89,6 +150,36 @@ router.get(
 
 // ==================== ROUTES UTILISATEUR AUTHENTIFIÉ ====================
 
+/**
+ * @swagger
+ * /api/bets:
+ *   post:
+ *     summary: Create a new bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fightId
+ *               - chosenFighter
+ *               - amount
+ *             properties:
+ *               fightId:
+ *                 type: string
+ *               chosenFighter:
+ *                 type: string
+ *                 enum: [A, B]
+ *               amount:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Bet created
+ */
 // Créer un nouveau pari
 router.post(
   '/',
@@ -108,6 +199,24 @@ router.post(
   asyncHandler(BetController.createBet)
 );
 
+/**
+ * @swagger
+ * /api/bets/{betId}/accept:
+ *   post:
+ *     summary: Accept a bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet accepted
+ */
 // Accepter un pari
 router.post(
   '/:betId/accept',
@@ -121,6 +230,24 @@ router.post(
   asyncHandler(BetController.acceptBet)
 );
 
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   delete:
+ *     summary: Cancel a bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet cancelled
+ */
 // Annuler un pari
 router.delete(
   '/:betId',

@@ -11,6 +11,33 @@ const router = express.Router();
 
 // ==================== ROUTES PUBLIQUES ====================
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Fights
+ *     description: Fight management
+ *   - name: DayEvents
+ *     description: Day Event management
+ */
+
+/**
+ * @swagger
+ * /api/fights/{fightId}:
+ *   get:
+ *     summary: Get fight details
+ *     tags: [Fights]
+ *     parameters:
+ *       - in: path
+ *         name: fightId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Fight details
+ *       404:
+ *         description: Fight not found
+ */
 // Obtenir les détails d'un combat
 router.get(
   '/:fightId',
@@ -23,6 +50,26 @@ router.get(
   asyncHandler(FightController.getFight)
 );
 
+/**
+ * @swagger
+ * /api/fights:
+ *   get:
+ *     summary: List fights with filters
+ *     tags: [Fights]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, ONGOING, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of fights
+ */
 // Liste des combats avec filtres
 router.get(
   '/',
@@ -50,6 +97,16 @@ router.get(
   asyncHandler(FightController.listFights)
 );
 
+/**
+ * @swagger
+ * /api/fights/upcoming:
+ *   get:
+ *     summary: Get upcoming fights
+ *     tags: [Fights]
+ *     responses:
+ *       200:
+ *         description: List of upcoming fights
+ */
 // Obtenir les prochains combats
 router.get(
   '/upcoming',
@@ -179,6 +236,22 @@ router.post(
 
 // ==================== ROUTES JOURNÉES DE LUTTE (PUBLIQUES) ====================
 
+/**
+ * @swagger
+ * /api/fights/day-events/{eventId}:
+ *   get:
+ *     summary: Get day event details
+ *     tags: [DayEvents]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Day event details
+ */
 // Obtenir les détails d'une journée
 router.get(
   '/day-events/:eventId',
@@ -191,18 +264,48 @@ router.get(
   asyncHandler(FightController.getDayEvent)
 );
 
+/**
+ * @swagger
+ * /api/fights/day-events:
+ *   get:
+ *     summary: List day events
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: List of day events
+ */
 // Liste des journées avec filtres
 router.get(
   '/day-events',
   asyncHandler(FightController.listDayEvents)
 );
 
+/**
+ * @swagger
+ * /api/fights/day-events/upcoming:
+ *   get:
+ *     summary: Get upcoming day events
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: List of upcoming day events
+ */
 // Obtenir les journées à venir
 router.get(
   '/day-events/upcoming',
   asyncHandler(FightController.getUpcomingDayEvents)
 );
 
+/**
+ * @swagger
+ * /api/fights/day-events/current:
+ *   get:
+ *     summary: Get current day event
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: Current day event details
+ */
 // Obtenir la journée actuelle
 router.get(
   '/day-events/current',

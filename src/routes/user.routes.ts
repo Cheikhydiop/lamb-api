@@ -8,6 +8,27 @@ const router = Router();
 // Helper to get service instance safely
 const getUserService = () => ServiceContainer.getInstance().userService;
 
+/**
+ * @swagger
+ * tags:
+ *   name: User
+ *   description: User profile management
+ */
+
+/**
+ * @swagger
+ * /api/user/profile:
+ *   get:
+ *     summary: Get current user profile
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
 // Get current user profile
 router.get('/profile', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -22,6 +43,28 @@ router.get('/profile', requireAuth, asyncHandler(async (req: Request, res: Respo
   }
 }));
 
+/**
+ * @swagger
+ * /api/user/profile:
+ *   patch:
+ *     summary: Update user profile
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ */
 // Update user profile
 router.patch('/profile', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {

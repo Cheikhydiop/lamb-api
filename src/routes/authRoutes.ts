@@ -11,6 +11,49 @@ export const createAuthRoutes = () => {
 
   // ==================== ROUTES PUBLIQUES ====================
 
+  // ==================== ROUTES PUBLIQUES ====================
+
+  /**
+   * @swagger
+   * tags:
+   *   name: Auth
+   *   description: Authentication management
+   */
+
+  /**
+   * @swagger
+   * /api/auth/register:
+   *   post:
+   *     summary: Register a new user
+   *     tags: [Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - password
+   *               - name
+   *               - phone
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *               password:
+   *                 type: string
+   *                 minLength: 6
+   *               name:
+   *                 type: string
+   *               phone:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: User successfully registered
+   *       400:
+   *         description: Validation error
+   */
   // Inscription
   router.post(
     '/register',
@@ -19,6 +62,44 @@ export const createAuthRoutes = () => {
     asyncHandler(AuthController.register)
   );
 
+  /**
+   * @swagger
+   * /api/auth/login:
+   *   post:
+   *     summary: Login user
+   *     tags: [Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - password
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *               password:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Login successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 accessToken:
+   *                   type: string
+   *                 refreshToken:
+   *                   type: string
+   *                 user:
+   *                   type: object
+   *       401:
+   *         description: Invalid credentials
+   */
   // Connexion
   router.post(
     '/login',
@@ -28,6 +109,29 @@ export const createAuthRoutes = () => {
     asyncHandler(AuthController.login)
   );
 
+  /**
+   * @swagger
+   * /api/auth/verify-email:
+   *   post:
+   *     summary: Verify email address
+   *     tags: [Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - token
+   *             properties:
+   *               token:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Email verified successfully
+   *       400:
+   *         description: Invalid or expired token
+   */
   // Vérification email
   router.post(
     '/verify-email',

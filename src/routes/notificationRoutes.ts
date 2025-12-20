@@ -9,9 +9,23 @@ const router = Router();
 router.use(requireAuth);
 
 /**
- * @route   GET /api/notifications
- * @desc    Get all notifications for current user
- * @access  Private
+ * @swagger
+ * tags:
+ *   name: Notifications
+ *   description: Notification management
+ */
+
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     summary: Get all notifications for current user
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of notifications
  */
 router.get(
     '/',
@@ -22,9 +36,16 @@ router.get(
 );
 
 /**
- * @route   GET /api/notifications/unread
- * @desc    Get unread notifications
- * @access  Private
+ * @swagger
+ * /api/notifications/unread:
+ *   get:
+ *     summary: Get unread notifications
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of unread notifications
  */
 router.get(
     '/unread',
@@ -35,9 +56,16 @@ router.get(
 );
 
 /**
- * @route   GET /api/notifications/unread/count
- * @desc    Get unread notifications count
- * @access  Private
+ * @swagger
+ * /api/notifications/unread/count:
+ *   get:
+ *     summary: Get unread notifications count
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Unread notifications count
  */
 router.get(
     '/unread/count',
@@ -48,9 +76,22 @@ router.get(
 );
 
 /**
- * @route   PATCH /api/notifications/:id/read
- * @desc    Mark notification as read
- * @access  Private
+ * @swagger
+ * /api/notifications/{id}/read:
+ *   patch:
+ *     summary: Mark notification as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
  */
 router.patch(
     '/:id/read',
@@ -61,9 +102,16 @@ router.patch(
 );
 
 /**
- * @route   PATCH /api/notifications/read-all
- * @desc    Mark all notifications as read
- * @access  Private
+ * @swagger
+ * /api/notifications/read-all:
+ *   patch:
+ *     summary: Mark all notifications as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All notifications marked as read
  */
 router.patch(
     '/read-all',
@@ -74,9 +122,22 @@ router.patch(
 );
 
 /**
- * @route   DELETE /api/notifications/:id
- * @desc    Delete notification
- * @access  Private
+ * @swagger
+ * /api/notifications/{id}:
+ *   delete:
+ *     summary: Delete notification
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification deleted
  */
 router.delete(
     '/:id',
@@ -87,9 +148,36 @@ router.delete(
 );
 
 /**
- * @route   POST /api/notifications/admin/send
- * @desc    Send notification to user (Admin)
- * @access  Private/Admin
+ * @swagger
+ * /api/notifications/admin/send:
+ *   post:
+ *     summary: Send notification to a specific user (Admin)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - title
+ *               - message
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: INFO
+ *     responses:
+ *       200:
+ *         description: Notification sent
  */
 router.post(
     '/admin/send',
@@ -101,9 +189,33 @@ router.post(
 );
 
 /**
- * @route   POST /api/notifications/admin/broadcast
- * @desc    Broadcast notification (Admin)
- * @access  Private/Admin
+ * @swagger
+ * /api/notifications/admin/broadcast:
+ *   post:
+ *     summary: Broadcast notification to all users (Admin)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - message
+ *             properties:
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: INFO
+ *     responses:
+ *       200:
+ *         description: Notification broadcasted
  */
 router.post(
     '/admin/broadcast',

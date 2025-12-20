@@ -18,6 +18,8 @@ import { CronService } from './services/CronService'; // Used manually
 import { sanitizationMiddleware } from './middlewares/sanitizationMiddleware';
 import { idempotencyMiddleware } from './middlewares/idempotencyMiddleware';
 import { initializeServices } from './container/ServiceContainer';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 // ========== IMPORTS DES MIDDLEWARES DE SÉCURITÉ ==========
 import {
@@ -61,6 +63,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware de sérialisation BigInt (pour JSON)
 app.use(bigIntSerializer);
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ==================== MIDDLEWARES DE SÉCURITÉ GLOBAUX ====================
 // 1. Rate Limiting Global
