@@ -939,7 +939,7 @@ export class BetService {
     userId?: string;
     fightId?: string;
     dayEventId?: string;
-    status?: BetStatus;
+    status?: BetStatus | BetStatus[];
     limit?: number;
     offset?: number;
   }): Promise<{ bets: any[]; total: number; limit: number; offset: number }> {
@@ -966,7 +966,12 @@ export class BetService {
       }
 
       if (status) {
-        where.status = status;
+        // Handle single status or array of statuses
+        if (Array.isArray(status)) {
+          where.status = { in: status };
+        } else {
+          where.status = status;
+        }
       }
 
       const [bets, total] = await Promise.all([
