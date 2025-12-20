@@ -1,20 +1,7 @@
-// src/repositories/SessionRepository.ts
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, DeviceType, SessionStatus } from '@prisma/client';
 import { Request } from 'express';
 
-// 1. Définissez vos propres enums localement
-export enum DeviceType {
-  MOBILE = 'MOBILE',
-  DESKTOP = 'DESKTOP',
-  TABLET = 'TABLET',
-  UNKNOWN = 'UNKNOWN'
-}
-
-export enum SessionStatus {
-  ACTIVE = 'ACTIVE',
-  REVOKED = 'REVOKED',
-  EXPIRED = 'EXPIRED'
-}
+export { DeviceType, SessionStatus };
 
 // 2. Type pour les données de création de session
 export interface CreateSessionData {
@@ -30,9 +17,6 @@ export interface CreateSessionData {
   isVerified?: boolean;
 }
 
-// 3. Helper pour convertir vos enums en strings pour Prisma
-const toPrismaDeviceType = (deviceType: DeviceType): string => deviceType;
-const toPrismaSessionStatus = (status: SessionStatus): string => status;
 
 import { Service } from 'typedi';
 
@@ -45,13 +29,13 @@ export class SessionRepository {
       data: {
         userId: data.userId,
         refreshToken: data.refreshToken,
-        deviceType: toPrismaDeviceType(data.deviceType || DeviceType.UNKNOWN),
+        deviceType: data.deviceType || DeviceType.UNKNOWN,
         deviceName: data.deviceName,
         deviceId: data.deviceId,
         ipAddress: data.ipAddress,
         userAgent: data.userAgent,
         expiresAt: data.expiresAt,
-        status: toPrismaSessionStatus(data.status || SessionStatus.ACTIVE),
+        status: data.status || SessionStatus.ACTIVE,
         isVerified: data.isVerified ?? false
       },
       include: {
@@ -72,7 +56,7 @@ export class SessionRepository {
     return this.prisma.session.findFirst({
       where: {
         refreshToken,
-        status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+        status: SessionStatus.ACTIVE,
         expiresAt: { gt: new Date() }
       },
       include: {
@@ -94,7 +78,7 @@ export class SessionRepository {
     return this.prisma.session.findMany({
       where: {
         userId,
-        status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+        status: SessionStatus.ACTIVE,
         expiresAt: { gt: new Date() }
       },
       select: {
@@ -248,11 +232,11 @@ export class SessionRepository {
   async cleanupExpiredSessions(): Promise<number> {
     const result = await this.prisma.session.updateMany({
       where: {
-        status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+        status: SessionStatus.ACTIVE,
         expiresAt: { lt: new Date() }
       },
       data: {
-        status: toPrismaSessionStatus(SessionStatus.EXPIRED),
+        status: SessionStatus.EXPIRED,
         updatedAt: new Date()
       }
     });
@@ -268,8 +252,8 @@ export class SessionRepository {
       where: {
         status: {
           in: [
-            toPrismaSessionStatus(SessionStatus.REVOKED),
-            toPrismaSessionStatus(SessionStatus.EXPIRED)
+            SessionStatus.REVOKED,
+            SessionStatus.EXPIRED
           ]
         },
         updatedAt: { lt: cutoffDate }
@@ -283,7 +267,7 @@ export class SessionRepository {
     const activeSessions = await this.prisma.session.findMany({
       where: {
         userId,
-        status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+        status: SessionStatus.ACTIVE,
         expiresAt: { gt: new Date() }
       },
       orderBy: { createdAt: 'desc' }
@@ -343,10 +327,10 @@ export class SessionRepository {
       await this.prisma.session.updateMany({
         where: {
           id: { in: sessionsToRevoke },
-          status: toPrismaSessionStatus(SessionStatus.ACTIVE)
+          status: SessionStatus.ACTIVE
         },
         data: {
-          status: toPrismaSessionStatus(SessionStatus.REVOKED),
+          status: SessionStatus.REVOKED,
           updatedAt: new Date()
         }
       });
@@ -375,7 +359,7 @@ export class SessionRepository {
     return this.prisma.session.update({
       where: { id: sessionId },
       data: {
-        status: toPrismaSessionStatus(SessionStatus.REVOKED),
+        status: SessionStatus.REVOKED,
         updatedAt: new Date()
       }
     });
@@ -384,7 +368,7 @@ export class SessionRepository {
   async revokeAllUserSessions(userId: string, excludeSessionId?: string) {
     const where: any = {
       userId,
-      status: toPrismaSessionStatus(SessionStatus.ACTIVE)
+      status: SessionStatus.ACTIVE
     };
 
     if (excludeSessionId) {
@@ -394,7 +378,7 @@ export class SessionRepository {
     const result = await this.prisma.session.updateMany({
       where,
       data: {
-        status: toPrismaSessionStatus(SessionStatus.REVOKED),
+        status: SessionStatus.REVOKED,
         updatedAt: new Date()
       }
     });
@@ -414,10 +398,10 @@ export class SessionRepository {
   ) {
     const updateData: any = { updatedAt: new Date() };
 
-    if (data.status) updateData.status = toPrismaSessionStatus(data.status);
+    if (data.status) updateData.status = data.status;
     if (data.ipAddress) updateData.ipAddress = data.ipAddress;
     if (data.userAgent) updateData.userAgent = data.userAgent;
-    if (data.deviceType) updateData.deviceType = toPrismaDeviceType(data.deviceType);
+    if (data.deviceType) updateData.deviceType = data.deviceType;
     if (data.expiresAt) updateData.expiresAt = data.expiresAt;
 
     return this.prisma.session.update({
@@ -455,20 +439,20 @@ export class SessionRepository {
       this.prisma.session.count(),
       this.prisma.session.count({
         where: {
-          status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+          status: SessionStatus.ACTIVE,
           expiresAt: { gt: new Date() }
         }
       }),
       this.prisma.session.count({
-        where: { status: toPrismaSessionStatus(SessionStatus.EXPIRED) }
+        where: { status: SessionStatus.EXPIRED }
       }),
       this.prisma.session.count({
-        where: { status: toPrismaSessionStatus(SessionStatus.REVOKED) }
+        where: { status: SessionStatus.REVOKED }
       }),
       this.prisma.session.groupBy({
         by: ['deviceType'],
         _count: true,
-        where: { status: toPrismaSessionStatus(SessionStatus.ACTIVE) }
+        where: { status: SessionStatus.ACTIVE }
       }),
       this.prisma.session.groupBy({
         by: ['status'],
@@ -490,7 +474,7 @@ export class SessionRepository {
     const session = await this.prisma.session.findFirst({
       where: {
         id: sessionId,
-        status: toPrismaSessionStatus(SessionStatus.ACTIVE),
+        status: SessionStatus.ACTIVE,
         expiresAt: { gt: new Date() }
       }
     });
@@ -546,11 +530,11 @@ export class SessionRepository {
     const where: any = { userId };
 
     if (options?.status) {
-      where.status = toPrismaSessionStatus(options.status);
+      where.status = options.status;
     }
 
     if (options?.deviceType) {
-      where.deviceType = toPrismaDeviceType(options.deviceType);
+      where.deviceType = options.deviceType;
     }
 
     return this.prisma.session.findMany({

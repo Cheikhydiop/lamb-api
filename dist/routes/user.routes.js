@@ -11,15 +11,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const typedi_1 = require("typedi");
-const user_service_1 = require("../services/user.service");
+const UserService_1 = require("../services/UserService");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
-const userService = typedi_1.Container.get(user_service_1.UserService);
+// Helper to get service instance safely
+const getUserService = () => typedi_1.Container.get(UserService_1.UserService);
 // Get current user profile
 router.get('/profile', authMiddleware_1.requireAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.userId;
-        const user = yield userService.getUserById(userId);
+        const user = yield getUserService().getUserById(userId);
         res.json({
             success: true,
             data: user,
@@ -33,7 +34,7 @@ router.get('/profile', authMiddleware_1.requireAuth, (req, res, next) => __await
 router.patch('/profile', authMiddleware_1.requireAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.userId;
-        const user = yield userService.updateUser(userId, req.body);
+        const user = yield getUserService().updateUser(userId, req.body);
         res.json({
             success: true,
             message: 'Profile updated successfully',
@@ -55,7 +56,7 @@ router.post('/change-password', authMiddleware_1.requireAuth, (req, res, next) =
                 message: 'Passwords do not match',
             });
         }
-        yield userService.changePassword(userId, oldPassword, newPassword);
+        yield getUserService().changePassword(userId, oldPassword, newPassword);
         res.json({
             success: true,
             message: 'Password changed successfully',
@@ -69,7 +70,7 @@ router.post('/change-password', authMiddleware_1.requireAuth, (req, res, next) =
 router.get('/stats', authMiddleware_1.requireAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.userId;
-        const stats = yield userService.getUserStats(userId);
+        const stats = yield getUserService().getUserStats(userId);
         res.json({
             success: true,
             data: stats,
@@ -83,7 +84,7 @@ router.get('/stats', authMiddleware_1.requireAuth, (req, res, next) => __awaiter
 router.post('/deactivate', authMiddleware_1.requireAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.userId;
-        yield userService.deactivateAccount(userId);
+        yield getUserService().deactivateAccount(userId);
         res.json({
             success: true,
             message: 'Account deactivated successfully',
@@ -97,7 +98,7 @@ router.post('/deactivate', authMiddleware_1.requireAuth, (req, res, next) => __a
 router.post('/reactivate', authMiddleware_1.requireAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.userId;
-        yield userService.reactivateAccount(userId);
+        yield getUserService().reactivateAccount(userId);
         res.json({
             success: true,
             message: 'Account reactivated successfully',
@@ -108,11 +109,11 @@ router.post('/reactivate', authMiddleware_1.requireAuth, (req, res, next) => __a
     }
 }));
 // Admin: List all users
-router.get('/', authMiddleware_1.requireAdmin, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/', (0, authMiddleware_1.requireRole)('ADMIN'), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
         const offset = parseInt(req.query.offset) || 0;
-        const users = yield userService.listUsers(limit, offset);
+        const users = yield getUserService().listUsers(limit, offset);
         res.json({
             success: true,
             data: users,
@@ -123,9 +124,9 @@ router.get('/', authMiddleware_1.requireAdmin, (req, res, next) => __awaiter(voi
     }
 }));
 // Admin: Get user by ID
-router.get('/:userId', authMiddleware_1.requireAdmin, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/:userId', (0, authMiddleware_1.requireRole)('ADMIN'), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield userService.getUserById(req.params.userId);
+        const user = yield getUserService().getUserById(req.params.userId);
         res.json({
             success: true,
             data: user,
@@ -136,9 +137,9 @@ router.get('/:userId', authMiddleware_1.requireAdmin, (req, res, next) => __awai
     }
 }));
 // Admin: Delete user
-router.delete('/:userId', authMiddleware_1.requireAdmin, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/:userId', (0, authMiddleware_1.requireRole)('ADMIN'), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield userService.deleteUser(req.params.userId);
+        yield getUserService().deleteUser(req.params.userId);
         res.json({
             success: true,
             message: 'User deleted successfully',

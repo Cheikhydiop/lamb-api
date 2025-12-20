@@ -25,7 +25,7 @@ export class TransactionService {
         type: data.type,
         amount: data.amount,
         userId,
-        provider: data.provider,
+        provider: data.provider as any, // Cast to any or MobileMoneyProvider to resolve mismatch
         notes: data.notes,
       },
     });
@@ -74,7 +74,7 @@ export class TransactionService {
         type: 'DEPOSIT',
         amount: data.amount,
         userId,
-        provider: data.provider,
+        provider: data.provider as any,
         status: 'PENDING',
         notes: `Deposit from ${data.phoneNumber}`,
       },
@@ -166,7 +166,7 @@ export class TransactionService {
         type: 'WITHDRAWAL',
         amount: data.amount,
         userId,
-        provider: data.provider,
+        provider: data.provider as any,
         status: 'PENDING',
         notes: `Withdrawal to ${data.phoneNumber}`,
       },

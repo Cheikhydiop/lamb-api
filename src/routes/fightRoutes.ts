@@ -5,6 +5,7 @@ import { requireAuth, requireAdmin, requireRole } from '../middlewares/authMiddl
 import { validateRequest } from '../middlewares/validateRequest';
 import { body, param, query } from 'express-validator';
 import { FightStatus, Winner } from '@prisma/client';
+import { asyncHandler } from '../middlewares/asyncHandler';
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get(
       .isString().withMessage('ID du combat doit être une chaîne')
   ],
   validateRequest,
-  FightController.getFight
+  asyncHandler(FightController.getFight)
 );
 
 // Liste des combats avec filtres
@@ -46,7 +47,7 @@ router.get(
       .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
   ],
   validateRequest,
-  FightController.listFights
+  asyncHandler(FightController.listFights)
 );
 
 // Obtenir les prochains combats
@@ -58,7 +59,7 @@ router.get(
       .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
   ],
   validateRequest,
-  FightController.getUpcomingFights
+  asyncHandler(FightController.getUpcomingFights)
 );
 
 // Obtenir les combats populaires
@@ -70,7 +71,7 @@ router.get(
       .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
   ],
   validateRequest,
-  FightController.getPopularFights
+  asyncHandler(FightController.getPopularFights)
 );
 
 // ==================== ROUTES ADMIN (COMBATS) ====================
@@ -104,7 +105,7 @@ router.post(
       .isString().withMessage('ID du combattant B doit être une chaîne')
   ],
   validateRequest,
-  FightController.createFight
+  asyncHandler(FightController.createFight)
 );
 
 // Mettre à jour le statut d'un combat (Admin seulement)
@@ -121,7 +122,7 @@ router.patch(
       .isIn(Object.values(FightStatus)).withMessage(`Statut invalide. Valeurs acceptées: ${Object.values(FightStatus).join(', ')}`)
   ],
   validateRequest,
-  FightController.updateFightStatus
+  asyncHandler(FightController.updateFightStatus)
 );
 
 // Valider le résultat d'un combat (Admin seulement)
@@ -151,7 +152,7 @@ router.post(
       .isLength({ min: 6, max: 6 }).withMessage('Le code OTP doit comporter 6 chiffres')
   ],
   validateRequest,
-  FightController.validateFightResult
+  asyncHandler(FightController.validateFightResult)
 );
 
 // Demander un OTP pour la validation d'un résultat
@@ -165,7 +166,7 @@ router.post(
       .isString().withMessage('ID du combat doit être une chaîne')
   ],
   validateRequest,
-  FightController.requestFightValidationOTP
+  asyncHandler(FightController.requestFightValidationOTP)
 );
 
 // Expirer automatiquement les combats passés (Admin seulement)
@@ -173,7 +174,7 @@ router.post(
   '/expire-past',
   requireAuth,
   requireRole('ADMIN'),
-  FightController.expirePastFights
+  asyncHandler(FightController.expirePastFights)
 );
 
 // ==================== ROUTES JOURNÉES DE LUTTE (PUBLIQUES) ====================
@@ -187,25 +188,25 @@ router.get(
       .isString().withMessage('ID de la journée doit être une chaîne')
   ],
   validateRequest,
-  FightController.getDayEvent
+  asyncHandler(FightController.getDayEvent)
 );
 
 // Liste des journées avec filtres
 router.get(
   '/day-events',
-  FightController.listDayEvents
+  asyncHandler(FightController.listDayEvents)
 );
 
 // Obtenir les journées à venir
 router.get(
   '/day-events/upcoming',
-  FightController.getUpcomingDayEvents
+  asyncHandler(FightController.getUpcomingDayEvents)
 );
 
 // Obtenir la journée actuelle
 router.get(
   '/day-events/current',
-  FightController.getCurrentDayEvent
+  asyncHandler(FightController.getCurrentDayEvent)
 );
 
 // ==================== ROUTES JOURNÉES DE LUTTE (ADMIN) ====================
@@ -215,7 +216,7 @@ router.post(
   '/day-events',
   requireAuth,
   requireRole('ADMIN'),
-  FightController.createDayEvent
+  asyncHandler(FightController.createDayEvent)
 );
 
 // Mettre à jour une journée (Admin seulement)
@@ -223,7 +224,7 @@ router.put(
   '/day-events/:eventId',
   requireAuth,
   requireRole('ADMIN'),
-  FightController.updateDayEvent
+  asyncHandler(FightController.updateDayEvent)
 );
 
 // Supprimer une journée (Admin seulement)
@@ -231,7 +232,7 @@ router.delete(
   '/day-events/:eventId',
   requireAuth,
   requireRole('ADMIN'),
-  FightController.deleteDayEvent
+  asyncHandler(FightController.deleteDayEvent)
 );
 
 // ==================== ROUTES DE TEST ====================

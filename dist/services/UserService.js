@@ -8,167 +8,220 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-// src/services/UserService.ts
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const crypto_1 = __importDefault(require("crypto"));
-const tokenUtils_1 = require("../utils/tokenUtils");
 const customErrors_1 = require("../errors/customErrors");
-const userValidator_1 = __importDefault(require("../utils/validators/userValidator"));
-const SessionRepository_1 = require("../repositories/SessionRepository");
 const Logger_1 = __importDefault(require("../utils/Logger"));
 class UserService {
-    constructor(userRepository, walletRepository, emailVerificationService, sessionRepository) {
+    constructor(userRepository, walletRepository, emailVerificationService, sessionRepository, prisma // Injected for complex queries/aggregations not yet in repositories
+    ) {
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.emailVerificationService = emailVerificationService;
         this.sessionRepository = sessionRepository;
-        this.MAX_LOGIN_ATTEMPTS = 5;
-        this.LOGIN_WINDOW_MS = 15 * 60 * 1000;
-        // Log pour vérifier l'instanciation
-        console.log('UserService constructor called');
-        console.log('UserRepository methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(userRepository)));
+        this.prisma = prisma;
+        Logger_1.default.info('UserService initialized');
     }
-    login(loginData, req) {
+    /**
+     * Récupère un utilisateur par son ID
+     */
+    getUserById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('Login attempt for:', loginData.email);
-                // Validation des données d'entrée
-                const validatedData = userValidator_1.default.validateLogin(loginData);
-                console.log('Data validated, searching user...');
-                // DEBUG: Vérifier si la méthode existe
-                console.log('Checking findByEmailWithWallet method...');
-                console.log('Method exists:', typeof this.userRepository.findByEmailWithWallet);
-                // Recherche de l'utilisateur
-                const user = yield this.userRepository.findByEmailWithWallet(validatedData.email);
-                console.log('User found:', !!user);
+                const user = yield this.userRepository.findByIdWithWallet(userId);
                 if (!user) {
-                    console.log('User not found:', validatedData.email);
-                    throw new customErrors_1.AuthenticationError('Identifiants invalides', {
-                        email: validatedData.email,
-                        reason: 'USER_NOT_FOUND',
-                        ipAddress: req === null || req === void 0 ? void 0 : req.ip,
-                        timestamp: new Date().toISOString()
-                    });
+                    throw new customErrors_1.NotFoundError('Utilisateur non trouvé');
                 }
-                console.log('User found, checking account status...');
-                // Vérification du statut du compte
-                if (!user.isActive) {
-                    throw new customErrors_1.AuthenticationError('Compte désactivé', {
-                        userId: user.id,
-                        email: user.email,
-                        reason: 'ACCOUNT_INACTIVE',
-                        suggestion: 'Contactez le support pour réactiver votre compte'
-                    });
-                }
-                if (!user.isEmailVerified) {
-                    throw new customErrors_1.AuthenticationError('Email non vérifié', {
-                        userId: user.id,
-                        email: user.email,
-                        reason: 'EMAIL_NOT_VERIFIED',
-                        suggestion: 'Vérifiez votre boîte mail ou demandez un nouveau lien de vérification'
-                    });
-                }
-                // Vérification du mot de passe
-                const isPasswordValid = yield bcrypt_1.default.compare(validatedData.password, user.password);
-                if (!isPasswordValid) {
-                    throw new customErrors_1.AuthenticationError('Mot de passe incorrect', {
-                        userId: user.id,
-                        email: user.email,
-                        reason: 'INVALID_PASSWORD',
-                        suggestion: 'Réinitialisez votre mot de passe si vous l\'avez oublié'
-                    });
-                }
-                // Mise à jour de la dernière connexion
-                yield this.userRepository.updateLastLogin(user.id, new Date());
-                // Génération des tokens
-                const token = (0, tokenUtils_1.generateToken)({
-                    userId: user.id,
-                    role: user.role,
-                    email: user.email
-                });
-                const refreshToken = crypto_1.default.randomBytes(40).toString('hex');
-                const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-                // Extraction des infos de l'appareil
-                let deviceInfo = {
-                    deviceType: SessionRepository_1.DeviceType.UNKNOWN,
-                    ipAddress: undefined,
-                    userAgent: undefined
-                };
-                if (req) {
-                    const extractedInfo = this.sessionRepository.extractDeviceInfoFromRequest(req);
-                    deviceInfo = {
-                        deviceType: extractedInfo.deviceType || SessionRepository_1.DeviceType.UNKNOWN,
-                        ipAddress: extractedInfo.ipAddress,
-                        userAgent: extractedInfo.userAgent
-                    };
-                }
-                // Création de la session
-                const session = yield this.sessionRepository.createSession({
-                    userId: user.id,
-                    refreshToken,
-                    deviceType: deviceInfo.deviceType,
-                    ipAddress: deviceInfo.ipAddress,
-                    userAgent: deviceInfo.userAgent,
-                    expiresAt: sessionExpiry
-                });
-                // Application des limites de sessions
-                yield this.sessionRepository.enforceSessionLimits(user.id);
-                // Nettoyage de la réponse
-                const { password } = user, userWithoutPassword = __rest(user, ["password"]);
-                Logger_1.default.info(`✅ Connexion réussie: ${user.email} (${user.id})`, {
-                    userId: user.id,
-                    ip: deviceInfo.ipAddress,
-                    deviceType: deviceInfo.deviceType
-                });
-                return {
-                    user: userWithoutPassword,
-                    token,
-                    refreshToken,
-                    sessionId: session.id,
-                    deviceInfo,
-                    message: 'Connexion réussie'
-                };
+                return user;
             }
             catch (error) {
-                console.error('❌ Login error details:', {
-                    errorName: error.name,
-                    errorMessage: error.message,
-                    errorStack: error.stack,
-                    userEmail: loginData.email
-                });
-                Logger_1.default.error('❌ Échec de la connexion', {
-                    email: loginData.email,
-                    errorCode: error.code,
-                    errorMessage: error.message,
-                    ip: req === null || req === void 0 ? void 0 : req.ip,
-                    userAgent: req === null || req === void 0 ? void 0 : req.headers['user-agent']
-                });
-                // Propagation des erreurs spécifiques
-                if (error instanceof customErrors_1.AuthenticationError ||
-                    error instanceof customErrors_1.ValidationError ||
-                    error instanceof customErrors_1.RateLimitError) {
+                if (error instanceof customErrors_1.NotFoundError)
                     throw error;
-                }
-                // Erreur générique avec plus de détails
-                throw new customErrors_1.DatabaseError('Une erreur est survenue lors de la connexion', 'LOGIN_OPERATION', 'USER', req === null || req === void 0 ? void 0 : req.headers['x-request-id']);
+                Logger_1.default.error('Error fetching user', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la récupération de l\'utilisateur');
             }
         });
     }
+    /**
+     * Met à jour les informations d'un utilisateur
+     */
+    updateUser(userId, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Validate input if needed
+                const updateData = {};
+                if (data.name)
+                    updateData.name = data.name;
+                if (data.phone)
+                    updateData.phone = data.phone;
+                if (data.email)
+                    updateData.email = data.email;
+                const user = yield this.userRepository.update(userId, updateData);
+                Logger_1.default.info(`User updated: ${userId}`);
+                return user;
+            }
+            catch (error) {
+                Logger_1.default.error('Error updating user', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la mise à jour de l\'utilisateur');
+            }
+        });
+    }
+    /**
+     * Change le mot de passe d'un utilisateur
+     */
+    changePassword(userId, oldPassword, newPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const user = yield this.userRepository.findById(userId);
+                if (!user) {
+                    throw new customErrors_1.NotFoundError('Utilisateur non trouvé');
+                }
+                const isPasswordValid = yield bcrypt_1.default.compare(oldPassword, user.password);
+                if (!isPasswordValid) {
+                    throw new customErrors_1.AuthenticationError('Mot de passe actuel incorrect');
+                }
+                const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
+                yield this.userRepository.updatePassword(userId, hashedPassword);
+                Logger_1.default.info(`Password changed for user: ${userId}`);
+            }
+            catch (error) {
+                if (error instanceof customErrors_1.NotFoundError || error instanceof customErrors_1.AuthenticationError)
+                    throw error;
+                Logger_1.default.error('Error changing password', error);
+                throw new customErrors_1.DatabaseError('Erreur lors du changement de mot de passe');
+            }
+        });
+    }
+    /**
+     * Désactive un compte utilisateur
+     */
+    deactivateAccount(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.userRepository.update(userId, { isActive: false });
+                Logger_1.default.info(`Account deactivated: ${userId}`);
+            }
+            catch (error) {
+                Logger_1.default.error('Error deactivating account', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la désactivation du compte');
+            }
+        });
+    }
+    /**
+     * Réactive un compte utilisateur
+     */
+    reactivateAccount(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.userRepository.update(userId, { isActive: true });
+                Logger_1.default.info(`Account reactivated: ${userId}`);
+            }
+            catch (error) {
+                Logger_1.default.error('Error reactivating account', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la réactivation du compte');
+            }
+        });
+    }
+    /**
+     * Récupère les statistiques d'un utilisateur
+     */
+    getUserStats(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Using direct prisma queries for stats as repositories might not have these specific aggregations
+                const [betStats, transactionStats, wallet] = yield Promise.all([
+                    this.prisma.bet.findMany({
+                        where: { OR: [{ creatorId: userId }, { acceptorId: userId }] },
+                    }),
+                    this.prisma.transaction.findMany({
+                        where: { userId },
+                    }),
+                    this.prisma.wallet.findUnique({
+                        where: { userId },
+                    }),
+                ]);
+                const totalBets = betStats.length;
+                const acceptedBets = betStats.filter((b) => b.status === valFromEnum('ACCEPTED')).length;
+                const totalTransactions = transactionStats.length;
+                const totalWinnings = yield this.prisma.winning.aggregate({
+                    where: { userId },
+                    _sum: { amount: true },
+                });
+                return {
+                    totalBets,
+                    acceptedBets,
+                    totalTransactions,
+                    totalWinnings: totalWinnings._sum.amount || BigInt(0),
+                    wallet: wallet ? this.sanitizeBigInt(wallet) : null,
+                };
+            }
+            catch (error) {
+                Logger_1.default.error('Error fetching user stats', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la récupération des statistiques');
+            }
+        });
+    }
+    /**
+     * Liste les utilisateurs (Admin)
+     */
+    listUsers() {
+        return __awaiter(this, arguments, void 0, function* (limit = 20, offset = 0) {
+            try {
+                const result = yield this.userRepository.findAll(Math.floor(offset / limit) + 1, limit);
+                return result.users;
+            }
+            catch (error) {
+                Logger_1.default.error('Error listing users', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la récupération de la liste des utilisateurs');
+            }
+        });
+    }
+    /**
+     * Supprime un utilisateur (Admin)
+     */
+    deleteUser(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Check if user has active bets or transactions
+                // Implementation migrated from user.service.ts
+                const activeBets = yield this.prisma.bet.count({
+                    where: { OR: [{ creatorId: userId }, { acceptorId: userId }], status: 'ACCEPTED' },
+                });
+                if (activeBets > 0) {
+                    throw new customErrors_1.ConflictError('Impossible de supprimer un utilisateur avec des paris actifs');
+                }
+                yield this.userRepository.delete(userId);
+                Logger_1.default.info(`User deleted: ${userId}`);
+            }
+            catch (error) {
+                if (error instanceof customErrors_1.ConflictError)
+                    throw error;
+                Logger_1.default.error('Error deleting user', error);
+                throw new customErrors_1.DatabaseError('Erreur lors de la suppression de l\'utilisateur');
+            }
+        });
+    }
+    // Helper for BigInt serialization (duplicated from repo, but useful here if returning direct prisma results)
+    sanitizeBigInt(data) {
+        if (data === null || data === undefined)
+            return data;
+        if (typeof data === 'bigint')
+            return String(data);
+        if (Array.isArray(data))
+            return data.map(item => this.sanitizeBigInt(item));
+        if (typeof data === 'object') {
+            const sanitized = {};
+            for (const key in data)
+                sanitized[key] = this.sanitizeBigInt(data[key]);
+            return sanitized;
+        }
+        return data;
+    }
 }
 exports.UserService = UserService;
+// Helper to handle Enum strings if needed, though Prisma Enums are usually available via import
+function valFromEnum(val) { return val; }

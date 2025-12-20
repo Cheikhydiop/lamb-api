@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
-import logger  from '../utils/Logger';
+import logger  from '../utils/logger';
 
 export const securityHeaders = [
   // Configuration de base de Helmet

@@ -119,8 +119,8 @@ class FightController {
                     fighterId: req.query.fighterId,
                     limit: req.query.limit ? parseInt(req.query.limit) : 20,
                     offset: req.query.offset ? parseInt(req.query.offset) : 0,
-                    fromDate: req.query.fromDate,
-                    toDate: req.query.toDate
+                    fromDate: req.query.fromDate ? new Date(req.query.fromDate) : undefined,
+                    toDate: req.query.toDate ? new Date(req.query.toDate) : undefined
                 };
                 const result = yield fightService.listFights(filters);
                 res.status(200).json({
@@ -418,8 +418,8 @@ class FightController {
                     status: req.query.status,
                     limit: req.query.limit ? parseInt(req.query.limit) : 20,
                     offset: req.query.offset ? parseInt(req.query.offset) : 0,
-                    fromDate: req.query.fromDate,
-                    toDate: req.query.toDate
+                    fromDate: req.query.fromDate ? new Date(req.query.fromDate) : undefined,
+                    toDate: req.query.toDate ? new Date(req.query.toDate) : undefined
                 };
                 const result = yield fightService.listDayEvents(filters);
                 res.status(200).json({

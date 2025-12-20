@@ -25,17 +25,7 @@ const betService = new BetService(prisma, webSocketService);
 const fightService = new FightService(prisma, betService, webSocketService);
 
 // Déclaration globale pour req.user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        role: string;
-        email: string;
-      };
-    }
-  }
-}
+// (Global declaration removed to avoid conflict with express.d.ts)
 
 class FightController {
   // ========== COMBATS INDIVIDUELS ==========

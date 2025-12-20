@@ -1,5 +1,4 @@
-import { Service } from 'typedi';
-import logger  from '../utils/Logger';
+import logger from '../utils/logger';
 import { PrismaClient } from '@prisma/client';
 
 interface CreateAuditLogParams {
@@ -14,13 +13,9 @@ interface CreateAuditLogParams {
   userAgent?: string;
 }
 
-@Service()
+// refactored for manual DI
 export class AuditService {
-  private prisma: PrismaClient;
-
-  constructor() {
-    this.prisma = new PrismaClient();
-  }
+  constructor(private prisma: PrismaClient) { }
 
   async createAuditLog(params: CreateAuditLogParams) {
     try {
@@ -59,7 +54,7 @@ export class AuditService {
       timestamp: new Date().toISOString(),
       ...params,
     };
-    
+
     // Log dans un fichier dédié ou dans les logs système
     logger.error('AUDIT LOG FALLBACK:', logEntry);
   }

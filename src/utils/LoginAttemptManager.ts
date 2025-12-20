@@ -1,4 +1,4 @@
-import logger  from './Logger';
+import logger from './logger';
 
 // Store en mémoire pour compter les tentatives par IP
 const failedLoginAttempts = new Map<string, { count: number; resetTime: number }>();
@@ -37,7 +37,7 @@ export class LoginAttemptManager {
     isBlocked: boolean;
   } {
     const now = Date.now();
-    
+
     // Récupérer ou initialiser le compteur pour cette IP
     let attempts = failedLoginAttempts.get(ip);
     if (!attempts || now > attempts.resetTime) {
@@ -53,10 +53,10 @@ export class LoginAttemptManager {
     const remaining = Math.max(0, this.MAX_ATTEMPTS - attempts.count);
     const isBlocked = attempts.count >= this.MAX_ATTEMPTS;
 
-    logger.info(`🔍 IP ${ip} - Attempt ${attempts.count}/${this.MAX_ATTEMPTS}, ${remaining} remaining - Reset in ${this.WINDOW_MS/1000}s`);
+    logger.info(`🔍 IP ${ip} - Attempt ${attempts.count}/${this.MAX_ATTEMPTS}, ${remaining} remaining - Reset in ${this.WINDOW_MS / 1000}s`);
 
     if (isBlocked) {
-      logger.error(`🚨 SECURITY ALERT: Rate limit exceeded for IP ${ip} - ${attempts.count} failed attempts - Wait ${this.WINDOW_MS/1000}s`);
+      logger.error(`🚨 SECURITY ALERT: Rate limit exceeded for IP ${ip} - ${attempts.count} failed attempts - Wait ${this.WINDOW_MS / 1000}s`);
     }
 
     return {
@@ -73,7 +73,7 @@ export class LoginAttemptManager {
   static isBlocked(ip: string): boolean {
     const now = Date.now();
     const attempts = failedLoginAttempts.get(ip);
-    
+
     if (!attempts || now > attempts.resetTime) {
       return false;
     }
@@ -87,7 +87,7 @@ export class LoginAttemptManager {
   static getAttemptStatus(ip: string): { count: number; timeUntilReset: number; isBlocked: boolean } | null {
     const now = Date.now();
     const attempts = failedLoginAttempts.get(ip);
-    
+
     if (!attempts || now > attempts.resetTime) {
       return null;
     }

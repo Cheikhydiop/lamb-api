@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { 
+import {
   AppError,
-  AuthenticationError, 
-  ValidationError, 
+  AuthenticationError,
+  ValidationError,
   DatabaseError,
   NotFoundError,
   ConflictError,
   RateLimitError,
   ForbiddenError
 } from '../errors/customErrors';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 export default class ErrorHandler {
   /**
@@ -18,11 +18,12 @@ export default class ErrorHandler {
   static handle = (err: Error, req: Request, res: Response, next: NextFunction) => {
     // Gestion des erreurs AppError
     if (err instanceof AppError) {
-      return ErrorHandler.handleAppError(err, req, res);
+      ErrorHandler.handleAppError(err, req, res);
+      return;
     }
 
     // Erreurs standards non gérées
-    return ErrorHandler.handleUnknownError(err, req, res);
+    ErrorHandler.handleUnknownError(err, req, res);
   };
 
   /**
@@ -69,13 +70,13 @@ export default class ErrorHandler {
     if (error instanceof AuthenticationError) {
       response.error.reason = error.details?.reason;
       response.error.suggestion = error.details?.suggestion;
-    } 
+    }
     else if (error instanceof ValidationError) {
       response.error.fields = error.details?.fields || [];
-    } 
+    }
     else if (error instanceof RateLimitError) {
       response.error.rateLimitInfo = error.details;
-      
+
       // Headers de rate limit
       if (error.details?.limit) {
         res.setHeader('RateLimit-Limit', error.details.limit);
@@ -86,16 +87,16 @@ export default class ErrorHandler {
       if (error.details?.resetTime) {
         res.setHeader('RateLimit-Reset', Math.floor(new Date(error.details.resetTime).getTime() / 1000));
       }
-    } 
+    }
     else if (error instanceof ConflictError) {
       response.error.resource = error.details?.resource;
       response.error.conflictingField = error.details?.conflictingField;
       response.error.value = error.details?.value;
-    } 
+    }
     else if (error instanceof NotFoundError) {
       response.error.resource = error.details?.resource;
       response.error.id = error.details?.id;
-    } 
+    }
     else if (error instanceof DatabaseError) {
       response.error.operation = error.details?.operation;
       response.error.entity = error.details?.entity;

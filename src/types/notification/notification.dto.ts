@@ -1,6 +1,6 @@
 // src/dto/notification/notification.dto.ts
 import { IsEnum, IsNotEmpty, IsOptional, IsString, IsObject, IsBoolean, IsNumber } from 'class-validator';
-import { NotificationType, NotificationPriority, NotificationGroupType } from '../../types/notification-types';
+import { NotificationType, NotificationPriority, NotificationGroupType } from '../notification-types';
 
 export class CreateNotificationDto {
   @IsNotEmpty()

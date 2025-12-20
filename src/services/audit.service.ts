@@ -4,7 +4,7 @@ import logger from '../utils/logger';
 
 @Service()
 export class AuditService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   async logAction(
     action: string,

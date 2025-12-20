@@ -1,9 +1,9 @@
-// services/BetService.ts - VERSION CORRIGÉE POUR TYPES PRISMA
-import { Service } from 'typedi';
-import { 
-  PrismaClient, 
-  BetStatus, 
-  NotificationType, 
+import {
+  PrismaClient,
+  BetStatus,
+  TransactionStatus,
+  NotificationType,
+  TransactionType,
   FighterChoice,
   User,
   Wallet,
@@ -13,12 +13,12 @@ import {
   EventStatus,
   FightStatus
 } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { addMinutes, addHours, isAfter } from 'date-fns';
-import { CreateBetDTO } from '../dto/bet.dto';
+import { CreateBetDTO, CreateBetDTOType } from '../dto/bet.dto';
 import { WebSocketService } from './WebSocketService';
 import logger from '../utils/logger';
 
-@Service()
 export class BetService {
   private readonly CANCELLATION_WINDOW_MINUTES = 20;
   private readonly COMMISSION_PERCENTAGE = 10; // 10% de commission
@@ -27,12 +27,12 @@ export class BetService {
   constructor(
     private prisma: PrismaClient,
     private webSocketService: WebSocketService
-  ) {}
+  ) { }
 
-  async createBet(userId: string, data: CreateBetDTO): Promise<any> {
+  async createBet(userId: string, data: CreateBetDTOType): Promise<any> {
     try {
       // ========== VALIDATIONS AVANT TRANSACTION (rapide) ==========
-      
+
       // Vérifier si l'utilisateur existe
       const user = await this.prisma.user.findUnique({
         where: { id: userId }
@@ -49,8 +49,8 @@ export class BetService {
       // Vérifier le combat
       const fight = await this.prisma.fight.findUnique({
         where: { id: data.fightId },
-        include: { 
-          fighterA: true, 
+        include: {
+          fighterA: true,
           fighterB: true,
           dayEvent: true
         }
@@ -74,7 +74,7 @@ export class BetService {
       }
 
       // Vérifier si le combat commence bientôt
-      const fightStartTime = fight.scheduledTime || fight.dayEvent.date;
+      const fightStartTime = fight.scheduledAt || fight.dayEvent.date;
       const now = new Date();
       const thirtyMinutesBeforeFight = addMinutes(fightStartTime, -30);
 
@@ -92,7 +92,8 @@ export class BetService {
       }
 
       // Vérifier que le solde est suffisant (pas besoin de calculer availableBalance)
-      if (wallet.balance < data.amount) {
+      const amountBigInt = data.amount;
+      if (wallet.balance < amountBigInt) {
         throw new Error('Solde insuffisant');
       }
 
@@ -101,7 +102,7 @@ export class BetService {
       }
 
       // Calculer le gain potentiel (pour l'annoncer)
-      const potentialWin = data.amount * this.WIN_MULTIPLIER;
+      const potentialWin = Number(data.amount) * this.WIN_MULTIPLIER;
 
       // Calculer la date limite d'annulation
       const canCancelUntil = addMinutes(new Date(), this.CANCELLATION_WINDOW_MINUTES);
@@ -121,13 +122,13 @@ export class BetService {
       }
 
       // ========== TRANSACTION (opérations critiques uniquement) ==========
-      
+
       const bet = await this.prisma.$transaction(async (tx) => {
         // 1. SOUSTRAIRE DU SOLDE et bloquer les fonds
-        const amountBigInt = BigInt(Math.floor(data.amount));
+        const amountBigInt = data.amount;
         await tx.wallet.update({
           where: { userId },
-          data: { 
+          data: {
             balance: { decrement: amountBigInt },
             lockedBalance: { increment: amountBigInt }
           }
@@ -136,7 +137,7 @@ export class BetService {
         // 2. Créer le pari
         const newBet = await tx.bet.create({
           data: {
-            amount: data.amount,
+            amount: data.amount.toString(),
             chosenFighter: data.chosenFighter,
             fightId: data.fightId,
             creatorId: userId,
@@ -163,7 +164,7 @@ export class BetService {
 
         // 3. Mettre à jour les statistiques de la journée
         // Convertir en BigInt si le champ est de type BigInt dans le schéma
-        const totalAmountIncrement = BigInt(Math.floor(data.amount));
+        const totalAmountIncrement = data.amount;
         await tx.dayEvent.update({
           where: { id: fight.dayEventId! },
           data: {
@@ -173,14 +174,14 @@ export class BetService {
         });
 
         return newBet;
-        
+
       }, {
         maxWait: 10000,
         timeout: 20000
       });
 
       // ========== OPÉRATIONS NON-CRITIQUES (après la transaction) ==========
-      
+
       // Audit log (non-bloquant)
       try {
         await this.prisma.auditLog.create({
@@ -201,9 +202,9 @@ export class BetService {
         await this.prisma.notification.create({
           data: {
             userId: userId,
-            type: 'BET_CREATED',
+            type: 'BET_PLACED',
             title: 'Pari créé',
-            message: `Vous avez créé un pari de ${data.amount} FCFA sur ${bet.chosenFighter === 'A' ? bet.fight.fighterA.name : bet.fight.fighterB.name}. Attendez qu'un autre joueur l'accepte.`,
+            message: `Vous avez créé un pari de ${data.amount} FCFA sur ${(bet as any).chosenFighter === 'A' ? (bet as any).fight.fighterA.name : (bet as any).fight.fighterB.name}. Attendez qu'un autre joueur l'accepte.`,
           }
         });
       } catch (notifError) {
@@ -212,120 +213,120 @@ export class BetService {
 
       logger.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
       return bet;
-      
+
     } catch (error: any) {
       logger.error('Erreur lors de la création du pari:', error);
       throw error;
     }
   }
-/**
- * Récupérer les paris avec statut PENDING
- */
-async getPendingBets(filters: {
-  userId?: string;
-  fightId?: string;
-  dayEventId?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<{ bets: any[]; total: number; limit: number; offset: number }> {
-  try {
-    const { userId, fightId, dayEventId, limit = 20, offset = 0 } = filters;
+  /**
+   * Récupérer les paris avec statut PENDING
+   */
+  async getPendingBets(filters: {
+    userId?: string;
+    fightId?: string;
+    dayEventId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ bets: any[]; total: number; limit: number; offset: number }> {
+    try {
+      const { userId, fightId, dayEventId, limit = 20, offset = 0 } = filters;
 
-    const where: any = {
-      status: 'PENDING'
-    };
-
-    if (userId) {
-      where.OR = [
-        { creatorId: userId },
-        { acceptorId: userId }
-      ];
-    }
-
-    if (fightId) {
-      where.fightId = fightId;
-    }
-
-    if (dayEventId) {
-      where.fight = {
-        dayEventId: dayEventId
+      const where: any = {
+        status: 'PENDING'
       };
-    }
 
-    // Vérifier que le combat n'a pas encore commencé
-    where.fight = {
-      ...where.fight,
-      status: 'SCHEDULED',
-      dayEvent: {
-        status: 'SCHEDULED'
+      if (userId) {
+        where.OR = [
+          { creatorId: userId },
+          { acceptorId: userId }
+        ];
       }
-    };
 
-    const [bets, total] = await Promise.all([
-      this.prisma.bet.findMany({
-        where,
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              phone: true
-            }
-          },
-          acceptor: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          fight: {
-            include: {
-              fighterA: true,
-              fighterB: true,
-              dayEvent: {
-                select: {
-                  id: true,
-                  title: true,
-                  date: true,
-                  status: true
+      if (fightId) {
+        where.fightId = fightId;
+      }
+
+      if (dayEventId) {
+        where.fight = {
+          dayEventId: dayEventId
+        };
+      }
+
+      // Vérifier que le combat n'a pas encore commencé
+      where.fight = {
+        ...where.fight,
+        status: 'SCHEDULED',
+        dayEvent: {
+          status: 'SCHEDULED'
+        }
+      };
+
+      const [bets, total] = await Promise.all([
+        this.prisma.bet.findMany({
+          where,
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            },
+            acceptor: {
+              select: {
+                id: true,
+                name: true
+              }
+            },
+            fight: {
+              include: {
+                fighterA: true,
+                fighterB: true,
+                dayEvent: {
+                  select: {
+                    id: true,
+                    title: true,
+                    date: true,
+                    status: true
+                  }
                 }
               }
             }
-          }
-        },
-        take: limit,
-        skip: offset,
-        orderBy: { createdAt: 'desc' }
-      }),
-      this.prisma.bet.count({ where })
-    ]);
+          },
+          take: limit,
+          skip: offset,
+          orderBy: { createdAt: 'desc' }
+        }),
+        this.prisma.bet.count({ where })
+      ]);
 
-    // Filtrer les paris qui sont dans la fenêtre de 30 minutes avant le combat
-    const now = new Date();
-    const filteredBets = bets.filter(bet => {
-      if (!bet.fight) return false;
-      
-      const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
-      const thirtyMinutesBeforeFight = addMinutes(fightStartTime, -30);
-      
-      return isAfter(thirtyMinutesBeforeFight, now);
-    });
+      // Filtrer les paris qui sont dans la fenêtre de 30 minutes avant le combat
+      const now = new Date();
+      const filteredBets = bets.filter(bet => {
+        if (!bet.fight) return false;
 
-    return {
-      bets: filteredBets,
-      total: total,
-      limit,
-      offset
-    };
-  } catch (error: any) {
-    logger.error('Erreur lors de la récupération des paris en attente:', error);
-    throw error;
+        const fightStartTime = bet.fight.scheduledAt || bet.fight.dayEvent?.date;
+        const thirtyMinutesBeforeFight = addMinutes(fightStartTime, -30);
+
+        return isAfter(thirtyMinutesBeforeFight, now);
+      });
+
+      return {
+        bets: filteredBets,
+        total: total,
+        limit,
+        offset
+      };
+    } catch (error: any) {
+      logger.error('Erreur lors de la récupération des paris en attente:', error);
+      throw error;
+    }
   }
-}
   async acceptBet(acceptorId: string, betId: string): Promise<any> {
     try {
       let bet: any;
-      
+
       const result = await this.prisma.$transaction(async (tx) => {
         bet = await tx.bet.findUnique({
           where: { id: betId },
@@ -355,10 +356,10 @@ async getPendingBets(filters: {
         }
 
         // Vérifier si le combat a commencé (c'est la seule limitation pour l'acceptation)
-        const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+        const fightStartTime = bet.fight.scheduledAt || bet.fight.dayEvent?.date;
         const thirtyMinutesBeforeFight = addMinutes(fightStartTime, -30);
         const now = new Date();
-        
+
         if (isAfter(now, thirtyMinutesBeforeFight)) {
           throw new Error('Impossible d\'accepter un pari moins de 30 minutes avant le combat');
         }
@@ -373,7 +374,9 @@ async getPendingBets(filters: {
         }
 
         // Vérifier que le solde est suffisant
-        if (acceptorWallet.balance < bet.amount) {
+        // bet.amount is Decimal from Prisma, convert to BigInt for comparison with wallet.balance
+        const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
+        if (acceptorWallet.balance < betAmountBigInt) {
           throw new Error('Solde insuffisant pour accepter ce pari');
         }
 
@@ -381,7 +384,7 @@ async getPendingBets(filters: {
         const amountToLock = BigInt(Math.floor(bet.amount));
         await tx.wallet.update({
           where: { userId: acceptorId },
-          data: { 
+          data: {
             balance: { decrement: amountToLock },
             lockedBalance: { increment: amountToLock }
           }
@@ -437,13 +440,13 @@ async getPendingBets(filters: {
         maxWait: 10000,
         timeout: 15000
       });
-      
+
       // Notifier l'accepteur (en dehors de la transaction pour la performance)
       try {
         await this.prisma.notification.create({
           data: {
             userId: acceptorId,
-            type: 'BET_ACCEPTED',
+            type: NotificationType.BET_ACCEPTED,
             title: 'Pari accepté',
             message: `Vous avez accepté le pari de ${bet.creator.name} de ${bet.amount} FCFA.`,
           }
@@ -451,9 +454,9 @@ async getPendingBets(filters: {
       } catch (notifError) {
         logger.error('Erreur notification accepteur:', notifError);
       }
-      
+
       return result;
-      
+
     } catch (error: any) {
       logger.error('Erreur lors de l\'acceptation du pari:', error);
       throw error;
@@ -497,16 +500,16 @@ async getPendingBets(filters: {
         }
 
         // Vérifier si le combat a commencé
-        const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+        const fightStartTime = bet.fight.scheduledAt || bet.fight.dayEvent?.date;
         if (isAfter(now, fightStartTime)) {
           throw new Error('Impossible d\'annuler un pari sur un combat déjà commencé');
         }
 
         // REMBOURSER ET libérer les fonds du créateur
-        const amountToRefund = BigInt(Math.floor(bet.amount));
+        const amountToRefund = BigInt(Math.floor(Number(bet.amount)));
         await tx.wallet.update({
           where: { userId: bet.creatorId },
-          data: { 
+          data: {
             balance: { increment: amountToRefund },
             lockedBalance: { decrement: amountToRefund }
           }
@@ -516,7 +519,7 @@ async getPendingBets(filters: {
         if (bet.acceptorId) {
           await tx.wallet.update({
             where: { userId: bet.acceptorId },
-            data: { 
+            data: {
               balance: { increment: amountToRefund },
               lockedBalance: { decrement: amountToRefund }
             }
@@ -541,16 +544,17 @@ async getPendingBets(filters: {
           }
         });
 
-        // Mettre à jour les statistiques de la journée
-        // Convertir en BigInt si le champ est de type BigInt dans le schéma
-        const totalAmountDecrement = BigInt(Math.floor(bet.amount));
-        await tx.dayEvent.update({
-          where: { id: bet.fight.dayEventId },
-          data: {
-            totalBets: { decrement: 1 },
-            totalAmount: { decrement: totalAmountDecrement }
-          }
-        });
+        // Mettre à jour les statistiques de la journée si elle existe
+        if (bet.fight.dayEventId) {
+          const totalAmountDecrement = BigInt(Math.floor(Number(bet.amount)));
+          await tx.dayEvent.update({
+            where: { id: bet.fight.dayEventId },
+            data: {
+              totalBets: { decrement: 1 },
+              totalAmount: { decrement: totalAmountDecrement }
+            }
+          });
+        }
 
         return cancelledBet;
       }, {
@@ -560,7 +564,7 @@ async getPendingBets(filters: {
 
       // Opérations non-critiques après la transaction
       await this.handlePostCancelOperations(betId, userId, isAdmin);
-      
+
     } catch (error: any) {
       logger.error('Erreur lors de l\'annulation du pari:', error);
       throw error;
@@ -589,19 +593,19 @@ async getPendingBets(filters: {
         await Promise.all([
           this.prisma.transaction.create({
             data: {
-              type: 'BET_REFUND',
-              amount: bet.amount,
+              type: TransactionType.BET_REFUND,
+              amount: BigInt(Math.floor(Number(bet.amount))),
               userId: bet.creatorId,
-              status: 'COMPLETED',
+              status: TransactionStatus.CONFIRMED,
               notes: `Annulation du pari ${bet.id}`
             }
           }),
           bet.acceptorId ? this.prisma.transaction.create({
             data: {
-              type: 'BET_REFUND',
-              amount: bet.amount,
+              type: TransactionType.BET_REFUND,
+              amount: BigInt(Math.floor(Number(bet.amount))),
               userId: bet.acceptorId,
-              status: 'COMPLETED',
+              status: TransactionStatus.CONFIRMED,
               notes: `Annulation du pari ${bet.id}`
             }
           }) : Promise.resolve()
@@ -609,30 +613,35 @@ async getPendingBets(filters: {
       }
 
       // Notifications
-      await Promise.all([
-        this.prisma.notification.create({
-          data: {
-            userId: bet.creatorId,
-            type: 'BET_CANCELLED',
-            title: 'Pari annulé',
-            message: `Votre pari de ${bet.amount} FCFA sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
-          }
-        }),
-        bet.acceptorId ? this.prisma.notification.create({
+      const notifications = [];
+      notifications.push(this.prisma.notification.create({
+        data: {
+          userId: bet.creatorId,
+          type: 'BET_CANCELLED' as any,
+          title: 'Pari annulé',
+          message: `Votre pari de ${bet.amount} FCFA sur "${bet.fight.dayEvent?.title}" a été annulé. Les fonds ont été remboursés.`,
+        }
+      }));
+      if (bet.acceptorId) {
+        notifications.push(this.prisma.notification.create({
           data: {
             userId: bet.acceptorId,
-            type: 'BET_CANCELLED',
+            type: 'BET_CANCELLED' as any,
             title: 'Pari annulé',
-            message: `Le pari que vous avez accepté sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
+            message: `Le pari que vous avez accepté sur "${bet.fight.dayEvent?.title}" a été annulé. Les fonds ont été remboursés.`,
           }
-        }) : Promise.resolve()
-      ]);
+        }));
+      }
+
+      await Promise.all(notifications);
 
       logger.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
+
     } catch (error) {
       logger.error('Erreur dans les opérations post-annulation:', error);
     }
   }
+
 
   async settleBet(betId: string, winner: 'A' | 'B' | 'DRAW'): Promise<any> {
     try {
@@ -669,13 +678,13 @@ async getPendingBets(filters: {
 
         if (winner === 'DRAW') {
           // Match nul - remboursement complet des deux parties
-          const betAmountBigInt = BigInt(Math.floor(bet.amount));
-          
+          const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
+
           await Promise.all([
             // REMBOURSEMENT créateur
             tx.wallet.update({
               where: { userId: bet.creatorId },
-              data: { 
+              data: {
                 balance: { increment: betAmountBigInt },
                 lockedBalance: { decrement: betAmountBigInt }
               }
@@ -683,7 +692,7 @@ async getPendingBets(filters: {
             // REMBOURSEMENT accepteur
             tx.wallet.update({
               where: { userId: bet.acceptorId },
-              data: { 
+              data: {
                 balance: { increment: betAmountBigInt },
                 lockedBalance: { decrement: betAmountBigInt }
               }
@@ -705,12 +714,13 @@ async getPendingBets(filters: {
           const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
 
           // Calculer le gain
-          const totalPot = bet.amount * 2;
+          const betAmountNumber = Number(bet.amount);
+          const totalPot = betAmountNumber * 2;
           const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
           const winAmount = totalPot - commission;
 
           // Convertir en BigInt
-          const betAmountBigInt = BigInt(Math.floor(bet.amount));
+          const betAmountBigInt = BigInt(Math.floor(betAmountNumber));
           const winAmountBigInt = BigInt(Math.floor(winAmount));
 
           // Mettre à jour les wallets en parallèle
@@ -718,7 +728,7 @@ async getPendingBets(filters: {
             // Perdant - juste libérer les fonds bloqués (le solde a déjà été déduit)
             tx.wallet.update({
               where: { userId: loserId },
-              data: { 
+              data: {
                 lockedBalance: { decrement: betAmountBigInt },
                 totalLost: { increment: betAmountBigInt }
               }
@@ -726,7 +736,7 @@ async getPendingBets(filters: {
             // Gagnant - libérer fonds bloqués + ajouter gain
             tx.wallet.update({
               where: { userId: winnerId },
-              data: { 
+              data: {
                 balance: { increment: winAmountBigInt },
                 lockedBalance: { decrement: betAmountBigInt },
                 totalWon: { increment: winAmountBigInt }
@@ -738,9 +748,9 @@ async getPendingBets(filters: {
           const transaction = await tx.transaction.create({
             data: {
               type: 'BET_WIN',
-              amount: winAmount,
+              amount: winAmountBigInt,
               userId: winnerId,
-              status: 'COMPLETED',
+              status: TransactionStatus.CONFIRMED,
               notes: `Gain du pari ${bet.id}`
             }
           });
@@ -749,18 +759,23 @@ async getPendingBets(filters: {
           updatedBet = await tx.bet.update({
             where: { id: betId },
             data: {
-              status: isCreatorWinner ? 'CREATOR_WON' : 'ACCEPTOR_WON',
-              winAmount: winAmount,
+              status: BetStatus.WON,
+              actualWin: winAmountBigInt,
               settledAt: now,
-              transactionId: transaction.id
+              // transactionId field in Bet? Schema check: Bet does NOT have transactionId.
+              // Bet has listings of Winnings.
+              // So removing transactionId update.
+              // And using actualWin instead of winAmount.
             }
           });
 
           // Enregistrer la commission
-          await tx.systemFee.create({
+          await tx.commission.create({
             data: {
-              betId: bet.id,
-              amount: commission
+              transactionId: transaction.id,
+              type: 'BET',
+              amount: BigInt(Math.floor(commission)),
+              betId: bet.id
             }
           });
         }
@@ -773,7 +788,7 @@ async getPendingBets(filters: {
 
       // Opérations non-critiques après la transaction
       await this.handlePostSettleOperations(betId, winner);
-      
+
     } catch (error: any) {
       logger.error('Erreur lors du traitement du pari:', error);
       throw error;
@@ -805,18 +820,18 @@ async getPendingBets(filters: {
           this.prisma.transaction.create({
             data: {
               type: 'BET_REFUND',
-              amount: bet.amount,
+              amount: BigInt(Math.floor(Number(bet.amount))),
               userId: bet.creatorId,
-              status: 'COMPLETED',
+              status: TransactionStatus.CONFIRMED,
               notes: `Remboursement match nul - Pari ${bet.id}`
             }
           }),
           this.prisma.transaction.create({
             data: {
               type: 'BET_REFUND',
-              amount: bet.amount,
+              amount: BigInt(Math.floor(Number(bet.amount))),
               userId: bet.acceptorId!,
-              status: 'COMPLETED',
+              status: TransactionStatus.CONFIRMED,
               notes: `Remboursement match nul - Pari ${bet.id}`
             }
           })
@@ -849,8 +864,8 @@ async getPendingBets(filters: {
         const loserId = isCreatorWinner ? bet.acceptorId! : bet.creatorId;
 
         // Calculer la commission
-        const totalPot = bet.amount * 2;
-        const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
+        const totalPot = new Decimal(bet.amount).mul(2);
+        const commission = totalPot.mul(this.COMMISSION_PERCENTAGE / 100);
 
         // Notifications
         await Promise.all([
@@ -859,7 +874,7 @@ async getPendingBets(filters: {
               userId: winnerId,
               type: 'BET_WON',
               title: 'Pari gagné !',
-              message: `Félicitations ! Vous avez gagné ${bet.winAmount} FCFA sur votre pari.`,
+              message: `Félicitations ! Vous avez gagné ${bet.actualWin} FCFA sur votre pari.`,
             }
           }),
           this.prisma.notification.create({
@@ -906,7 +921,6 @@ async getPendingBets(filters: {
               result: true
             }
           },
-          transaction: true
         }
       });
 
@@ -1001,7 +1015,7 @@ async getPendingBets(filters: {
   async getAvailableBets(fightId: string): Promise<any[]> {
     try {
       const now = new Date();
-      
+
       return await this.prisma.bet.findMany({
         where: {
           fightId: fightId,
@@ -1175,8 +1189,8 @@ async getPendingBets(filters: {
         where: {
           status: 'SCHEDULED',
           OR: [
-            { scheduledTime: { lte: addMinutes(now, 30), gt: now } },
-            { 
+            { scheduledAt: { lte: addMinutes(now, 30), gt: now } },
+            {
               dayEvent: {
                 date: { lte: addMinutes(now, 30), gt: now }
               }
@@ -1184,6 +1198,7 @@ async getPendingBets(filters: {
           ]
         },
         include: {
+          dayEvent: true,
           bets: {
             where: {
               status: 'PENDING'
@@ -1197,10 +1212,16 @@ async getPendingBets(filters: {
       for (const fight of upcomingFights) {
         for (const bet of fight.bets) {
           // REMBOURSER les fonds (solde + libérer)
-          const amountBigInt = BigInt(Math.floor(bet.amount));
+          // Bet amount should be Decimal or string. If Decimal, we might need to be careful with precision.
+          // Assuming amount is stored as string in decimal field or Decimal type in Prisma.
+          // Prisma Decimal -> Number -> BigInt (floor)
+          // Or if it's already a string/number.
+          // Using BigInt constructor on string is safest if integer. If decimal, it throws.
+          // We floor it first. 
+          const amountBigInt = BigInt(Math.floor(Number(bet.amount)));
           await this.prisma.wallet.update({
             where: { userId: bet.creatorId },
-            data: { 
+            data: {
               balance: { increment: amountBigInt },
               lockedBalance: { decrement: amountBigInt }
             }
@@ -1219,7 +1240,7 @@ async getPendingBets(filters: {
           await this.prisma.notification.create({
             data: {
               userId: bet.creatorId,
-              type: 'BET_EXPIRED',
+              type: 'BET_REFUNDED',
               title: 'Pari expiré',
               message: `Votre pari sur "${fight.dayEvent?.title}" a été annulé car le combat commence bientôt. Les fonds ont été remboursés.`,
             }

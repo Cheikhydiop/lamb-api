@@ -7,48 +7,48 @@ import FighterController from '../controllers/FighterController';
 const router = Router();
 
 // List fighters
-router.get('/', 
-  validateRequest(ListFightersDTO), 
+router.get('/',
+  validateRequest(ListFightersDTO),
   FighterController.listFighters
 );
 
 // Search fighters
-router.get('/search', 
-  FighterController.searchFighters
+router.get('/search',
+  (req, res) => { FighterController.searchFighters(req, res); }
 );
 
 // Get top fighters
-router.get('/top', 
+router.get('/top',
   FighterController.getTopFighters
 );
 
 // Get fighter by ID
-router.get('/:fighterId', 
+router.get('/:fighterId',
   FighterController.getFighterById
 );
 
 // Get fighter stats
-router.get('/:fighterId/stats', 
+router.get('/:fighterId/stats',
   FighterController.getFighterStats
 );
 
 // Create fighter (admin only)
-router.post('/', 
-  requireAdmin, 
-  validateRequest(CreateFighterDTO), 
+router.post('/',
+  requireAdmin,
+  validateRequest(CreateFighterDTO),
   FighterController.createFighter
 );
 
 // Update fighter (admin only)
-router.patch('/:fighterId', 
-  requireAdmin, 
-  validateRequest(UpdateFighterDTO), 
+router.patch('/:fighterId',
+  requireAdmin,
+  validateRequest(UpdateFighterDTO),
   FighterController.updateFighter
 );
 
 // Delete fighter (admin only)
-router.delete('/:fighterId', 
-  requireAdmin, 
+router.delete('/:fighterId',
+  requireAdmin,
   FighterController.deleteFighter
 );
 

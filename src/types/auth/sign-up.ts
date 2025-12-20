@@ -15,10 +15,10 @@ export class SignUpDto {
   password: string;
 
   @IsNotEmpty()
-  first_name: string;
+  name: string;
 
   @IsNotEmpty()
-  last_name: string;
+  phone: string;
 
   @IsOptional()
   organization_type?: OrganizationType; // Si non spécifié -> HOUSE

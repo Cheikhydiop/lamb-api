@@ -120,7 +120,7 @@ const superAdminMiddleware = (req, res, next) => {
         // Vérification supplémentaire pour super-admin
         // Par exemple, vérifier un email spécifique ou un flag dans la base de données
         const superAdminEmails = ((_a = process.env.SUPER_ADMIN_EMAILS) === null || _a === void 0 ? void 0 : _a.split(',')) || [];
-        if (!superAdminEmails.includes(req.user.email)) {
+        if (!req.user.email || !superAdminEmails.includes(req.user.email)) {
             throw new customErrors_1.ForbiddenError('Privilèges super-administrateur requis', {
                 reason: 'INSUFFICIENT_ADMIN_PRIVILEGES',
                 suggestion: 'Cette action nécessite des privilèges super-administrateur'

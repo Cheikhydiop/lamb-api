@@ -183,7 +183,7 @@ export const rateLimitMiddleware = (
 
         res.setHeader('Retry-After', retryAfter);
 
-        return res.status(429).json({
+        res.status(429).json({
           success: false,
           message,
           error: {
@@ -194,6 +194,7 @@ export const rateLimitMiddleware = (
             scope
           }
         });
+        return;
       }
 
       // Si la requête réussit et qu'on doit ignorer les succès

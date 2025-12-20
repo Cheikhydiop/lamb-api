@@ -1,7 +1,7 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { Service, Inject } from 'typedi';
 import { RedisService } from './RedisService';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 @Service()
 export class QueueService {

@@ -1,0 +1,417 @@
+
+> better-api@1.0.0 build
+> prisma generate && tsc
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.16.2) to ./node_modules/@prisma/client in 172ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+src/container/ServiceContainer.ts(2,10): error TS2614: Module '"../utils/Logger"' has no exported member 'AppLogger'. Did you mean to use 'import AppLogger from "../utils/Logger"' instead?
+src/container/ServiceContainer.ts(40,28): error TS2554: Expected 1 arguments, but got 0.
+src/container/ServiceContainer.ts(50,25): error TS2554: Expected 4 arguments, but got 1.
+src/controllers/AuthController.ts(103,46): error TS2339: Property 'requiresDeviceVerification' does not exist on type '{ user: any; token: string; refreshToken: string; sessionId: string; deviceInfo: any; message: string; }'.
+src/controllers/AuthController.ts(104,36): error TS2339: Property 'existingSessions' does not exist on type '{ user: any; token: string; refreshToken: string; sessionId: string; deviceInfo: any; message: string; }'.
+src/controllers/FightController.ts(31,7): error TS2717: Subsequent property declarations must have the same type.  Property 'user' must be of type '{ id: string; userId: string; email: string | null; phone: string; name: string; role: "BETTOR" | "ADMIN" | "SUPER_ADMIN"; isActive: boolean; isEmailVerified: boolean; sessionId?: string | undefined; authToken?: string | undefined; walletId?: string | undefined; refreshToken?: string | undefined; wallet?: { ...; } |...', but here has type '{ id: string; role: string; email: string; } | undefined'.
+src/controllers/transaction.controller.ts(3,36): error TS2307: Cannot find module '../services/transaction.service' or its corresponding type declarations.
+src/dto/auth/sign-in.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/dto/auth/sign-in.ts(4,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/dto/auth/sign-up.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/dto/auth/user.ts(4,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/dto/auth/user.ts(5,28): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/dto/invitation/create-invitation.dto.ts(2,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/dto/location/location-dto.ts(14,30): error TS2307: Cannot find module '../../entity/Location' or its corresponding type declarations.
+src/dto/user/update-user.dto.ts(3,26): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/index.ts(165,30): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<{}, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Response<any, Record<...>, number> | undefined' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<{}, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Response<any, Record<...>, number> | undefined' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/index.ts(243,9): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(err: Error, req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>>' is not assignable to parameter of type 'PathParams'.
+src/interfaces/UserInterface.ts(103,38): error TS2339: Property 'register' does not exist on type 'UserService'.
+src/interfaces/UserInterface.ts(164,38): error TS2339: Property 'verifyEmail' does not exist on type 'UserService'.
+src/repositories/SessionRepository.ts(48,9): error TS2322: Type 'string' is not assignable to type 'DeviceType | undefined'.
+src/repositories/SessionRepository.ts(54,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | undefined'.
+src/repositories/SessionRepository.ts(75,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(97,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(251,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(255,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(271,13): error TS2322: Type 'string' is not assignable to type 'SessionStatus'.
+src/repositories/SessionRepository.ts(272,13): error TS2322: Type 'string' is not assignable to type 'SessionStatus'.
+src/repositories/SessionRepository.ts(286,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(346,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(349,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(378,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(397,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(458,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(463,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(466,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(471,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(493,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/UserRepository.ts(200,11): error TS2304: Cannot find name 'UserRole'.
+src/repositories/UserRepository.ts(211,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/repositories/UserRepository.ts(212,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/repositories/implementations/ImplRequestRepository.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'Request'.
+src/repositories/implementations/ImplRequestRepository.ts(1,33): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/repositories/implementations/ImplRequestRepository.ts(1,48): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/repositories/implementations/ImplRequestRepository.ts(1,61): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/repositories/implementations/ImplRequestRepository.ts(1,77): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/repositories/implementations/ImplRequestRepository.ts(41,25): error TS2724: '"/home/diop/Documents/lamb/node_modules/.prisma/client/index".Prisma' has no exported member named 'RequestWhereInput'. Did you mean 'BetWhereInput'?
+src/repositories/implementations/ImplRequestRepository.ts(84,57): error TS2345: Argument of type '"request"' is not assignable to parameter of type 'keyof PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/implementations/ImplRequestRepository.ts(108,41): error TS2339: Property 'request' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/implementations/ImplRequestRepository.ts(227,23): error TS2724: '"/home/diop/Documents/lamb/node_modules/.prisma/client/index".Prisma' has no exported member named 'RequestWhereInput'. Did you mean 'BetWhereInput'?
+src/repositories/implementations/ImplRequestRepository.ts(271,55): error TS2345: Argument of type '"request"' is not assignable to parameter of type 'keyof PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/interfaces/IRequestRepository.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'Request'.
+src/repositories/interfaces/IRequestRepository.ts(1,19): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/repositories/interfaces/IRequestRepository.ts(1,34): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/repositories/interfaces/IRequestRepository.ts(1,47): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/repositories/interfaces/IRequestRepository.ts(1,63): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/routes/admin.routes.ts(43,26): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>, next: NextFunction) => Promise<...>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>, next: NextFunction) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/routes/authRoutes.ts(16,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(24,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(33,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(40,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(47,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(54,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(67,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(74,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(21,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(48,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(60,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(85,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(106,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(119,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(132,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(172,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(21,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(48,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(60,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(72,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(106,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(123,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(153,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(167,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(189,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fighterRoutes.ts(17,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/routes/user.routes.ts(39,46): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void'.
+              Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(17,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(28,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(39,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(50,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/services/AuthService.ts(14,15): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../interfaces/UserInterface"' instead?
+src/services/AuthService.ts(177,13): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(212,9): error TS2322: Type 'DeviceType' is not assignable to type 'DeviceType | undefined'.
+  Type '"MOBILE"' is not assignable to type 'DeviceType | undefined'.
+src/services/AuthService.ts(256,69): error TS2339: Property 'email' does not exist on type 'UserController'.
+src/services/AuthService.ts(272,26): error TS2339: Property 'email' does not exist on type 'UserController'.
+src/services/AuthService.ts(333,9): error TS2353: Object literal may only specify known properties, and 'role' does not exist in type '{ name: string; phone: string; email: string; password: string; }'.
+src/services/AuthService.ts(341,9): error TS2322: Type 'number' is not assignable to type 'bigint'.
+src/services/AuthService.ts(342,9): error TS2322: Type 'number' is not assignable to type 'bigint'.
+src/services/AuthService.ts(346,77): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(437,59): error TS2554: Expected 3 arguments, but got 2.
+src/services/AuthService.ts(447,46): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(503,36): error TS2551: Property 'invalidateSession' does not exist on type 'SessionRepository'. Did you mean 'isValidSession'?
+src/services/AuthService.ts(583,24): error TS2339: Property 'wallet' does not exist on type '{ name: string; email: string | null; phone: string; password: string; id: string; role: UserRole; isEmailVerified: boolean; isActive: boolean; isBanned: boolean; banReason: string | null; ... 9 more ...; maxBetPerFight: bigint | null; }'.
+src/services/AuthService.ts(590,36): error TS2551: Property 'updateRefreshToken' does not exist on type 'SessionRepository'. Did you mean 'rotateRefreshToken'?
+src/services/AuthService.ts(716,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(975,53): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1043,33): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1131,53): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1146,31): error TS2339: Property 'wallet' does not exist on type '{ name: string; email: string | null; phone: string; password: string; id: string; role: UserRole; isEmailVerified: boolean; isActive: boolean; isBanned: boolean; banReason: string | null; ... 9 more ...; maxBetPerFight: bigint | null; }'.
+src/services/AuthService.ts(1235,53): error TS2339: Property 'findByUserId' does not exist on type 'SessionRepository'.
+src/services/AuthService.ts(1239,27): error TS7006: Parameter 'session' implicitly has an 'any' type.
+src/services/AuthService.ts(1271,52): error TS2339: Property 'findById' does not exist on type 'SessionRepository'.
+src/services/AuthService.ts(1286,36): error TS2551: Property 'invalidateSession' does not exist on type 'SessionRepository'. Did you mean 'isValidSession'?
+src/services/BetService.ts(32,41): error TS2749: 'CreateBetDTO' refers to a value, but is being used as a type here. Did you mean 'typeof CreateBetDTO'?
+src/services/BetService.ts(77,36): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; fighterA: { ...; }; fighterB: { ...; }; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(204,13): error TS2322: Type '"BET_CREATED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(308,40): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; date: Date; status: EventStatus; title: string; } | null; fighterA: { name: string; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; ... 19 more ...; ranking: number | null; }; fighterB: { ...; }; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(308,57): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(500,42): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(500,59): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(506,50): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(546,56): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(548,20): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/services/BetService.ts(593,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(595,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(602,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(604,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(616,13): error TS2322: Type '"BET_CANCELLED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(618,63): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(624,13): error TS2322: Type '"BET_CANCELLED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(626,60): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(672,53): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(708,28): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/BetService.ts(713,53): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(743,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(752,15): error TS2322: Type '"CREATOR_WON" | "ACCEPTOR_WON"' is not assignable to type 'BetStatus | EnumBetStatusFieldUpdateOperationsInput | undefined'.
+  Type '"CREATOR_WON"' is not assignable to type 'BetStatus | EnumBetStatusFieldUpdateOperationsInput | undefined'.
+src/services/BetService.ts(760,20): error TS2339: Property 'systemFee' does not exist on type 'Omit<PrismaClient<PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">'.
+src/services/BetService.ts(808,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(810,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(817,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(819,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(852,26): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/BetService.ts(862,63): error TS2551: Property 'winAmount' does not exist on type '{ fight: { dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; fighterA: { ...; }; fighterB: { ...; }; } & { ...; }; creator: { ...; }; acceptor: { ...; } | null;...'. Did you mean 'amount'?
+src/services/BetService.ts(909,11): error TS2353: Object literal may only specify known properties, and 'transaction' does not exist in type 'BetInclude<DefaultArgs>'.
+src/services/BetService.ts(1178,15): error TS2561: Object literal may only specify known properties, but 'scheduledTime' does not exist in type 'FightWhereInput'. Did you mean to write 'scheduledAt'?
+src/services/BetService.ts(1198,33): error TS2339: Property 'bets' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; status: FightStatus; title: string; description: string | null; location: string; scheduledAt: Date; startedAt: Date | null; ... 16 more ...; dayEventId: string | null; }'.
+src/services/BetService.ts(1222,15): error TS2322: Type '"BET_EXPIRED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(1224,49): error TS2551: Property 'dayEvent' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; status: FightStatus; title: string; description: string | null; location: string; scheduledAt: Date; startedAt: Date | null; ... 16 more ...; dayEventId: string | null; }'. Did you mean 'dayEventId'?
+src/services/EmailVerificationService.ts(88,70): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/MultiDeviceAuthService.ts(7,20): error TS1149: File name '/home/diop/Documents/lamb/src/utils/logger.ts' differs from already included file name '/home/diop/Documents/lamb/src/utils/Logger.ts' only in casing.
+  The file is in the program because:
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/config/env.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/errorHandler.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/EmailService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/EmailVerificationService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/UserService.ts'
+    Imported via './Logger' from file '/home/diop/Documents/lamb/src/utils/LoginAttemptManager.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/AuthService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/WebSocketService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/controllers/AuthController.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/AuditService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/AuditMiddleware.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/security.ts'
+    Imported via './utils/Logger' from file '/home/diop/Documents/lamb/src/index.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/config/dependencyInjection.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/container/ServiceContainer.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/RedisService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/QueueService.ts'
+    Matched by include pattern 'src/**/*' in '/home/diop/Documents/lamb/tsconfig.json'
+    Imported via '../utils/logger' from file '/home/diop/Documents/lamb/src/services/MultiDeviceAuthService.ts'
+src/services/MultiDeviceAuthService.ts(315,35): error TS2339: Property 'sendToUser' does not exist on type 'WebSocketService'.
+src/services/MultiDeviceAuthService.ts(335,37): error TS2339: Property 'sendDeviceConnectionConfirmation' does not exist on type 'EmailService'.
+src/services/TransactionService.ts(77,9): error TS2322: Type 'string' is not assignable to type 'MobileMoneyProvider | null | undefined'.
+src/services/UserService.ts(13,10): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../interfaces/UserInterface"' instead?
+src/services/UserService.ts(13,20): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Login'. Did you mean to use 'import Login from "../interfaces/UserInterface"' instead?
+src/services/UserService.ts(140,11): error TS2322: Type 'string | undefined' is not assignable to type 'undefined'.
+  Type 'string' is not assignable to type 'undefined'.
+src/services/UserService.ts(141,11): error TS2322: Type 'string | undefined' is not assignable to type 'undefined'.
+  Type 'string' is not assignable to type 'undefined'.
+src/services/UserService.ts(203,9): error TS2554: Expected 1-2 arguments, but got 4.
+src/services/auth.service.ts(40,49): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/auth.service.ts(61,49): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/auth.service.ts(179,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/types/auth/sign-in.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/types/auth/sign-in.ts(4,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/types/auth/sign-up.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/types/auth/user.ts(4,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/types/auth/user.ts(5,28): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/types/invitation/create-invitation.dto.ts(2,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(9,22): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(10,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/types/notification/notification-filters.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification-preference.dto.ts(15,77): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification-response.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification.dto.ts(3,79): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/update-notification.dto.ts(2,37): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/user/update-user.dto.ts(3,26): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/utils/RateLimitInfo.ts(57,33): error TS2367: This comparison appears to be unintentional because the types 'string | null' and 'number' have no overlap.
+src/utils/RateLimitInfo.ts(83,20): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(83,20): error TS18047: 'limit' is possibly 'null'.
+src/utils/RateLimitInfo.ts(83,28): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(86,9): error TS2322: Type 'string | number' is not assignable to type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/utils/RateLimitInfo.ts(86,65): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(86,65): error TS18047: 'limit' is possibly 'null'.
+src/utils/RateLimitInfo.ts(87,9): error TS2322: Type 'string | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+src/utils/RequestFilters.ts(2,10): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/utils/RequestFilters.ts(2,25): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/utils/RequestFilters.ts(2,38): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/utils/RequestFilters.ts(2,54): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/utils/response/errors/request-validation-error.ts(13,3): error TS2416: Property 'serializeErrors' in type 'RequestValidationError' is not assignable to the same property in base type 'CustomError'.
+  Type '() => object | null' is not assignable to type '() => {} | { message: string; }'.
+    Type 'object | null' is not assignable to type '{} | { message: string; }'.
+      Type 'null' is not assignable to type '{} | { message: string; }'.
+src/utils/response/success/successResponse.ts(3,10): error TS2339: Property 'successResponse' does not exist on type 'Response<any, Record<string, any>>'.
+src/utils/validators/userValidator.ts(2,10): error TS2614: Module '"../../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../../interfaces/UserInterface"' instead?
+src/utils/validators/userValidator.ts(2,20): error TS2614: Module '"../../interfaces/UserInterface"' has no exported member 'Login'. Did you mean to use 'import Login from "../../interfaces/UserInterface"' instead?
+src/utils/validators/userValidator.ts(3,27): error TS2724: '"../../errors/customErrors"' has no exported member named 'ValidationErrorField'. Did you mean 'ValidationError'?
+src/utils/validators/userValidator.ts(14,58): error TS2339: Property 'MIN_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(15,55): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(25,64): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(47,67): error TS2339: Property 'MIN_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(48,64): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.

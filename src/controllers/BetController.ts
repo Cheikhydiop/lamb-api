@@ -1,28 +1,23 @@
-// src/controllers/BetController.ts
 import { Request, Response } from 'express';
-import { BetService } from '../services/BetService';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { BetStatus, FighterChoice } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
-import { WebSocketService } from '../services/WebSocketService';
-import logger from '../utils/logger';
-
-const prisma = new PrismaClient();
-const webSocketService = new WebSocketService();
-const betService = new BetService(prisma, webSocketService);
+import { ServiceContainer } from '../container/ServiceContainer';
 
 class BetController {
+  private static get services() {
+    return ServiceContainer.getInstance();
+  }
   /**
    * POST /api/bets
    * Créer un nouveau pari
    */
   static createBet = asyncHandler(async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
-    
+
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
@@ -30,28 +25,28 @@ class BetController {
     const { fightId, amount, chosenFighter } = req.body;
 
     if (!fightId || !amount || !chosenFighter) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'Données invalides: fightId, amount et chosenFighter sont requis' 
+      res.status(400).json({
+        success: false,
+        message: 'Données invalides: fightId, amount et chosenFighter sont requis'
       });
       return;
     }
 
     if (!['A', 'B'].includes(chosenFighter)) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'chosenFighter doit être "A" ou "B"' 
+      res.status(400).json({
+        success: false,
+        message: 'chosenFighter doit être "A" ou "B"'
       });
       return;
     }
 
     const betData = {
       fightId,
-      amount: Number(amount),
+      amount: BigInt(amount),
       chosenFighter: chosenFighter as FighterChoice
     };
 
-    const bet = await betService.createBet(userId, betData);
+    const bet = await BetController.services.betService.createBet(userId, betData);
 
     res.status(201).json({
       success: true,
@@ -69,22 +64,22 @@ class BetController {
     const { betId } = req.params;
 
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
 
     if (!betId) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'ID du pari requis' 
+      res.status(400).json({
+        success: false,
+        message: 'ID du pari requis'
       });
       return;
     }
 
-    const bet = await betService.acceptBet(userId, betId);
+    const bet = await BetController.services.betService.acceptBet(userId, betId);
 
     res.status(200).json({
       success: true,
@@ -103,22 +98,22 @@ class BetController {
     const isAdmin = (req as any).user?.role === 'ADMIN';
 
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
 
     if (!betId) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'ID du pari requis' 
+      res.status(400).json({
+        success: false,
+        message: 'ID du pari requis'
       });
       return;
     }
 
-    const bet = await betService.cancelBet(betId, userId, isAdmin);
+    const bet = await BetController.services.betService.cancelBet(betId, userId, isAdmin);
 
     res.status(200).json({
       success: true,
@@ -135,14 +130,14 @@ class BetController {
     const { betId } = req.params;
 
     if (!betId) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'ID du pari requis' 
+      res.status(400).json({
+        success: false,
+        message: 'ID du pari requis'
       });
       return;
     }
 
-    const bet = await betService.getBet(betId);
+    const bet = await BetController.services.betService.getBet(betId);
 
     res.status(200).json({
       success: true,
@@ -162,7 +157,7 @@ class BetController {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
 
-    const result = await betService.listBets({
+    const result = await BetController.services.betService.listBets({
       userId,
       fightId,
       dayEventId,
@@ -188,15 +183,15 @@ class BetController {
     const dayEventId = req.query.dayEventId as string | undefined;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
-  
-    const result = await betService.getPendingBets({
+
+    const result = await BetController.services.betService.getPendingBets({
       userId,
       fightId,
       dayEventId,
       limit,
       offset
     });
-  
+
     res.status(200).json({
       success: true,
       data: result.bets,
@@ -216,14 +211,14 @@ class BetController {
     const { fightId } = req.params;
 
     if (!fightId) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'ID du combat requis' 
+      res.status(400).json({
+        success: false,
+        message: 'ID du combat requis'
       });
       return;
     }
 
-    const bets = await betService.getAvailableBets(fightId);
+    const bets = await BetController.services.betService.getAvailableBets(fightId);
 
     res.status(200).json({
       success: true,
@@ -239,14 +234,14 @@ class BetController {
     const userId = (req as any).user?.id;
 
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
 
-    const bets = await betService.getUserBets(userId);
+    const bets = await BetController.services.betService.getUserBets(userId);
 
     res.status(200).json({
       success: true,
@@ -262,14 +257,14 @@ class BetController {
     const userId = (req as any).user?.id;
 
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
 
-    const bets = await betService.getActiveBetsForUser(userId);
+    const bets = await BetController.services.betService.getActiveBetsForUser(userId);
 
     res.status(200).json({
       success: true,
@@ -285,14 +280,14 @@ class BetController {
     const userId = (req as any).user?.id;
 
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Non authentifié' 
+      res.status(401).json({
+        success: false,
+        message: 'Non authentifié'
       });
       return;
     }
 
-    const stats = await betService.getBetStats(userId);
+    const stats = await BetController.services.betService.getBetStats(userId);
 
     res.status(200).json({
       success: true,
@@ -310,30 +305,30 @@ class BetController {
     const { winner } = req.body;
 
     if (!isAdmin) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Accès interdit: administrateur requis' 
+      res.status(403).json({
+        success: false,
+        message: 'Accès interdit: administrateur requis'
       });
       return;
     }
 
     if (!betId || !winner) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'betId et winner sont requis' 
+      res.status(400).json({
+        success: false,
+        message: 'betId et winner sont requis'
       });
       return;
     }
 
     if (!['A', 'B', 'DRAW'].includes(winner)) {
-      res.status(400).json({ 
-        success: false, 
-        message: 'winner doit être "A", "B" ou "DRAW"' 
+      res.status(400).json({
+        success: false,
+        message: 'winner doit être "A", "B" ou "DRAW"'
       });
       return;
     }
 
-    const bet = await betService.settleBet(betId, winner as 'A' | 'B' | 'DRAW');
+    const bet = await BetController.services.betService.settleBet(betId, winner as 'A' | 'B' | 'DRAW');
 
     res.status(200).json({
       success: true,
@@ -350,14 +345,14 @@ class BetController {
     const isAdmin = (req as any).user?.role === 'ADMIN';
 
     if (!isAdmin) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Accès interdit: administrateur requis' 
+      res.status(403).json({
+        success: false,
+        message: 'Accès interdit: administrateur requis'
       });
       return;
     }
 
-    const expiredPending = await betService.expirePendingBetsBeforeFight();
+    const expiredPending = await BetController.services.betService.expirePendingBetsBeforeFight();
 
     res.status(200).json({
       success: true,

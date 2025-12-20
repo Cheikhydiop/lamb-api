@@ -1,16 +1,18 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { Container } from 'typedi';
-import { UserService } from '../services/user.service';
-import { requireAuth, requireAdmin } from '../middlewares/authMiddleware';
+import { ServiceContainer } from '../container/ServiceContainer';
+import { requireAuth, requireRole } from '../middlewares/authMiddleware';
+import { asyncHandler } from '../middlewares/asyncHandler';
 
 const router = Router();
-const userService = Container.get(UserService);
+
+// Helper to get service instance safely
+const getUserService = () => ServiceContainer.getInstance().userService;
 
 // Get current user profile
-router.get('/profile', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/profile', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const user = await userService.getUserById(userId);
+    const user = await getUserService().getUserById(userId);
     res.json({
       success: true,
       data: user,
@@ -18,13 +20,13 @@ router.get('/profile', requireAuth, async (req: Request, res: Response, next: Ne
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Update user profile
-router.patch('/profile', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/profile', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const user = await userService.updateUser(userId, req.body);
+    const user = await getUserService().updateUser(userId, req.body);
     res.json({
       success: true,
       message: 'Profile updated successfully',
@@ -33,10 +35,10 @@ router.patch('/profile', requireAuth, async (req: Request, res: Response, next: 
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Change password
-router.post('/change-password', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/change-password', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
     const { oldPassword, newPassword, confirmPassword } = req.body;
@@ -48,7 +50,7 @@ router.post('/change-password', requireAuth, async (req: Request, res: Response,
       });
     }
 
-    await userService.changePassword(userId, oldPassword, newPassword);
+    await getUserService().changePassword(userId, oldPassword, newPassword);
     res.json({
       success: true,
       message: 'Password changed successfully',
@@ -56,13 +58,13 @@ router.post('/change-password', requireAuth, async (req: Request, res: Response,
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Get user stats
-router.get('/stats', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/stats', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    const stats = await userService.getUserStats(userId);
+    const stats = await getUserService().getUserStats(userId);
     res.json({
       success: true,
       data: stats,
@@ -70,13 +72,13 @@ router.get('/stats', requireAuth, async (req: Request, res: Response, next: Next
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Deactivate account
-router.post('/deactivate', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/deactivate', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    await userService.deactivateAccount(userId);
+    await getUserService().deactivateAccount(userId);
     res.json({
       success: true,
       message: 'Account deactivated successfully',
@@ -84,13 +86,13 @@ router.post('/deactivate', requireAuth, async (req: Request, res: Response, next
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Reactivate account
-router.post('/reactivate', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post('/reactivate', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user.userId;
-    await userService.reactivateAccount(userId);
+    await getUserService().reactivateAccount(userId);
     res.json({
       success: true,
       message: 'Account reactivated successfully',
@@ -98,14 +100,14 @@ router.post('/reactivate', requireAuth, async (req: Request, res: Response, next
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Admin: List all users
-router.get('/', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', requireRole('ADMIN'), asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const offset = parseInt(req.query.offset as string) || 0;
-    const users = await userService.listUsers(limit, offset);
+    const users = await getUserService().listUsers(limit, offset);
     res.json({
       success: true,
       data: users,
@@ -113,12 +115,12 @@ router.get('/', requireAdmin, async (req: Request, res: Response, next: NextFunc
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Admin: Get user by ID
-router.get('/:userId', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:userId', requireRole('ADMIN'), asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await userService.getUserById(req.params.userId);
+    const user = await getUserService().getUserById(req.params.userId);
     res.json({
       success: true,
       data: user,
@@ -126,19 +128,21 @@ router.get('/:userId', requireAdmin, async (req: Request, res: Response, next: N
   } catch (error) {
     next(error);
   }
-});
+}));
 
 // Admin: Delete user
-router.delete('/:userId', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:userId', requireRole('ADMIN'), asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await userService.deleteUser(req.params.userId);
+    const userResult = await getUserService().deleteUser(req.params.userId);
     res.json({
       success: true,
       message: 'User deleted successfully',
+      data: userResult,
     });
+    // Note: deleteUser signature returns something? adjusted to expect return or just void
   } catch (error) {
     next(error);
   }
-});
+}));
 
 export default router;

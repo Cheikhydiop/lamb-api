@@ -1,8 +1,6 @@
 // src/dto/auth/user.ts
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { Organization } from '../../entity/Organization';
-import { UserStatus } from '../../entity/User';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -31,35 +29,31 @@ export class SignInDto {
 @Exclude()
 export class UserDto {
   @Expose()
-  id: number;
+  id: string;
 
   @Expose()
-  first_name: string;
-
-  @Expose()
-  last_name: string;
+  name: string;
 
   @Expose()
   email: string;
 
   @Expose()
-  status: string;
+  role: string;
 
   @Expose()
-  is_email_verified: boolean;
+  isActive: boolean;
 
   @Expose()
-  organization?: Organization;
+  isEmailVerified: boolean;
 }
 
 export interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
+  id: string;
+  name: string;
   email: string;
-  password: string;
-  organization?: Organization;
-  status?: UserStatus;
+  password?: string;
+  role?: string;
+  isActive?: boolean;
 }
 
 export interface UserSingIn {

@@ -1,10 +1,9 @@
-// routes/index.ts - Configuration complète sécurisée
 import { Express } from 'express';
-import authRoutes from './authRoutes';
+import { createAuthRoutes } from './authRoutes';
 import fightRoutes from './fightRoutes';
 import fighterRoutes from './fighterRoutes';
 import betRoutes from './betRoutes';
-import adminRoutes from './admin.routes';
+import { createAdminRoutes } from './admin.routes';
 import transactionRoutes from './transaction.routes';
 import userRoutes from './user.routes';
 import walletRoutes from './walletRoutes';
@@ -16,7 +15,8 @@ export default function Routes(app: Express) {
   // ==================== ROUTES PUBLIQUES ====================
 
   // Routes d'authentification
-  app.use('/api/auth', authRoutes);
+  // Routes d'authentification
+  app.use('/api/auth', createAuthRoutes());
 
   // Routes des combattants (lecture publique)
   app.use('/api/fighter', fighterRoutes);
@@ -42,7 +42,7 @@ export default function Routes(app: Express) {
   app.use('/api/notifications', notificationRoutes);
 
   // Routes d'administration (protégées par le router lui-même)
-  app.use('/api/admin', adminRoutes);
+  app.use('/api/admin', createAdminRoutes());
 
   // ==================== ROUTES DE SANTÉ ET STATUS ====================
 

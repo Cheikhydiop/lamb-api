@@ -16,7 +16,7 @@ export interface RateLimitInfo {
 export class RateLimitUtils {
   private static readonly DEFAULT_LIMIT = 5;
   private static readonly DEFAULT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-  
+
   /**
    * Extrait les informations de rate limiting depuis une requête
    * Supporte plusieurs formats de headers (RFC 6585, headers customisés)
@@ -29,17 +29,19 @@ export class RateLimitUtils {
       }
 
       // Headers selon RFC 6585 et pratiques courantes
-      const remaining = this.parseHeader(req, [
+      const remainingHeader = this.parseHeader(req, [
         'RateLimit-Remaining',
         'X-RateLimit-Remaining',
         'ratelimit-remaining'
       ]);
+      const remaining = remainingHeader !== null ? parseInt(remainingHeader, 10) : null;
 
-      const limit = this.parseHeader(req, [
+      const limitHeader = this.parseHeader(req, [
         'RateLimit-Limit',
         'X-RateLimit-Limit',
         'ratelimit-limit'
       ], this.DEFAULT_LIMIT);
+      const limit = limitHeader !== null ? parseInt(limitHeader, 10) : this.DEFAULT_LIMIT;
 
       const resetTimestamp = this.parseHeader(req, [
         'RateLimit-Reset',
@@ -48,7 +50,7 @@ export class RateLimitUtils {
         'X-RateLimit-Reset-Timestamp'
       ]);
 
-      const retryAfter = this.parseHeader(req, [
+      const retryAfterHeader = this.parseHeader(req, [
         'Retry-After',
         'X-Retry-After'
       ]);
@@ -59,7 +61,7 @@ export class RateLimitUtils {
       }
 
       let resetTime: Date;
-      
+
       if (resetTimestamp) {
         // Timestamp peut être en secondes UNIX ou en format ISO
         if (/^\d+$/.test(resetTimestamp)) {
@@ -82,13 +84,15 @@ export class RateLimitUtils {
       // Calculer combien de tentatives ont été utilisées
       const used = limit - (remaining !== null ? remaining : 0);
 
+      const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+
       return {
         remaining: remaining !== null ? remaining : Math.max(0, limit - used),
         limit,
         resetTime,
         windowMs: this.calculateWindowMs(resetTime),
         used,
-        retryAfter: retryAfter ? parseInt(retryAfter, 10) : undefined
+        retryAfter
       };
     } catch (error) {
       console.error('Error parsing rate limit headers:', error);
@@ -100,8 +104,8 @@ export class RateLimitUtils {
    * Parse un header avec plusieurs noms possibles
    */
   private static parseHeader(
-    req: Request, 
-    headerNames: string[], 
+    req: Request,
+    headerNames: string[],
     defaultValue: string | number | null = null
   ): string | null {
     for (const headerName of headerNames) {
@@ -132,7 +136,7 @@ export class RateLimitUtils {
       '/api/auth/reset-password',
       '/api/auth/forgot-password'
     ];
-    
+
     return rateLimitedRoutes.some(route => req.path.startsWith(route));
   }
 
@@ -143,13 +147,13 @@ export class RateLimitUtils {
     const now = Date.now();
     const resetTime = rateLimitInfo.resetTime.getTime();
     const remainingMs = Math.max(0, resetTime - now);
-    
+
     if (rateLimitInfo.remaining <= 0) {
       if (rateLimitInfo.retryAfter) {
         const retryInSeconds = rateLimitInfo.retryAfter;
         return `Too many attempts. Please try again in ${this.formatTime(retryInSeconds * 1000)}.`;
       }
-      
+
       const remainingMinutes = Math.ceil(remainingMs / (60 * 1000));
       return `Too many attempts. Account temporarily locked. Please try again in ${remainingMinutes} minute${remainingMinutes === 1 ? '' : 's'}.`;
     }
@@ -220,8 +224,8 @@ export class RateLimitUtils {
    */
   static calculateBackoffTime(rateLimitInfo: RateLimitInfo, attemptCount: number): number {
     if (this.isOverLimit(rateLimitInfo)) {
-      return rateLimitInfo.retryAfter || 
-             Math.max(1000, Math.min(30000, Math.pow(2, attemptCount) * 1000)); // Exponential backoff
+      return rateLimitInfo.retryAfter ||
+        Math.max(1000, Math.min(30000, Math.pow(2, attemptCount) * 1000)); // Exponential backoff
     }
 
     // Backoff progressif basé sur le nombre de tentatives
@@ -253,7 +257,7 @@ export class RateLimitUtils {
    */
   static createMockRateLimitInfo(options: Partial<RateLimitInfo> = {}): RateLimitInfo {
     const defaultResetTime = new Date(Date.now() + this.DEFAULT_WINDOW_MS);
-    
+
     return {
       remaining: options.remaining ?? 4,
       limit: options.limit ?? this.DEFAULT_LIMIT,
@@ -270,16 +274,16 @@ export class RateLimitUtils {
  */
 export const rateLimitMiddleware = (req: Request, res: any, next: Function) => {
   const originalJson = res.json;
-  
-  res.json = function(data: any) {
+
+  res.json = function (data: any) {
     const rateLimitInfo = RateLimitUtils.getRateLimitInfo(req);
-    
+
     if (rateLimitInfo && (req.path.includes('/auth/') || req.path.includes('/login'))) {
       // Ajouter les headers de rate limiting à la réponse
       res.setHeader('RateLimit-Limit', rateLimitInfo.limit);
       res.setHeader('RateLimit-Remaining', rateLimitInfo.remaining);
       res.setHeader('RateLimit-Reset', Math.floor(rateLimitInfo.resetTime.getTime() / 1000));
-      
+
       // Ajouter les infos au corps de la réponse pour les clients frontend
       if (data && typeof data === 'object') {
         data.rateLimitInfo = {
@@ -290,10 +294,10 @@ export const rateLimitMiddleware = (req: Request, res: any, next: Function) => {
         };
       }
     }
-    
+
     return originalJson.call(this, data);
   };
-  
+
   next();
 };
 
@@ -307,7 +311,7 @@ export const useRateLimitMonitor = () => {
         const info = response.rateLimitInfo;
         const resetTime = new Date(info.resetTime);
         const remainingMs = resetTime.getTime() - Date.now();
-        
+
         return {
           ...info,
           isLimited: info.remaining <= 0,

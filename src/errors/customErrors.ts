@@ -24,7 +24,7 @@ export abstract class AppError extends Error {
 export class AuthenticationError extends AppError {
   public readonly statusCode: number = 401;
   public readonly code: string = 'AUTHENTICATION_ERROR';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'AuthenticationError';
@@ -37,7 +37,7 @@ export class AuthenticationError extends AppError {
 export class ValidationError extends AppError {
   public readonly statusCode: number = 400;
   public readonly code: string = 'VALIDATION_ERROR';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'ValidationError';
@@ -50,7 +50,7 @@ export class ValidationError extends AppError {
 export class ConflictError extends AppError {
   public readonly statusCode: number = 409;
   public readonly code: string = 'CONFLICT_ERROR';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'ConflictError';
@@ -63,7 +63,7 @@ export class ConflictError extends AppError {
 export class NotFoundError extends AppError {
   public readonly statusCode: number = 404;
   public readonly code: string = 'NOT_FOUND';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'NotFoundError';
@@ -76,7 +76,7 @@ export class NotFoundError extends AppError {
 export class RateLimitError extends AppError {
   public readonly statusCode: number = 429;
   public readonly code: string = 'RATE_LIMIT_EXCEEDED';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'RateLimitError';
@@ -89,9 +89,9 @@ export class RateLimitError extends AppError {
 export class DatabaseError extends AppError {
   public readonly statusCode: number = 500;
   public readonly code: string = 'DATABASE_ERROR';
-  
+
   constructor(
-    message: string, 
+    message: string,
     public readonly details?: any
   ) {
     super(message);
@@ -105,9 +105,17 @@ export class DatabaseError extends AppError {
 export class ForbiddenError extends AppError {
   public readonly statusCode: number = 403;
   public readonly code: string = 'FORBIDDEN';
-  
+
   constructor(message: string, public readonly details?: any) {
     super(message);
+    // ...
     this.name = 'ForbiddenError';
   }
+}
+
+export interface ValidationErrorField {
+  field: string;
+  message: string;
+  value?: any;
+  constraint?: string;
 }

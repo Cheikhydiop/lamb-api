@@ -5,6 +5,7 @@ export interface Register {
   name: string;
   email: string;
   password: string;
+  phone: string;
   role?: UserRole;
   // ajoute d'autres champs selon ton modèle
 }

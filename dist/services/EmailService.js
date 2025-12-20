@@ -15,39 +15,11 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
-    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
-    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
-    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-    var _, done = false;
-    for (var i = decorators.length - 1; i >= 0; i--) {
-        var context = {};
-        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
-        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
-        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
-        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
-        if (kind === "accessor") {
-            if (result === void 0) continue;
-            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-        }
-        else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
-        }
-    }
-    if (target) Object.defineProperty(target, contextIn.name, descriptor);
-    done = true;
-};
-var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
-    var useValue = arguments.length > 2;
-    for (var i = 0; i < initializers.length; i++) {
-        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
-    }
-    return useValue ? value : void 0;
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var __importStar = (this && this.__importStar) || (function () {
     var ownKeys = function(o) {
@@ -66,6 +38,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -74,10 +49,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-};
-var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
-    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -88,150 +59,145 @@ exports.EmailService = void 0;
 const typedi_1 = require("typedi");
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const Logger_1 = __importDefault(require("../utils/Logger"));
-let EmailService = (() => {
-    let _classDecorators = [(0, typedi_1.Service)()];
-    let _classDescriptor;
-    let _classExtraInitializers = [];
-    let _classThis;
-    var EmailService = _classThis = class {
-        constructor() {
-            this.isConfigured = false;
-            const smtpUser = process.env.SMTP_USER;
-            const smtpPass = process.env.SMTP_PASS;
-            // Vérifier si la configuration SMTP est disponible
-            if (smtpUser && smtpPass) {
-                this.isConfigured = true;
-                this.transporter = nodemailer_1.default.createTransport({
-                    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-                    port: parseInt(process.env.SMTP_PORT || '587'),
-                    secure: process.env.SMTP_SECURE === 'true',
-                    auth: {
-                        user: smtpUser,
-                        pass: smtpPass,
-                    },
-                    tls: {
-                        rejectUnauthorized: false
-                    }
-                });
-                // Tester la connexion
-                this.testConnection();
-            }
-            else {
-                Logger_1.default.warn('SMTP configuration not found. Running in development/log-only mode.');
-                this.isConfigured = false;
-                // Créer un transporteur factice pour éviter les erreurs
-                this.transporter = nodemailer_1.default.createTransport({
-                    jsonTransport: true
-                });
-            }
-        }
-        testConnection() {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (!this.isConfigured)
-                    return;
-                try {
-                    yield this.transporter.verify();
-                    Logger_1.default.info('✅ SMTP connection verified successfully');
-                }
-                catch (error) {
-                    Logger_1.default.error(`❌ SMTP connection failed: ${error.message}`);
-                    // Ne pas bloquer l'application en cas d'erreur de connexion
-                    this.isConfigured = false;
+let EmailService = class EmailService {
+    constructor() {
+        this.isConfigured = false;
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
+        // Vérifier si la configuration SMTP est disponible
+        if (smtpUser && smtpPass) {
+            this.isConfigured = true;
+            this.transporter = nodemailer_1.default.createTransport({
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: parseInt(process.env.SMTP_PORT || '587'),
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: {
+                    user: smtpUser,
+                    pass: smtpPass,
+                },
+                tls: {
+                    rejectUnauthorized: false
                 }
             });
+            // Tester la connexion
+            this.testConnection();
         }
-        /**
-         * Méthode générique pour envoyer un email (sûre)
-         * @returns Promise<boolean> True si l'email a été envoyé ou loggé en dev
-         */
-        sendEmailSafe(options) {
-            return __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                const isProduction = process.env.NODE_ENV === 'production';
-                const emailToSend = options.to;
-                // 1. Extraire et logger le code OTP pour le développement
-                const extractedCode = this.extractVerificationCode(options.html);
-                if (extractedCode) {
-                    Logger_1.default.info(`📧 [EMAIL OTP] Pour ${emailToSend}: ${extractedCode}`);
+        else {
+            Logger_1.default.warn('SMTP configuration not found. Running in development/log-only mode.');
+            this.isConfigured = false;
+            // Créer un transporteur factice pour éviter les erreurs
+            this.transporter = nodemailer_1.default.createTransport({
+                jsonTransport: true
+            });
+        }
+    }
+    testConnection() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isConfigured)
+                return;
+            try {
+                yield this.transporter.verify();
+                Logger_1.default.info('✅ SMTP connection verified successfully');
+            }
+            catch (error) {
+                Logger_1.default.error(`❌ SMTP connection failed: ${error.message}`);
+                // Ne pas bloquer l'application en cas d'erreur de connexion
+                this.isConfigured = false;
+            }
+        });
+    }
+    /**
+     * Méthode générique pour envoyer un email (sûre)
+     * @returns Promise<boolean> True si l'email a été envoyé ou loggé en dev
+     */
+    sendEmailSafe(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const isProduction = process.env.NODE_ENV === 'production';
+            const emailToSend = options.to;
+            // 1. Extraire et logger le code OTP pour le développement
+            const extractedCode = this.extractVerificationCode(options.html);
+            if (extractedCode) {
+                Logger_1.default.info(`📧 [EMAIL OTP] Pour ${emailToSend}: ${extractedCode}`);
+            }
+            // 2. Logger les détails en mode développement
+            if (!isProduction) {
+                Logger_1.default.info(`📧 [DEV EMAIL] Destinataire: ${emailToSend}, Sujet: "${options.subject}"`);
+                if (!this.isConfigured) {
+                    Logger_1.default.info(`📧 [DEV EMAIL] Non envoyé (SMTP non configuré). OTP: ${extractedCode || 'N/A'}`);
+                    return true; // Succès en mode dev sans envoyer
                 }
-                // 2. Logger les détails en mode développement
-                if (!isProduction) {
-                    Logger_1.default.info(`📧 [DEV EMAIL] Destinataire: ${emailToSend}, Sujet: "${options.subject}"`);
-                    if (!this.isConfigured) {
-                        Logger_1.default.info(`📧 [DEV EMAIL] Non envoyé (SMTP non configuré). OTP: ${extractedCode || 'N/A'}`);
-                        return true; // Succès en mode dev sans envoyer
+            }
+            // 3. Tenter d'envoyer via SMTP si configuré
+            if (this.isConfigured) {
+                try {
+                    const mailOptions = {
+                        from: process.env.FROM_EMAIL || '"Xbeur" <no-reply@xbeur.com>',
+                        to: emailToSend,
+                        subject: options.subject,
+                        html: options.html,
+                        replyTo: options.replyTo,
+                    };
+                    const info = yield this.transporter.sendMail(mailOptions);
+                    if (isProduction) {
+                        Logger_1.default.info(`✅ Email envoyé à ${emailToSend} [ID: ${info.messageId}]`);
                     }
-                }
-                // 3. Tenter d'envoyer via SMTP si configuré
-                if (this.isConfigured) {
-                    try {
-                        const mailOptions = {
-                            from: process.env.FROM_EMAIL || '"Xbeur" <no-reply@xbeur.com>',
-                            to: emailToSend,
-                            subject: options.subject,
-                            html: options.html,
-                            replyTo: options.replyTo,
-                        };
-                        const info = yield this.transporter.sendMail(mailOptions);
-                        if (isProduction) {
-                            Logger_1.default.info(`✅ Email envoyé à ${emailToSend} [ID: ${info.messageId}]`);
-                        }
-                        else {
-                            // En développement, afficher l'URL de prévisualisation si disponible
-                            const previewText = ((_a = info.response) === null || _a === void 0 ? void 0 : _a.includes('mailtrap'))
-                                ? ` | Preview: ${info.response}`
-                                : '';
-                            Logger_1.default.info(`✅ Email envoyé à ${emailToSend}${previewText}`);
-                        }
-                        return true;
+                    else {
+                        // En développement, afficher l'URL de prévisualisation si disponible
+                        const previewText = ((_a = info.response) === null || _a === void 0 ? void 0 : _a.includes('mailtrap'))
+                            ? ` | Preview: ${info.response}`
+                            : '';
+                        Logger_1.default.info(`✅ Email envoyé à ${emailToSend}${previewText}`);
                     }
-                    catch (error) {
-                        Logger_1.default.error(`❌ Échec d'envoi d'email à ${emailToSend}: ${error.message}`);
-                        // Fallback: logger l'email dans la console en mode développement
-                        if (!isProduction) {
-                            Logger_1.default.info(`📧 [FALLBACK] Contenu pour ${emailToSend}:`);
-                            Logger_1.default.info(`   Sujet: ${options.subject}`);
-                            Logger_1.default.info(`   Code OTP: ${extractedCode || 'Non trouvé'}`);
-                        }
-                        // En production, on peut choisir de retourner false si l'envoi est critique
-                        if (isProduction && process.env.EMAIL_STRICT_MODE === 'true') {
-                            return false;
-                        }
-                        // Sinon, on considère que c'est un succès pour ne pas bloquer le flux
-                        return true;
-                    }
-                }
-                // 4. Fallback pour le développementaaa
-                if (!isProduction) {
-                    Logger_1.default.info(`📧 [MOCK] Email simulé pour ${emailToSend}:`);
-                    Logger_1.default.info(`   Sujet: ${options.subject}`);
-                    Logger_1.default.info(`   OTP: ${extractedCode || 'N/A'}`);
                     return true;
                 }
-                // 5. En production sans configuration, c'est une erreur
-                Logger_1.default.error('Tentative d\'envoi d\'email en production sans configuration SMTP.');
-                return false;
+                catch (error) {
+                    Logger_1.default.error(`❌ Échec d'envoi d'email à ${emailToSend}: ${error.message}`);
+                    // Fallback: logger l'email dans la console en mode développement
+                    if (!isProduction) {
+                        Logger_1.default.info(`📧 [FALLBACK] Contenu pour ${emailToSend}:`);
+                        Logger_1.default.info(`   Sujet: ${options.subject}`);
+                        Logger_1.default.info(`   Code OTP: ${extractedCode || 'Non trouvé'}`);
+                    }
+                    // En production, on peut choisir de retourner false si l'envoi est critique
+                    if (isProduction && process.env.EMAIL_STRICT_MODE === 'true') {
+                        return false;
+                    }
+                    // Sinon, on considère que c'est un succès pour ne pas bloquer le flux
+                    return true;
+                }
+            }
+            // 4. Fallback pour le développementaaa
+            if (!isProduction) {
+                Logger_1.default.info(`📧 [MOCK] Email simulé pour ${emailToSend}:`);
+                Logger_1.default.info(`   Sujet: ${options.subject}`);
+                Logger_1.default.info(`   OTP: ${extractedCode || 'N/A'}`);
+                return true;
+            }
+            // 5. En production sans configuration, c'est une erreur
+            Logger_1.default.error('Tentative d\'envoi d\'email en production sans configuration SMTP.');
+            return false;
+        });
+    }
+    // Helper pour extraire le code OTP du HTML
+    extractVerificationCode(html) {
+        const match = html.match(/>\s*(\d{6})\s*</);
+        return match ? match[1] : null;
+    }
+    // ========== MÉTHODES D'ENVOI SPÉCIFIQUES ==========
+    // Envoi de code de vérification (version simplifiée)
+    sendVerificationCode(email, code) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = this.generateVerificationTemplate(code);
+            return this.sendEmailSafe({
+                to: email,
+                subject: 'Vérification de votre adresse email - Xbeur',
+                html,
             });
-        }
-        // Helper pour extraire le code OTP du HTML
-        extractVerificationCode(html) {
-            const match = html.match(/>\s*(\d{6})\s*</);
-            return match ? match[1] : null;
-        }
-        // ========== MÉTHODES D'ENVOI SPÉCIFIQUES ==========
-        // Envoi de code de vérification (version simplifiée)
-        sendVerificationCode(email, code) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const html = this.generateVerificationTemplate(code);
-                return this.sendEmailSafe({
-                    to: email,
-                    subject: 'Vérification de votre adresse email - Xbeur',
-                    html,
-                });
-            });
-        }
-        generateVerificationTemplate(code) {
-            return `
+        });
+    }
+    generateVerificationTemplate(code) {
+        return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -272,13 +238,13 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-        }
-        // Notification de pari accepté
-        sendBetAcceptedNotification(bet) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const fighterChoice = bet.chosenFighter === 'A' ? 'Fighter A' : 'Fighter B';
-                const amount = Number(bet.amount) / 100;
-                const html = `
+    }
+    // Notification de pari accepté
+    sendBetAcceptedNotification(bet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const fighterChoice = bet.chosenFighter === 'A' ? 'Fighter A' : 'Fighter B';
+            const amount = Number(bet.amount) / 100;
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -324,13 +290,13 @@ let EmailService = (() => {
             </p>
             <p style="color: #666; font-size: 14px; text-align: center; margin: 0;">
               ${new Date(bet.fight.scheduledAt).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
             </p>
             <p style="color: #666; font-size: 14px; text-align: center; margin-top: 5px;">
               ${bet.fight.location}
@@ -354,22 +320,22 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                if (!bet.creator.email) {
-                    Logger_1.default.warn(`Cannot send bet accepted notification: creator ${bet.creator.id} has no email`);
-                    return false;
-                }
-                return this.sendEmailSafe({
-                    to: bet.creator.email,
-                    subject: `🎉 Votre pari a été accepté ! - Xbeur`,
-                    html,
-                });
+            if (!bet.creator.email) {
+                Logger_1.default.warn(`Cannot send bet accepted notification: creator ${bet.creator.id} has no email`);
+                return false;
+            }
+            return this.sendEmailSafe({
+                to: bet.creator.email,
+                subject: `🎉 Votre pari a été accepté ! - Xbeur`,
+                html,
             });
-        }
-        // Notification de gain
-        sendWinningNotification(winning) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const amount = Number(winning.amount) / 100;
-                const html = `
+        });
+    }
+    // Notification de gain
+    sendWinningNotification(winning) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const amount = Number(winning.amount) / 100;
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -404,21 +370,21 @@ let EmailService = (() => {
               <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Date du pari</p>
               <p style="color: #333; font-size: 16px; margin: 0 0 15px 0;">
                 ${new Date(winning.bet.createdAt).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}
               </p>
               
               <p style="color: #666; font-size: 14px; margin: 0 0 5px 0;">Date du gain</p>
               <p style="color: #333; font-size: 16px; margin: 0;">
                 ${new Date(winning.distributedAt).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}
               </p>
             </div>
           </div>
@@ -443,27 +409,27 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                if (!winning.user.email) {
-                    Logger_1.default.warn(`Cannot send winning notification: user ${winning.user.id} has no email`);
-                    return false;
-                }
-                return this.sendEmailSafe({
-                    to: winning.user.email,
-                    subject: `💰 Félicitations ! Vous avez gagné ${amount.toFixed(2)} XOF - Xbeur`,
-                    html,
-                });
+            if (!winning.user.email) {
+                Logger_1.default.warn(`Cannot send winning notification: user ${winning.user.id} has no email`);
+                return false;
+            }
+            return this.sendEmailSafe({
+                to: winning.user.email,
+                subject: `💰 Félicitations ! Vous avez gagné ${amount.toFixed(2)} XOF - Xbeur`,
+                html,
             });
-        }
-        // Notification de paiement confirmé
-        sendPaymentConfirmedNotification(user, amount, type) {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (!user.email) {
-                    Logger_1.default.warn(`Cannot send payment notification: user ${user.id} has no email`);
-                    return false;
-                }
-                const amountFormatted = Number(amount) / 100;
-                const typeText = type === 'DEPOSIT' ? 'Dépôt' : 'Retrait';
-                const html = `
+        });
+    }
+    // Notification de paiement confirmé
+    sendPaymentConfirmedNotification(user, amount, type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!user.email) {
+                Logger_1.default.warn(`Cannot send payment notification: user ${user.id} has no email`);
+                return false;
+            }
+            const amountFormatted = Number(amount) / 100;
+            const typeText = type === 'DEPOSIT' ? 'Dépôt' : 'Retrait';
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -501,13 +467,13 @@ let EmailService = (() => {
                 <span style="color: #666; font-size: 14px;">Date</span>
                 <span style="color: #333; font-size: 16px;">
                   ${new Date().toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
                 </span>
               </div>
               
@@ -521,8 +487,8 @@ let EmailService = (() => {
           <div style="background-color: #e8f5e9; padding: 15px; border-radius: 6px; margin-top: 25px; text-align: center;">
             <p style="color: #2e7d32; font-size: 16px; margin: 0; font-weight: bold;">
               ${type === 'DEPOSIT'
-                    ? 'Votre portefeuille a été crédité avec succès. Prêt pour de nouveaux paris !'
-                    : 'Votre retrait a été traité avec succès. L\'argent sera disponible sur votre compte sous peu.'}
+                ? 'Votre portefeuille a été crédité avec succès. Prêt pour de nouveaux paris !'
+                : 'Votre retrait a été traité avec succès. L\'argent sera disponible sur votre compte sous peu.'}
             </p>
           </div>
         </div>
@@ -537,17 +503,17 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                return this.sendEmailSafe({
-                    to: user.email,
-                    subject: `✅ ${typeText} confirmé(e) - Xbeur`,
-                    html,
-                });
+            return this.sendEmailSafe({
+                to: user.email,
+                subject: `✅ ${typeText} confirmé(e) - Xbeur`,
+                html,
             });
-        }
-        // Notification lorsqu'un utilisateur est taggé dans un pari
-        sendTaggedInBetNotification(taggedUser, bet) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const html = `
+        });
+    }
+    // Notification lorsqu'un utilisateur est taggé dans un pari
+    sendTaggedInBetNotification(taggedUser, bet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -581,13 +547,13 @@ let EmailService = (() => {
               </p>
               <p style="color: #666; font-size: 14px; margin: 0;">
                 ${new Date(bet.fight.scheduledAt).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
               </p>
             </div>
           </div>
@@ -612,23 +578,23 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                if (!taggedUser.email) {
-                    Logger_1.default.warn(`Cannot send tagged notification: user ${taggedUser.id} has no email`);
-                    return false;
-                }
-                return this.sendEmailSafe({
-                    to: taggedUser.email,
-                    subject: `🏷️ Vous avez été tagué dans un pari - Xbeur`,
-                    html,
-                });
+            if (!taggedUser.email) {
+                Logger_1.default.warn(`Cannot send tagged notification: user ${taggedUser.id} has no email`);
+                return false;
+            }
+            return this.sendEmailSafe({
+                to: taggedUser.email,
+                subject: `🏷️ Vous avez été tagué dans un pari - Xbeur`,
+                html,
             });
-        }
-        // Notification quand un combat est terminé
-        sendFightFinishedNotification(user, fight, winner) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const winnerName = winner === 'A' ? fight.fighterA.name :
-                    winner === 'B' ? fight.fighterB.name : 'Match nul';
-                const html = `
+        });
+    }
+    // Notification quand un combat est terminé
+    sendFightFinishedNotification(user, fight, winner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const winnerName = winner === 'A' ? fight.fighterA.name :
+                winner === 'B' ? fight.fighterB.name : 'Match nul';
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -685,13 +651,13 @@ let EmailService = (() => {
                 <span style="color: #666; font-size: 14px;">Date</span>
                 <span style="color: #333; font-size: 16px;">
                   ${new Date(fight.scheduledAt).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}
                 </span>
               </div>
               
@@ -719,21 +685,21 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                if (!user.email) {
-                    Logger_1.default.warn(`Cannot send fight finished notification: user ${user.id} has no email`);
-                    return false;
-                }
-                return this.sendEmailSafe({
-                    to: user.email,
-                    subject: `🥊 Combat terminé : ${fight.title} - Xbeur`,
-                    html,
-                });
+            if (!user.email) {
+                Logger_1.default.warn(`Cannot send fight finished notification: user ${user.id} has no email`);
+                return false;
+            }
+            return this.sendEmailSafe({
+                to: user.email,
+                subject: `🥊 Combat terminé : ${fight.title} - Xbeur`,
+                html,
             });
-        }
-        // Notification de validation de combat (OTP)
-        sendFightValidationOTP(email, code, fightTitle) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const html = `
+        });
+    }
+    // Notification de validation de combat (OTP)
+    sendFightValidationOTP(email, code, fightTitle) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur - Admin</h1>
@@ -764,17 +730,17 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                return this.sendEmailSafe({
-                    to: email,
-                    subject: `🚨 CODE DE SÉCURITÉ : Validation de combat - ${fightTitle}`,
-                    html,
-                });
+            return this.sendEmailSafe({
+                to: email,
+                subject: `🚨 CODE DE SÉCURITÉ : Validation de combat - ${fightTitle}`,
+                html,
             });
-        }
-        // Notification pour vérification d'appareil
-        sendDeviceVerificationOTP(email, username, code, deviceInfo) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const html = `
+        });
+    }
+    // Notification pour vérification d'appareil
+    sendDeviceVerificationOTP(email, username, code, deviceInfo) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
@@ -802,57 +768,51 @@ let EmailService = (() => {
         </div>
       </div>
     `;
-                return this.sendEmailSafe({
-                    to: email,
-                    subject: '🔒 Code de vérification nouvel appareil - Xbeur',
-                    html,
-                });
+            return this.sendEmailSafe({
+                to: email,
+                subject: '🔒 Code de vérification nouvel appareil - Xbeur',
+                html,
             });
-        }
-        // Méthode pour envoyer des emails avec pièces jointes
-        sendEmailWithAttachments(options) {
-            return __awaiter(this, void 0, void 0, function* () {
-                if (!this.isConfigured) {
-                    Logger_1.default.warn('Cannot send attachments: SMTP not configured.');
-                    return false;
-                }
-                try {
-                    const fs = yield Promise.resolve().then(() => __importStar(require('fs')));
-                    const attachments = yield Promise.all((options.attachments || []).map((att) => __awaiter(this, void 0, void 0, function* () {
-                        const content = yield fs.promises.readFile(att.path);
-                        return {
-                            filename: att.filename,
-                            content: content.toString('base64'),
-                            contentType: att.contentType,
-                        };
-                    })));
-                    const mailOptions = {
-                        from: process.env.FROM_EMAIL || '"Xbeur" <no-reply@xbeur.com>',
-                        to: options.to,
-                        subject: options.subject,
-                        html: options.html,
-                        replyTo: options.replyTo,
-                        attachments,
+        });
+    }
+    // Méthode pour envoyer des emails avec pièces jointes
+    sendEmailWithAttachments(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isConfigured) {
+                Logger_1.default.warn('Cannot send attachments: SMTP not configured.');
+                return false;
+            }
+            try {
+                const fs = yield Promise.resolve().then(() => __importStar(require('fs')));
+                const attachments = yield Promise.all((options.attachments || []).map((att) => __awaiter(this, void 0, void 0, function* () {
+                    const content = yield fs.promises.readFile(att.path);
+                    return {
+                        filename: att.filename,
+                        content: content.toString('base64'),
+                        contentType: att.contentType,
                     };
-                    const info = yield this.transporter.sendMail(mailOptions);
-                    Logger_1.default.info(`Email with attachments sent successfully: ${info.messageId}`);
-                    return true;
-                }
-                catch (error) {
-                    Logger_1.default.error(`Failed to send email with attachments: ${error.message}`);
-                    return false;
-                }
-            });
-        }
-    };
-    __setFunctionName(_classThis, "EmailService");
-    (() => {
-        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
-        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
-        EmailService = _classThis = _classDescriptor.value;
-        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
-        __runInitializers(_classThis, _classExtraInitializers);
-    })();
-    return EmailService = _classThis;
-})();
+                })));
+                const mailOptions = {
+                    from: process.env.FROM_EMAIL || '"Xbeur" <no-reply@xbeur.com>',
+                    to: options.to,
+                    subject: options.subject,
+                    html: options.html,
+                    replyTo: options.replyTo,
+                    attachments,
+                };
+                const info = yield this.transporter.sendMail(mailOptions);
+                Logger_1.default.info(`Email with attachments sent successfully: ${info.messageId}`);
+                return true;
+            }
+            catch (error) {
+                Logger_1.default.error(`Failed to send email with attachments: ${error.message}`);
+                return false;
+            }
+        });
+    }
+};
 exports.EmailService = EmailService;
+exports.EmailService = EmailService = __decorate([
+    (0, typedi_1.Service)(),
+    __metadata("design:paramtypes", [])
+], EmailService);

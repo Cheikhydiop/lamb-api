@@ -16,34 +16,15 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 import { PrismaClient } from '@prisma/client';
 import { RateLimitService } from '../services/RateLimitService';
 import { LoginAttemptManager } from '../utils/LoginAttemptManager';
-import { Container } from 'typedi';
+import { ServiceContainer } from '../container/ServiceContainer';
 import { generateToken } from '../utils/tokenUtils';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
-const prisma = new PrismaClient();
-const userRepository = new UserRepository(prisma);
-const walletRepository = new WalletRepository(prisma);
-const sessionRepository = new SessionRepository(prisma);
-const emailService = new EmailService();
-const otpCodeRepository = new OtpCodeRepository(prisma);
-const auditLogRepository = new AuditLogRepository(prisma);
-const emailVerificationService = new EmailVerificationService(
-  emailService,
-  userRepository
-);
-
-const authService = new AuthService(
-  userRepository,
-  walletRepository,
-  emailVerificationService,
-  sessionRepository,
-  emailService,
-  otpCodeRepository,
-  auditLogRepository,
-  prisma
-);
 
 class AuthController {
+  private static get services() {
+    return ServiceContainer.getInstance();
+  }
   /**
    * POST /api/auth/login
    * Connexion d'un utilisateur
@@ -77,7 +58,7 @@ class AuthController {
     const loginData = req.body;
 
     try {
-      const result = await authService.login(loginData, req);
+      const result = await AuthController.services.authService.login(loginData, req);
 
       // Réinitialiser les tentatives échouées en cas de succès
       LoginAttemptManager.clearFailedAttempts(clientIp);
@@ -91,17 +72,19 @@ class AuthController {
         );
       }
 
+      const authResult = result as any;
+
       res.status(200).json({
         success: true,
-        message: result.message,
+        message: authResult.message,
         data: {
-          user: result.user,
-          token: result.token,
-          refreshToken: result.refreshToken,
-          sessionId: result.sessionId,
-          deviceInfo: result.deviceInfo,
-          requiresDeviceVerification: result.requiresDeviceVerification,
-          existingSessions: result.existingSessions
+          user: authResult.user,
+          token: authResult.token,
+          refreshToken: authResult.refreshToken,
+          sessionId: authResult.sessionId,
+          deviceInfo: authResult.deviceInfo,
+          requiresDeviceVerification: authResult.requiresDeviceVerification,
+          existingSessions: authResult.existingSessions
         }
       });
 
@@ -156,7 +139,7 @@ class AuthController {
 
     const userData = req.body;
 
-    const result = await authService.register(userData, req);
+    const result = await AuthController.services.authService.register(userData, req);
 
     // Ajouter les headers de rate limit
     if (rateLimitCheck.rateLimitInfo) {
@@ -211,7 +194,7 @@ class AuthController {
       );
     }
 
-    const result = await authService.verifyEmail(userId, otpCode, req);
+    const result = await AuthController.services.authService.verifyEmail(userId, otpCode, req);
 
     res.status(200).json({
       success: true,
@@ -236,7 +219,7 @@ class AuthController {
       ]);
     }
 
-    await authService.logout(userId, sessionId);
+    await AuthController.services.authService.logout(userId, sessionId);
 
     res.status(200).json({
       success: true,
@@ -257,7 +240,7 @@ class AuthController {
       ]);
     }
 
-    const result = await authService.refreshToken(refreshToken, req);
+    const result = await AuthController.services.authService.refreshToken(refreshToken, req);
 
     res.status(200).json({
       success: true,
@@ -291,7 +274,7 @@ class AuthController {
       ]);
     }
 
-    const result = await authService.forgotPassword({ email }, req);
+    const result = await AuthController.services.authService.forgotPassword({ email }, req);
 
     res.status(200).json({
       success: true,
@@ -334,7 +317,7 @@ class AuthController {
       );
     }
 
-    const result = await authService.resetPassword({ token, newPassword }, req);
+    const result = await AuthController.services.authService.resetPassword({ token, newPassword }, req);
 
     res.status(200).json({
       success: true,
@@ -378,7 +361,7 @@ class AuthController {
       );
     }
 
-    const result = await authService.changePassword(userId, { currentPassword, newPassword }, req);
+    const result = await AuthController.services.authService.changePassword(userId, { currentPassword, newPassword }, req);
 
     res.status(200).json({
       success: true,
@@ -438,7 +421,7 @@ class AuthController {
       ]);
     }
 
-    const result = await authService.updateProfile(userId, updateData, req);
+    const result = await AuthController.services.authService.updateProfile(userId, updateData, req);
 
     res.status(200).json({
       success: true,
@@ -462,7 +445,7 @@ class AuthController {
       ]);
     }
 
-    const user = await authService.getProfile(userId);
+    const user = await AuthController.services.authService.getProfile(userId);
 
     res.status(200).json({
       success: true,
@@ -486,7 +469,7 @@ class AuthController {
       ]);
     }
 
-    const result = await authService.deactivateAccount(userId, { reason }, req);
+    const result = await AuthController.services.authService.deactivateAccount(userId, { reason }, req);
 
     res.status(200).json({
       success: true,
@@ -517,7 +500,7 @@ class AuthController {
       );
     }
 
-    const result = await authService.reactivateAccount(email, password, req);
+    const result = await AuthController.services.authService.reactivateAccount(email, password, req);
 
     res.status(200).json({
       success: true,
@@ -542,7 +525,7 @@ class AuthController {
       ]);
     }
 
-    const sessions = await authService.getUserSessions(userId);
+    const sessions = await AuthController.services.authService.getUserSessions(userId);
 
     res.status(200).json({
       success: true,
@@ -572,7 +555,7 @@ class AuthController {
       ]);
     }
 
-    await authService.revokeSession(userId, sessionId);
+    await AuthController.services.authService.revokeSession(userId, sessionId);
 
     res.status(200).json({
       success: true,
@@ -595,13 +578,13 @@ class AuthController {
     }
 
     // Récupérer toutes les sessions
-    const sessions = await authService.getUserSessions(userId);
+    const sessions = await AuthController.services.authService.getUserSessions(userId);
 
     // Révoquer toutes les sessions sauf la session actuelle
     const sessionsToRevoke = sessions.filter(session => session.id !== currentSessionId);
 
     for (const session of sessionsToRevoke) {
-      await authService.revokeSession(userId, session.id);
+      await AuthController.services.authService.revokeSession(userId, session.id);
     }
 
     res.status(200).json({
@@ -628,14 +611,14 @@ class AuthController {
     }
 
     // Récupérer l'utilisateur
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await AuthController.services.prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundError('Utilisateur non trouvé');
     }
 
     // Renvoyer l'email de vérification
-    const emailVerificationService = Container.get(EmailVerificationService);
+    const emailVerificationService = AuthController.services.emailVerificationService;
     await emailVerificationService.sendVerificationEmail(user.id, user.email!);
 
     res.status(200).json({
@@ -659,12 +642,8 @@ class AuthController {
     }
 
     // Importer le service
-    const { MultiDeviceAuthService } = await import('../services/MultiDeviceAuthService');
-    const multiDeviceService = new MultiDeviceAuthService(
-      prisma,
-      Container.get(EmailService),
-      Container.get(require('../services/WebSocketService').WebSocketService)
-    );
+    // const { MultiDeviceAuthService } = await import('../services/MultiDeviceAuthService');
+    const multiDeviceService = AuthController.services.multiDeviceAuthService;
 
     const result = await multiDeviceService.verifyDeviceOTP(sessionId, otpCode);
 
@@ -675,7 +654,7 @@ class AuthController {
     }
 
     // Récupérer le rôle réel de l'utilisateur
-    const userRole = await prisma.user.findUnique({
+    const userRole = await AuthController.services.prisma.user.findUnique({
       where: { id: result.session!.userId },
       select: { role: true }
     });
@@ -712,12 +691,7 @@ class AuthController {
       ]);
     }
 
-    const { MultiDeviceAuthService } = await import('../services/MultiDeviceAuthService');
-    const multiDeviceService = new MultiDeviceAuthService(
-      prisma,
-      Container.get(EmailService),
-      Container.get(require('../services/WebSocketService').WebSocketService)
-    );
+    const multiDeviceService = AuthController.services.multiDeviceAuthService;
 
     const result = await multiDeviceService.resendDeviceOTP(sessionId);
 

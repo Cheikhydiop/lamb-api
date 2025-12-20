@@ -12,7 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { NotificationType, NotificationChannel, NotificationPriority } from '../../types/notification-types';
+import { NotificationType, NotificationChannel, NotificationPriority } from '../notification-types';
 
 export class CreateNotificationPreferenceDto {
   @IsNotEmpty()

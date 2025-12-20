@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsEnum, IsOptional } from 'class-validator';
-import { NotificationChannel } from '../../types/notification-types';
+import { NotificationChannel } from '../notification-types';
 
 // src/dto/notification/update-notification.dto.ts
 export class UpdateNotificationDto {

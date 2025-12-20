@@ -5,6 +5,7 @@ import { requireAuth, requireAdmin } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
 import { body, param, query } from 'express-validator';
 import { BetStatus } from '@prisma/client';
+import { asyncHandler } from '../middlewares/asyncHandler';
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get(
       .isString().withMessage('ID du pari doit être une chaîne')
   ],
   validateRequest,
-  BetController.getBet
+  asyncHandler(BetController.getBet)
 );
 
 // Liste des paris avec filtres
@@ -46,7 +47,7 @@ router.get(
       .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
   ],
   validateRequest,
-  BetController.listBets
+  asyncHandler(BetController.listBets)
 );
 
 // Obtenir les paris disponibles pour un combat
@@ -58,7 +59,7 @@ router.get(
       .isString().withMessage('ID du combat doit être une chaîne')
   ],
   validateRequest,
-  BetController.getAvailableBets
+  asyncHandler(BetController.getAvailableBets)
 );
 
 
@@ -83,7 +84,7 @@ router.get(
       .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
   ],
   validateRequest,
-  BetController.getPendingBets
+  asyncHandler(BetController.getPendingBets)
 );
 
 // ==================== ROUTES UTILISATEUR AUTHENTIFIÉ ====================
@@ -104,7 +105,7 @@ router.post(
       .isFloat({ min: 1 }).withMessage('Montant doit être un nombre positif')
   ],
   validateRequest,
-  BetController.createBet
+  asyncHandler(BetController.createBet)
 );
 
 // Accepter un pari
@@ -117,7 +118,7 @@ router.post(
       .isString().withMessage('ID du pari doit être une chaîne')
   ],
   validateRequest,
-  BetController.acceptBet
+  asyncHandler(BetController.acceptBet)
 );
 
 // Annuler un pari
@@ -130,28 +131,28 @@ router.delete(
       .isString().withMessage('ID du pari doit être une chaîne')
   ],
   validateRequest,
-  BetController.cancelBet
+  asyncHandler(BetController.cancelBet)
 );
 
 // Obtenir mes paris (créés et acceptés)
 router.get(
   '/my-bets',
   requireAuth,
-  BetController.getMyBets
+  asyncHandler(BetController.getMyBets)
 );
 
 // Obtenir les paris actifs d'un utilisateur
 router.get(
   '/active',
   requireAuth,
-  BetController.getActiveBets
+  asyncHandler(BetController.getActiveBets)
 );
 
 // Obtenir les statistiques de paris
 router.get(
   '/stats',
   requireAuth,
-  BetController.getBetStats
+  asyncHandler(BetController.getBetStats)
 );
 
 // ==================== ROUTES ADMIN ====================
@@ -170,7 +171,7 @@ router.post(
       .isIn(['A', 'B', 'DRAW']).withMessage('Vainqueur invalide. Valeurs acceptées: A, B, DRAW')
   ],
   validateRequest,
-  BetController.settleBet
+  asyncHandler(BetController.settleBet)
 );
 
 // Vérifier et expirer les paris (admin seulement)
@@ -178,7 +179,7 @@ router.post(
   '/expire-check',
   requireAuth,
   requireAdmin,
-  BetController.checkExpiredBets
+  asyncHandler(BetController.checkExpiredBets)
 );
 
 // ==================== ROUTES DE TEST ====================

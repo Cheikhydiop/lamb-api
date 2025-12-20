@@ -1,8 +1,8 @@
-import { PrismaClient, User, Wallet } from '@prisma/client';
+import { PrismaClient, User, Wallet, UserRole } from '@prisma/client';
 import { DatabaseError } from '../errors/customErrors';
 
 export class UserRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   // Méthode helper pour convertir BigInt en string de manière récursive
   private sanitizeBigInt<T>(data: T): T {
@@ -80,6 +80,9 @@ export class UserRepository {
     phone: string;
     email: string;
     password: string;
+    role?: UserRole;
+    isActive?: boolean;
+    isEmailVerified?: boolean;
   }): Promise<User> {
     try {
       const user = await this.prisma.user.create({
@@ -129,6 +132,8 @@ export class UserRepository {
     email: string;
     password: string;
     isActive: boolean;
+    isEmailVerified: boolean;
+    role: UserRole;
   }>): Promise<User> {
     try {
       const user = await this.prisma.user.update({
@@ -208,14 +213,14 @@ export class UserRepository {
           data: {
             email: userData.email,
             password: userData.password,
-            name: userData.name,
-            phone: userData.phone,
+            name: userData.name || '',  // Prisma typically expects string if required or null if optional, but here error says undefined not assignable to string. If field is required in schema, must provide string. If optional, likely string | null. Assuming required or defaulting to empty string based on error. Actually, let's use || null if schema allows, but error "Type 'undefined' is not assignable to type 'string'" suggests strictly string.
+            phone: userData.phone || '',
             role: userData.role,
             isActive: userData.isActive,
             isEmailVerified: userData.isEmailVerified,
           }
         });
-  
+
         // Créer le wallet associé
         const wallet = await tx.wallet.create({
           data: {
@@ -224,7 +229,7 @@ export class UserRepository {
             lockedBalance: 0
           }
         });
-  
+
         return { user, wallet };
       });
     } catch (error: any) {
@@ -234,33 +239,33 @@ export class UserRepository {
 
 
   // ----------------------------------------------------
-// NOUVELLE MÉTHODE À AJOUTER DANS UserRepository.ts
-// ----------------------------------------------------
-async findById(userId: string): Promise<User | null> {
-  try {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId }
-    });
-    // Utilisation de la méthode helper existante
-    return this.sanitizeBigInt(user); 
-  } catch (error: any) {
-    throw new DatabaseError(`Failed to find user by ID: ${error.message}`);
+  // NOUVELLE MÉTHODE À AJOUTER DANS UserRepository.ts
+  // ----------------------------------------------------
+  async findById(userId: string): Promise<User | null> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      // Utilisation de la méthode helper existante
+      return this.sanitizeBigInt(user);
+    } catch (error: any) {
+      throw new DatabaseError(`Failed to find user by ID: ${error.message}`);
+    }
   }
-}
 
-// ----------------------------------------------------
-// MÉTHODE À AJOUTER DANS UserRepository.ts
-// ----------------------------------------------------
-async updatePassword(userId: string, hashedPassword: string): Promise<void> {
-  try {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword }
-    });
-  } catch (error: any) {
-    throw new DatabaseError(`Failed to update password for user: ${error.message}`);
+  // ----------------------------------------------------
+  // MÉTHODE À AJOUTER DANS UserRepository.ts
+  // ----------------------------------------------------
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword }
+      });
+    } catch (error: any) {
+      throw new DatabaseError(`Failed to update password for user: ${error.message}`);
+    }
   }
-}
-// ----------------------------------------------------
-// ----------------------------------------------------
+  // ----------------------------------------------------
+  // ----------------------------------------------------
 }

@@ -1,13 +1,10 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsObject, IsArray, IsBoolean, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsOptional, IsObject, IsArray, IsBoolean } from 'class-validator';
 import {
   NotificationType,
   NotificationChannel,
   NotificationPriority,
   NotificationMetadata,
-} from '../../types/notification-types';
-import { User } from '../../entity/User';
-import { Organization } from '../../entity/Organization';
+} from '../notification-types';
 
 export class CreateNotificationDto {
   @IsNotEmpty()
@@ -15,10 +12,10 @@ export class CreateNotificationDto {
   type: NotificationType;
 
   @IsNotEmpty()
-  recipient: User;
+  userId: string; // Replaced User entity with userId string
 
-  @IsNotEmpty()
-  organization: Organization;
+  // Removed Organization as it does not exist in schema
+  // organization: Organization;
 
   @IsOptional()
   @IsObject()

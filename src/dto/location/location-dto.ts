@@ -11,7 +11,15 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { LocationType } from '../../entity/Location';
+// import { LocationType } from '../../entity/Location';
+
+export enum LocationType {
+  ARENA = 'ARENA',
+  STADIUM = 'STADIUM',
+  GYM = 'GYM',
+  OTHER = 'OTHER'
+}
+
 
 export class CreateLocationDto {
   @IsString()

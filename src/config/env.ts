@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 // Charger les variables d'environnement
 dotenv.config();

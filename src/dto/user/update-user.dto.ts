@@ -1,6 +1,13 @@
 // src/dto/auth/update-user.dto.ts
 import { IsOptional, IsString, IsEnum, Length, IsPhoneNumber } from 'class-validator';
-import { Language } from '../../entity/User';
+// import { Language } from '../../entity/User';
+
+export enum Language {
+  FR = 'fr',
+  EN = 'en',
+  WOLOF = 'wo'
+}
+
 
 export class UpdateUserDto {
   @IsOptional()

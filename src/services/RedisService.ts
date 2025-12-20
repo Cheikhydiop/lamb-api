@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { Service } from 'typedi';
 import config from '../config/env';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 @Service()
 export class RedisService {

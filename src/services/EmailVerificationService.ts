@@ -1,7 +1,7 @@
 // src/services/EmailVerificationService.ts
 import { Service } from 'typedi';
 import { EmailService } from './EmailService';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 import { BadRequestError } from '../utils/response/errors/bad-request-error';
 import { NotFoundError } from '../utils/response/errors/not-found-error';
 import { UserRepository } from '../repositories/UserRepository';
@@ -84,6 +84,9 @@ export class EmailVerificationService {
 
       logger.info(`✅ [CREATE VERIFICATION] OTP créé: ${otpCode.id}`);
 
+      if (!user.email) {
+        throw new Error('User email is required for verification');
+      }
       // ⚠️ POINT CRITIQUE : Envoyer l'email
       const emailSent = await this.emailService.sendVerificationCode(user.email, code);
 

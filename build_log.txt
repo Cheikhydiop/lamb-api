@@ -1,0 +1,1496 @@
+
+> better-api@1.0.0 build
+> prisma generate && tsc
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.16.2) to ./node_modules/@prisma/client in 165ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+src/container/ServiceContainer.ts(2,10): error TS2614: Module '"../utils/Logger"' has no exported member 'AppLogger'. Did you mean to use 'import AppLogger from "../utils/Logger"' instead?
+src/container/ServiceContainer.ts(40,28): error TS2554: Expected 1 arguments, but got 0.
+src/container/ServiceContainer.ts(50,25): error TS2554: Expected 4 arguments, but got 1.
+src/controllers/AuthController.ts(103,46): error TS2339: Property 'requiresDeviceVerification' does not exist on type '{ user: any; token: string; refreshToken: string; sessionId: string; deviceInfo: any; message: string; }'.
+src/controllers/AuthController.ts(104,36): error TS2339: Property 'existingSessions' does not exist on type '{ user: any; token: string; refreshToken: string; sessionId: string; deviceInfo: any; message: string; }'.
+src/controllers/FightController.ts(31,7): error TS2717: Subsequent property declarations must have the same type.  Property 'user' must be of type '{ id: string; userId: string; email: string | null; phone: string; name: string; role: "BETTOR" | "ADMIN" | "SUPER_ADMIN"; isActive: boolean; isEmailVerified: boolean; sessionId?: string | undefined; authToken?: string | undefined; walletId?: string | undefined; refreshToken?: string | undefined; wallet?: { ...; } |...', but here has type '{ id: string; role: string; email: string; } | undefined'.
+src/controllers/transaction.controller.ts(3,36): error TS2307: Cannot find module '../services/transaction.service' or its corresponding type declarations.
+src/dto/auth/forgot-password.dto.ts(4,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/forgot-password.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/forgot-password.dto.ts(6,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/reactivate-account.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reactivate-account.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reactivate-account.dto.ts(7,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/reactivate-account.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reactivate-account.dto.ts(10,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/reset-password.dto.ts(4,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reset-password.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reset-password.dto.ts(6,3): error TS2564: Property 'token' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/reset-password.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reset-password.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reset-password.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/reset-password.dto.ts(16,3): error TS2564: Property 'newPassword' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/session.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/session.dto.ts(6,3): error TS2564: Property 'refresh_token' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-in.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/dto/auth/sign-in.ts(4,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/dto/auth/sign-in.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-in.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-in.ts(9,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-in.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-in.ts(12,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-up.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/dto/auth/sign-up.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(8,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-up.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(15,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-up.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(18,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-up.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(21,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/sign-up.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/sign-up.ts(26,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(4,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/dto/auth/user.ts(5,28): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/dto/auth/user.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(10,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(13,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(16,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(19,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(25,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/user.ts(28,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(34,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(37,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(40,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(42,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(43,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(45,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(46,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(48,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/user.ts(49,3): error TS2564: Property 'is_email_verified' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth/user.ts(51,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/auth/verify-email.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/verify-email.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/verify-email.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/verify-email.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth/verify-email.dto.ts(11,3): error TS2564: Property 'code' has no initializer and is not definitely assigned in the constructor.
+src/dto/contact/contact-email.dto.ts(4,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(7,3): error TS2564: Property 'name' has no initializer and is not definitely assigned in the constructor.
+src/dto/contact/contact-email.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(11,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/contact/contact-email.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(16,3): error TS2564: Property 'subject' has no initializer and is not definitely assigned in the constructor.
+src/dto/contact/contact-email.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(21,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(22,3): error TS2564: Property 'message' has no initializer and is not definitely assigned in the constructor.
+src/dto/contact/contact-email.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(25,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(26,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(29,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/contact/contact-email.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(7,3): error TS2564: Property 'title' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(14,3): error TS2564: Property 'location' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(18,3): error TS2564: Property 'scheduledAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(21,3): error TS2564: Property 'fighterAId' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(24,3): error TS2564: Property 'fighterBId' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(28,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(29,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(34,3): error TS2564: Property 'fightId' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(37,3): error TS2564: Property 'winner' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(40,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(43,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(44,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(45,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(46,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(49,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(50,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(53,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(54,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(57,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(58,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(60,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(61,3): error TS2564: Property 'otpCode' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(65,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(66,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(69,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(70,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(73,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(74,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(75,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(78,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(79,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(80,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(83,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(84,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(85,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(86,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(89,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(90,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(91,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(98,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(99,3): error TS2564: Property 'fighterAId' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(101,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(102,3): error TS2564: Property 'fighterBId' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(104,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(105,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(106,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(107,3): error TS2564: Property 'order' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(109,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(110,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(115,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(116,3): error TS2564: Property 'title' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(118,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(119,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(120,3): error TS2564: Property 'date' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(122,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(123,3): error TS2564: Property 'location' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(125,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(126,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(129,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(130,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(133,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(134,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(137,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(138,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(139,3): error TS2564: Property 'fights' has no initializer and is not definitely assigned in the constructor.
+src/dto/fight.dto.ts(143,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(144,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(147,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(148,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(149,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(152,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(153,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(156,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(157,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(160,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(161,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(164,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(165,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(168,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(169,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(174,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(175,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(178,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(179,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(180,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(183,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(184,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(185,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(188,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(189,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(190,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(191,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(194,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(195,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/fight.dto.ts(196,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(7,3): error TS2564: Property 'token' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/accept-invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(14,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/accept-invitation.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(18,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/accept-invitation.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(21,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/accept-invitation.dto.ts(22,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/create-invitation.dto.ts(2,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/dto/invitation/create-invitation.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/create-invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/create-invitation.dto.ts(7,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/create-invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/create-invitation.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/create-invitation.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/invitation/invitation-response.dto.ts(20,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(21,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(22,3): error TS2564: Property 'role' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(23,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(24,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(29,3): error TS2564: Property 'invitedBy' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation-response.dto.ts(35,3): error TS2564: Property 'expiresAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(7,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(10,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(13,3): error TS2564: Property 'role' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(16,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(19,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(25,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(26,3): error TS2564: Property 'invitedBy' has no initializer and is not definitely assigned in the constructor.
+src/dto/invitation/invitation.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/dto/invitation/invitation.dto.ts(32,3): error TS2564: Property 'expiresAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(14,30): error TS2307: Cannot find module '../../entity/Location' or its corresponding type declarations.
+src/dto/location/location-dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(20,3): error TS2564: Property 'name' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(22,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(26,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(29,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(34,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(38,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(40,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(43,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(44,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(45,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(48,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(49,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(50,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(51,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(54,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(55,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(56,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(57,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(60,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(61,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(66,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(67,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(68,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(69,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(72,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(73,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(76,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(77,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(80,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(81,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(84,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(85,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(86,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(89,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(90,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(91,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(94,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(95,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(96,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(99,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(100,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(101,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(102,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(105,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(106,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(107,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(108,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(111,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(112,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/location/location-dto.ts(117,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(118,3): error TS2564: Property 'name' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(132,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(137,3): error TS2564: Property 'createdAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/location/location-dto.ts(138,3): error TS2564: Property 'updatedAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/user/change-password.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/change-password.dto.ts(6,3): error TS2564: Property 'current_password' has no initializer and is not definitely assigned in the constructor.
+src/dto/user/change-password.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/change-password.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/change-password.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/change-password.dto.ts(13,3): error TS2564: Property 'new_password' has no initializer and is not definitely assigned in the constructor.
+src/dto/user/deactivate-account.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/deactivate-account.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/deactivate-account.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/deactivate-account.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/deactivate-account.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/deactivate-account.dto.ts(12,3): error TS2564: Property 'confirmation' has no initializer and is not definitely assigned in the constructor.
+src/dto/user/update-user.dto.ts(3,26): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/dto/user/update-user.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user/update-user.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/index.ts(165,30): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<{}, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Response<any, Record<...>, number> | undefined' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<{}, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Response<any, Record<...>, number> | undefined' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/index.ts(243,9): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(err: Error, req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>>' is not assignable to parameter of type 'PathParams'.
+src/interfaces/UserInterface.ts(103,38): error TS2339: Property 'register' does not exist on type 'UserService'.
+src/interfaces/UserInterface.ts(164,38): error TS2339: Property 'verifyEmail' does not exist on type 'UserService'.
+src/repositories/SessionRepository.ts(48,9): error TS2322: Type 'string' is not assignable to type 'DeviceType | undefined'.
+src/repositories/SessionRepository.ts(54,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | undefined'.
+src/repositories/SessionRepository.ts(75,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(97,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(251,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(255,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(271,13): error TS2322: Type 'string' is not assignable to type 'SessionStatus'.
+src/repositories/SessionRepository.ts(272,13): error TS2322: Type 'string' is not assignable to type 'SessionStatus'.
+src/repositories/SessionRepository.ts(286,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(346,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(349,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(378,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(397,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFieldUpdateOperationsInput | undefined'.
+src/repositories/SessionRepository.ts(458,11): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(463,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(466,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(471,18): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/SessionRepository.ts(493,9): error TS2322: Type 'string' is not assignable to type 'SessionStatus | EnumSessionStatusFilter<"Session"> | undefined'.
+src/repositories/UserRepository.ts(200,11): error TS2304: Cannot find name 'UserRole'.
+src/repositories/UserRepository.ts(211,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/repositories/UserRepository.ts(212,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/repositories/implementations/ImplRequestRepository.ts(1,24): error TS2305: Module '"@prisma/client"' has no exported member 'Request'.
+src/repositories/implementations/ImplRequestRepository.ts(1,33): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/repositories/implementations/ImplRequestRepository.ts(1,48): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/repositories/implementations/ImplRequestRepository.ts(1,61): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/repositories/implementations/ImplRequestRepository.ts(1,77): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/repositories/implementations/ImplRequestRepository.ts(41,25): error TS2724: '"/home/diop/Documents/lamb/node_modules/.prisma/client/index".Prisma' has no exported member named 'RequestWhereInput'. Did you mean 'BetWhereInput'?
+src/repositories/implementations/ImplRequestRepository.ts(84,57): error TS2345: Argument of type '"request"' is not assignable to parameter of type 'keyof PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/implementations/ImplRequestRepository.ts(108,41): error TS2339: Property 'request' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/implementations/ImplRequestRepository.ts(227,23): error TS2724: '"/home/diop/Documents/lamb/node_modules/.prisma/client/index".Prisma' has no exported member named 'RequestWhereInput'. Did you mean 'BetWhereInput'?
+src/repositories/implementations/ImplRequestRepository.ts(271,55): error TS2345: Argument of type '"request"' is not assignable to parameter of type 'keyof PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+src/repositories/interfaces/IRequestRepository.ts(1,10): error TS2305: Module '"@prisma/client"' has no exported member 'Request'.
+src/repositories/interfaces/IRequestRepository.ts(1,19): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/repositories/interfaces/IRequestRepository.ts(1,34): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/repositories/interfaces/IRequestRepository.ts(1,47): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/repositories/interfaces/IRequestRepository.ts(1,63): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/routes/admin.routes.ts(43,26): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>, next: NextFunction) => Promise<...>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<{ id: string; }, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>, next: NextFunction) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/routes/authRoutes.ts(16,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(24,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(33,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(40,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(47,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(54,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(67,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/authRoutes.ts(74,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(21,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(48,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(60,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(85,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(106,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(119,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(132,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/betRoutes.ts(172,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(21,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(48,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(60,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(72,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(106,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(123,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(153,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(167,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fightRoutes.ts(189,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Response<any, Record<string, any>> | undefined' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void | Promise<void>'.
+          Type 'Response<any, Record<string, any>>' is not assignable to type 'void | Promise<void>'.
+src/routes/fighterRoutes.ts(17,3): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+src/routes/user.routes.ts(39,46): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>> | undefined>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>> | undefined' is not assignable to type 'void'.
+              Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(17,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(28,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(39,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/routes/walletRoutes.ts(50,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to parameter of type 'RequestHandlerParams<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>, number>) => Promise<...>' is not assignable to type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>'.
+        Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'void | Promise<void>'.
+          Type 'Promise<Response<any, Record<string, any>>>' is not assignable to type 'Promise<void>'.
+            Type 'Response<any, Record<string, any>>' is not assignable to type 'void'.
+src/services/AuthService.ts(14,15): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../interfaces/UserInterface"' instead?
+src/services/AuthService.ts(177,13): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(212,9): error TS2322: Type 'DeviceType' is not assignable to type 'DeviceType | undefined'.
+  Type '"MOBILE"' is not assignable to type 'DeviceType | undefined'.
+src/services/AuthService.ts(256,69): error TS2339: Property 'email' does not exist on type 'UserController'.
+src/services/AuthService.ts(272,26): error TS2339: Property 'email' does not exist on type 'UserController'.
+src/services/AuthService.ts(333,9): error TS2353: Object literal may only specify known properties, and 'role' does not exist in type '{ name: string; phone: string; email: string; password: string; }'.
+src/services/AuthService.ts(341,9): error TS2322: Type 'number' is not assignable to type 'bigint'.
+src/services/AuthService.ts(342,9): error TS2322: Type 'number' is not assignable to type 'bigint'.
+src/services/AuthService.ts(346,77): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(437,59): error TS2554: Expected 3 arguments, but got 2.
+src/services/AuthService.ts(447,46): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(503,36): error TS2551: Property 'invalidateSession' does not exist on type 'SessionRepository'. Did you mean 'isValidSession'?
+src/services/AuthService.ts(583,24): error TS2339: Property 'wallet' does not exist on type '{ name: string; email: string | null; phone: string; password: string; id: string; role: UserRole; isEmailVerified: boolean; isActive: boolean; isBanned: boolean; banReason: string | null; ... 9 more ...; maxBetPerFight: bigint | null; }'.
+src/services/AuthService.ts(590,36): error TS2551: Property 'updateRefreshToken' does not exist on type 'SessionRepository'. Did you mean 'rotateRefreshToken'?
+src/services/AuthService.ts(716,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/AuthService.ts(975,53): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1043,33): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1131,53): error TS2554: Expected 2 arguments, but got 1.
+src/services/AuthService.ts(1146,31): error TS2339: Property 'wallet' does not exist on type '{ name: string; email: string | null; phone: string; password: string; id: string; role: UserRole; isEmailVerified: boolean; isActive: boolean; isBanned: boolean; banReason: string | null; ... 9 more ...; maxBetPerFight: bigint | null; }'.
+src/services/AuthService.ts(1235,53): error TS2339: Property 'findByUserId' does not exist on type 'SessionRepository'.
+src/services/AuthService.ts(1239,27): error TS7006: Parameter 'session' implicitly has an 'any' type.
+src/services/AuthService.ts(1271,52): error TS2339: Property 'findById' does not exist on type 'SessionRepository'.
+src/services/AuthService.ts(1286,36): error TS2551: Property 'invalidateSession' does not exist on type 'SessionRepository'. Did you mean 'isValidSession'?
+src/services/BetService.ts(32,41): error TS2749: 'CreateBetDTO' refers to a value, but is being used as a type here. Did you mean 'typeof CreateBetDTO'?
+src/services/BetService.ts(77,36): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; fighterA: { ...; }; fighterB: { ...; }; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(204,13): error TS2322: Type '"BET_CREATED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(308,40): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; date: Date; status: EventStatus; title: string; } | null; fighterA: { name: string; id: string; isActive: boolean; createdAt: Date; updatedAt: Date; ... 19 more ...; ranking: number | null; }; fighterB: { ...; }; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(308,57): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(500,42): error TS2551: Property 'scheduledTime' does not exist on type '{ dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; } & { ...; }'. Did you mean 'scheduledAt'?
+src/services/BetService.ts(500,59): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(506,50): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(546,56): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(548,20): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/services/BetService.ts(593,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(595,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(602,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(604,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(616,13): error TS2322: Type '"BET_CANCELLED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(618,63): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(624,13): error TS2322: Type '"BET_CANCELLED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(626,60): error TS18047: 'bet.fight.dayEvent' is possibly 'null'.
+src/services/BetService.ts(672,53): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(708,28): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/BetService.ts(713,53): error TS2345: Argument of type 'Decimal' is not assignable to parameter of type 'number'.
+src/services/BetService.ts(743,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(752,15): error TS2322: Type '"CREATOR_WON" | "ACCEPTOR_WON"' is not assignable to type 'BetStatus | EnumBetStatusFieldUpdateOperationsInput | undefined'.
+  Type '"CREATOR_WON"' is not assignable to type 'BetStatus | EnumBetStatusFieldUpdateOperationsInput | undefined'.
+src/services/BetService.ts(760,20): error TS2339: Property 'systemFee' does not exist on type 'Omit<PrismaClient<PrismaClientOptions, never, DefaultArgs>, "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends">'.
+src/services/BetService.ts(808,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(810,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(817,15): error TS2322: Type 'Decimal' is not assignable to type 'number | bigint'.
+src/services/BetService.ts(819,15): error TS2322: Type '"COMPLETED"' is not assignable to type 'TransactionStatus | undefined'.
+src/services/BetService.ts(852,26): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/services/BetService.ts(862,63): error TS2551: Property 'winAmount' does not exist on type '{ fight: { dayEvent: { id: string; createdAt: Date; updatedAt: Date; date: Date; status: EventStatus; title: string; description: string | null; location: string; ... 15 more ...; createdById: string | null; } | null; fighterA: { ...; }; fighterB: { ...; }; } & { ...; }; creator: { ...; }; acceptor: { ...; } | null;...'. Did you mean 'amount'?
+src/services/BetService.ts(909,11): error TS2353: Object literal may only specify known properties, and 'transaction' does not exist in type 'BetInclude<DefaultArgs>'.
+src/services/BetService.ts(1178,15): error TS2561: Object literal may only specify known properties, but 'scheduledTime' does not exist in type 'FightWhereInput'. Did you mean to write 'scheduledAt'?
+src/services/BetService.ts(1198,33): error TS2339: Property 'bets' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; status: FightStatus; title: string; description: string | null; location: string; scheduledAt: Date; startedAt: Date | null; ... 16 more ...; dayEventId: string | null; }'.
+src/services/BetService.ts(1222,15): error TS2322: Type '"BET_EXPIRED"' is not assignable to type 'NotificationType'.
+src/services/BetService.ts(1224,49): error TS2551: Property 'dayEvent' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; status: FightStatus; title: string; description: string | null; location: string; scheduledAt: Date; startedAt: Date | null; ... 16 more ...; dayEventId: string | null; }'. Did you mean 'dayEventId'?
+src/services/EmailVerificationService.ts(88,70): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/MultiDeviceAuthService.ts(7,20): error TS1149: File name '/home/diop/Documents/lamb/src/utils/logger.ts' differs from already included file name '/home/diop/Documents/lamb/src/utils/Logger.ts' only in casing.
+  The file is in the program because:
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/config/env.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/errorHandler.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/EmailService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/EmailVerificationService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/UserService.ts'
+    Imported via './Logger' from file '/home/diop/Documents/lamb/src/utils/LoginAttemptManager.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/AuthService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/WebSocketService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/controllers/AuthController.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/AuditService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/AuditMiddleware.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/middlewares/security.ts'
+    Imported via './utils/Logger' from file '/home/diop/Documents/lamb/src/index.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/config/dependencyInjection.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/container/ServiceContainer.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/RedisService.ts'
+    Imported via '../utils/Logger' from file '/home/diop/Documents/lamb/src/services/QueueService.ts'
+    Matched by include pattern 'src/**/*' in '/home/diop/Documents/lamb/tsconfig.json'
+    Imported via '../utils/logger' from file '/home/diop/Documents/lamb/src/services/MultiDeviceAuthService.ts'
+src/services/MultiDeviceAuthService.ts(315,35): error TS2339: Property 'sendToUser' does not exist on type 'WebSocketService'.
+src/services/MultiDeviceAuthService.ts(335,37): error TS2339: Property 'sendDeviceConnectionConfirmation' does not exist on type 'EmailService'.
+src/services/QueueService.ts(12,9): error TS1206: Decorators are not valid here.
+src/services/TransactionService.ts(77,9): error TS2322: Type 'string' is not assignable to type 'MobileMoneyProvider | null | undefined'.
+src/services/UserService.ts(13,10): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../interfaces/UserInterface"' instead?
+src/services/UserService.ts(13,20): error TS2614: Module '"../interfaces/UserInterface"' has no exported member 'Login'. Did you mean to use 'import Login from "../interfaces/UserInterface"' instead?
+src/services/UserService.ts(140,11): error TS2322: Type 'string | undefined' is not assignable to type 'undefined'.
+  Type 'string' is not assignable to type 'undefined'.
+src/services/UserService.ts(141,11): error TS2322: Type 'string | undefined' is not assignable to type 'undefined'.
+  Type 'string' is not assignable to type 'undefined'.
+src/services/UserService.ts(203,9): error TS2554: Expected 1-2 arguments, but got 4.
+src/services/auth.service.ts(40,49): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/auth.service.ts(61,49): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/services/auth.service.ts(179,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/types/auth/reactivate-account.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/reactivate-account.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/reactivate-account.dto.ts(7,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/reactivate-account.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/reactivate-account.dto.ts(10,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/session.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/session.dto.ts(6,3): error TS2564: Property 'refresh_token' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-in.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/types/auth/sign-in.ts(4,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/types/auth/sign-in.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-in.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-in.ts(9,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-in.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-in.ts(12,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-up.ts(3,34): error TS2307: Cannot find module '../../types/organization-types' or its corresponding type declarations.
+src/types/auth/sign-up.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(8,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-up.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(15,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-up.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(18,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-up.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(21,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/sign-up.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/sign-up.ts(26,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(4,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/types/auth/user.ts(5,28): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/types/auth/user.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(10,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(13,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(16,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(19,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(25,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/user.ts(28,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(34,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(37,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(40,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(42,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(43,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(45,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(46,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(48,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/user.ts(49,3): error TS2564: Property 'is_email_verified' has no initializer and is not definitely assigned in the constructor.
+src/types/auth/user.ts(51,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/auth/verify-email.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/verify-email.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/verify-email.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/verify-email.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/auth/verify-email.dto.ts(11,3): error TS2564: Property 'code' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/accept-invitation.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(7,3): error TS2564: Property 'token' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/accept-invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(14,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/accept-invitation.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(18,3): error TS2564: Property 'first_name' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/accept-invitation.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(21,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/accept-invitation.dto.ts(22,3): error TS2564: Property 'last_name' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/create-invitation.dto.ts(2,32): error TS2307: Cannot find module '../../types/role-types' or its corresponding type declarations.
+src/types/invitation/create-invitation.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/create-invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/create-invitation.dto.ts(7,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/create-invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/create-invitation.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/create-invitation.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/invitation/invitation-response.dto.ts(20,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(21,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(22,3): error TS2564: Property 'role' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(23,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(24,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(29,3): error TS2564: Property 'invitedBy' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation-response.dto.ts(35,3): error TS2564: Property 'expiresAt' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(7,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(10,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(13,3): error TS2564: Property 'role' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(16,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(19,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(25,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(26,3): error TS2564: Property 'invitedBy' has no initializer and is not definitely assigned in the constructor.
+src/types/invitation/invitation.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  No overload matches this call.
+    Overload 1 of 2, '(target: Object, propertyKey: string | symbol): void', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+    Overload 2 of 2, '(target: Function): void | Function', gave the following error.
+      Argument of type 'undefined' is not assignable to parameter of type 'Function'.
+src/types/invitation/invitation.dto.ts(32,3): error TS2564: Property 'expiresAt' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/create-notification.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(9,22): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(10,30): error TS2307: Cannot find module '../../entity/Organization' or its corresponding type declarations.
+src/types/notification/create-notification.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(28,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(29,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(32,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(37,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/create-notification.dto.ts(40,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification-filters.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(21,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(22,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(25,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(28,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(32,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(40,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(43,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(46,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-filters.dto.ts(49,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(15,77): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification-preference.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(22,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(25,3): error TS2564: Property 'channels' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(34,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(36,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(41,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(42,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(43,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(50,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(51,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(52,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(53,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(56,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(57,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(60,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(61,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(64,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(65,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(66,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(71,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(72,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(73,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(80,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(82,3): error TS2564: Property 'channels' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(83,3): error TS2564: Property 'enabled' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(87,3): error TS2564: Property 'updatedAt' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(88,3): error TS2564: Property 'user' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(100,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(103,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(104,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(105,3): error TS2564: Property 'preferences' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(109,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(110,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(111,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification-preference.dto.ts(112,3): error TS2564: Property 'updates' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-preference.dto.ts(117,3): error TS2564: Property 'preferences' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(8,8): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification-response.dto.ts(12,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(14,3): error TS2564: Property 'title' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(15,3): error TS2564: Property 'message' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(16,3): error TS2564: Property 'channels' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(20,3): error TS2564: Property 'read' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(23,3): error TS2564: Property 'requiresAcknowledgement' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(24,3): error TS2564: Property 'createdAt' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(27,3): error TS2564: Property 'recipient' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification-response.dto.ts(33,3): error TS2564: Property 'organization' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification.dto.ts(3,79): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/notification.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(12,3): error TS2564: Property 'title' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(16,3): error TS2564: Property 'message' has no initializer and is not definitely assigned in the constructor.
+src/types/notification/notification.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(22,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(26,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(34,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(38,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/notification.dto.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(2,37): error TS2307: Cannot find module '../../types/notification-types' or its corresponding type declarations.
+src/types/notification/update-notification.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(15,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/notification/update-notification.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/change-password.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/change-password.dto.ts(6,3): error TS2564: Property 'current_password' has no initializer and is not definitely assigned in the constructor.
+src/types/user/change-password.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/change-password.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/change-password.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/change-password.dto.ts(13,3): error TS2564: Property 'new_password' has no initializer and is not definitely assigned in the constructor.
+src/types/user/deactivate-account.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/deactivate-account.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/deactivate-account.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/deactivate-account.dto.ts(10,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/deactivate-account.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/deactivate-account.dto.ts(12,3): error TS2564: Property 'confirmation' has no initializer and is not definitely assigned in the constructor.
+src/types/user/update-user.dto.ts(3,26): error TS2307: Cannot find module '../../entity/User' or its corresponding type declarations.
+src/types/user/update-user.dto.ts(6,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(7,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(12,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(23,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/types/user/update-user.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/utils/RateLimitInfo.ts(57,33): error TS2367: This comparison appears to be unintentional because the types 'string | null' and 'number' have no overlap.
+src/utils/RateLimitInfo.ts(83,20): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(83,20): error TS18047: 'limit' is possibly 'null'.
+src/utils/RateLimitInfo.ts(83,28): error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(86,9): error TS2322: Type 'string | number' is not assignable to type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/utils/RateLimitInfo.ts(86,65): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+src/utils/RateLimitInfo.ts(86,65): error TS18047: 'limit' is possibly 'null'.
+src/utils/RateLimitInfo.ts(87,9): error TS2322: Type 'string | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+src/utils/RequestFilters.ts(2,10): error TS2305: Module '"@prisma/client"' has no exported member 'RequestStatus'.
+src/utils/RequestFilters.ts(2,25): error TS2305: Module '"@prisma/client"' has no exported member 'RequestType'.
+src/utils/RequestFilters.ts(2,38): error TS2305: Module '"@prisma/client"' has no exported member 'RequestChannel'.
+src/utils/RequestFilters.ts(2,54): error TS2305: Module '"@prisma/client"' has no exported member 'Priority'.
+src/utils/response/errors/request-validation-error.ts(13,3): error TS2416: Property 'serializeErrors' in type 'RequestValidationError' is not assignable to the same property in base type 'CustomError'.
+  Type '() => object | null' is not assignable to type '() => {} | { message: string; }'.
+    Type 'object | null' is not assignable to type '{} | { message: string; }'.
+      Type 'null' is not assignable to type '{} | { message: string; }'.
+src/utils/response/success/successResponse.ts(3,10): error TS2339: Property 'successResponse' does not exist on type 'Response<any, Record<string, any>>'.
+src/utils/validators/userValidator.ts(2,10): error TS2614: Module '"../../interfaces/UserInterface"' has no exported member 'Register'. Did you mean to use 'import Register from "../../interfaces/UserInterface"' instead?
+src/utils/validators/userValidator.ts(2,20): error TS2614: Module '"../../interfaces/UserInterface"' has no exported member 'Login'. Did you mean to use 'import Login from "../../interfaces/UserInterface"' instead?
+src/utils/validators/userValidator.ts(3,27): error TS2724: '"../../errors/customErrors"' has no exported member named 'ValidationErrorField'. Did you mean 'ValidationError'?
+src/utils/validators/userValidator.ts(14,58): error TS2339: Property 'MIN_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(15,55): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(25,64): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(47,67): error TS2339: Property 'MIN_LENGTH' does not exist on type 'typeof UserValidator'.
+src/utils/validators/userValidator.ts(48,64): error TS2339: Property 'MAX_LENGTH' does not exist on type 'typeof UserValidator'.

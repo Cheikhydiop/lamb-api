@@ -153,20 +153,20 @@ class FighterController {
     try {
       // Vérifier si le paramètre 'query' est présent
       const { query } = req.query;
-      
+
       if (!query || typeof query !== 'string') {
         return res.status(400).json({
           success: false,
           message: "Paramètre de recherche requis"
         });
       }
-      
-      const limit = req.query.limit 
-        ? parseInt(req.query.limit as string) 
+
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string)
         : 20;
-      
+
       const fighters = await fighterService.searchFighters(query, limit);
-      
+
       return res.status(200).json({
         success: true,
         data: fighters

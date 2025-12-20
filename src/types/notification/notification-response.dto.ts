@@ -5,7 +5,8 @@ import {
   NotificationPriority,
   NotificationStatus,
   NotificationType,
-} from '../../types/notification-types';
+} from '../notification-types';
+
 
 // src/dto/notification/notification-response.dto.ts
 export class NotificationResponseDto {

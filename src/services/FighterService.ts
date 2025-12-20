@@ -37,7 +37,7 @@ export interface ListFightersDTO {
 }
 
 export class FighterService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   async listFighters(filters: ListFightersDTO) {
     try {
@@ -289,7 +289,7 @@ export class FighterService {
         losses: fighter.losses,
         draws: fighter.draws,
         knockouts: fighter.knockouts,
-        winRate: fighter.totalFights > 0 
+        winRate: fighter.totalFights > 0
           ? ((fighter.wins / fighter.totalFights) * 100).toFixed(1)
           : '0.0'
       };

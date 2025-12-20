@@ -1,37 +1,12 @@
 "use strict";
-var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
-    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
-    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
-    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-    var _, done = false;
-    for (var i = decorators.length - 1; i >= 0; i--) {
-        var context = {};
-        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
-        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
-        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
-        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
-        if (kind === "accessor") {
-            if (result === void 0) continue;
-            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-        }
-        else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
-        }
-    }
-    if (target) Object.defineProperty(target, contextIn.name, descriptor);
-    done = true;
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
-    var useValue = arguments.length > 2;
-    for (var i = 0; i < initializers.length; i++) {
-        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
-    }
-    return useValue ? value : void 0;
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -42,10 +17,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
-    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -53,501 +24,402 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetService = void 0;
 // services/BetService.ts - VERSION CORRIGÉE POUR TYPES PRISMA
 const typedi_1 = require("typedi");
+const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
+const WebSocketService_1 = require("./WebSocketService");
 const logger_1 = __importDefault(require("../utils/logger"));
-let BetService = (() => {
-    let _classDecorators = [(0, typedi_1.Service)()];
-    let _classDescriptor;
-    let _classExtraInitializers = [];
-    let _classThis;
-    var BetService = _classThis = class {
-        constructor(prisma, webSocketService) {
-            this.prisma = prisma;
-            this.webSocketService = webSocketService;
-            this.CANCELLATION_WINDOW_MINUTES = 20;
-            this.COMMISSION_PERCENTAGE = 10; // 10% de commission
-            this.WIN_MULTIPLIER = 1.8; // Gain = mise × 1.8 (après commission)
-        }
-        createBet(userId, data) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    // ========== VALIDATIONS AVANT TRANSACTION (rapide) ==========
-                    // Vérifier si l'utilisateur existe
-                    const user = yield this.prisma.user.findUnique({
-                        where: { id: userId }
-                    });
-                    if (!user) {
-                        throw new Error('Utilisateur non trouvé');
+let BetService = class BetService {
+    constructor(prisma, webSocketService) {
+        this.prisma = prisma;
+        this.webSocketService = webSocketService;
+        this.CANCELLATION_WINDOW_MINUTES = 20;
+        this.COMMISSION_PERCENTAGE = 10; // 10% de commission
+        this.WIN_MULTIPLIER = 1.8; // Gain = mise × 1.8 (après commission)
+    }
+    createBet(userId, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // ========== VALIDATIONS AVANT TRANSACTION (rapide) ==========
+                // Vérifier si l'utilisateur existe
+                const user = yield this.prisma.user.findUnique({
+                    where: { id: userId }
+                });
+                if (!user) {
+                    throw new Error('Utilisateur non trouvé');
+                }
+                if (!user.isActive) {
+                    throw new Error('Compte utilisateur désactivé');
+                }
+                // Vérifier le combat
+                const fight = yield this.prisma.fight.findUnique({
+                    where: { id: data.fightId },
+                    include: {
+                        fighterA: true,
+                        fighterB: true,
+                        dayEvent: true
                     }
-                    if (!user.isActive) {
-                        throw new Error('Compte utilisateur désactivé');
+                });
+                if (!fight) {
+                    throw new Error('Combat non trouvé');
+                }
+                // Vérifier la journée de lutte
+                if (!fight.dayEvent) {
+                    throw new Error("Ce combat ne fait pas partie d'une journée de lutte");
+                }
+                if (fight.dayEvent.status !== 'SCHEDULED') {
+                    throw new Error('Impossible de parier sur une journée terminée ou annulée');
+                }
+                if (fight.status !== 'SCHEDULED') {
+                    throw new Error('Impossible de parier sur un combat terminé ou annulé');
+                }
+                // Vérifier si le combat commence bientôt
+                const fightStartTime = fight.scheduledTime || fight.dayEvent.date;
+                const now = new Date();
+                const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
+                if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
+                    throw new Error('Impossible de parier moins de 30 minutes avant le combat');
+                }
+                // Vérifier les fonds disponibles
+                const wallet = yield this.prisma.wallet.findUnique({
+                    where: { userId }
+                });
+                if (!wallet) {
+                    throw new Error('Portefeuille non trouvé');
+                }
+                // Vérifier que le solde est suffisant (pas besoin de calculer availableBalance)
+                if (wallet.balance < data.amount) {
+                    throw new Error('Solde insuffisant');
+                }
+                if (data.amount <= 0) {
+                    throw new Error('Le montant du pari doit être supérieur à 0');
+                }
+                // Calculer le gain potentiel (pour l'annoncer)
+                const potentialWin = data.amount * this.WIN_MULTIPLIER;
+                // Calculer la date limite d'annulation
+                const canCancelUntil = (0, date_fns_1.addMinutes)(new Date(), this.CANCELLATION_WINDOW_MINUTES);
+                // Vérifier s'il existe déjà un pari similaire non accepté
+                const existingSimilarBet = yield this.prisma.bet.findFirst({
+                    where: {
+                        fightId: data.fightId,
+                        creatorId: userId,
+                        chosenFighter: data.chosenFighter,
+                        status: 'PENDING'
                     }
-                    // Vérifier le combat
-                    const fight = yield this.prisma.fight.findUnique({
-                        where: { id: data.fightId },
-                        include: {
-                            fighterA: true,
-                            fighterB: true,
-                            dayEvent: true
+                });
+                if (existingSimilarBet) {
+                    throw new Error('Vous avez déjà un pari en attente sur ce combat avec ce lutteur');
+                }
+                // ========== TRANSACTION (opérations critiques uniquement) ==========
+                const bet = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    // 1. SOUSTRAIRE DU SOLDE et bloquer les fonds
+                    const amountBigInt = BigInt(Math.floor(data.amount));
+                    yield tx.wallet.update({
+                        where: { userId },
+                        data: {
+                            balance: { decrement: amountBigInt },
+                            lockedBalance: { increment: amountBigInt }
                         }
                     });
-                    if (!fight) {
-                        throw new Error('Combat non trouvé');
-                    }
-                    // Vérifier la journée de lutte
-                    if (!fight.dayEvent) {
-                        throw new Error("Ce combat ne fait pas partie d'une journée de lutte");
-                    }
-                    if (fight.dayEvent.status !== 'SCHEDULED') {
-                        throw new Error('Impossible de parier sur une journée terminée ou annulée');
-                    }
-                    if (fight.status !== 'SCHEDULED') {
-                        throw new Error('Impossible de parier sur un combat terminé ou annulé');
-                    }
-                    // Vérifier si le combat commence bientôt
-                    const fightStartTime = fight.scheduledTime || fight.dayEvent.date;
-                    const now = new Date();
-                    const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
-                    if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
-                        throw new Error('Impossible de parier moins de 30 minutes avant le combat');
-                    }
-                    // Vérifier les fonds disponibles
-                    const wallet = yield this.prisma.wallet.findUnique({
-                        where: { userId }
-                    });
-                    if (!wallet) {
-                        throw new Error('Portefeuille non trouvé');
-                    }
-                    // Vérifier que le solde est suffisant (pas besoin de calculer availableBalance)
-                    if (wallet.balance < data.amount) {
-                        throw new Error('Solde insuffisant');
-                    }
-                    if (data.amount <= 0) {
-                        throw new Error('Le montant du pari doit être supérieur à 0');
-                    }
-                    // Calculer le gain potentiel (pour l'annoncer)
-                    const potentialWin = data.amount * this.WIN_MULTIPLIER;
-                    // Calculer la date limite d'annulation
-                    const canCancelUntil = (0, date_fns_1.addMinutes)(new Date(), this.CANCELLATION_WINDOW_MINUTES);
-                    // Vérifier s'il existe déjà un pari similaire non accepté
-                    const existingSimilarBet = yield this.prisma.bet.findFirst({
-                        where: {
+                    // 2. Créer le pari
+                    const newBet = yield tx.bet.create({
+                        data: {
+                            amount: data.amount,
+                            chosenFighter: data.chosenFighter,
                             fightId: data.fightId,
                             creatorId: userId,
-                            chosenFighter: data.chosenFighter,
+                            canCancelUntil,
                             status: 'PENDING'
-                        }
-                    });
-                    if (existingSimilarBet) {
-                        throw new Error('Vous avez déjà un pari en attente sur ce combat avec ce lutteur');
-                    }
-                    // ========== TRANSACTION (opérations critiques uniquement) ==========
-                    const bet = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                        // 1. SOUSTRAIRE DU SOLDE et bloquer les fonds
-                        const amountBigInt = BigInt(Math.floor(data.amount));
-                        yield tx.wallet.update({
-                            where: { userId },
-                            data: {
-                                balance: { decrement: amountBigInt },
-                                lockedBalance: { increment: amountBigInt }
-                            }
-                        });
-                        // 2. Créer le pari
-                        const newBet = yield tx.bet.create({
-                            data: {
-                                amount: data.amount,
-                                chosenFighter: data.chosenFighter,
-                                fightId: data.fightId,
-                                creatorId: userId,
-                                canCancelUntil,
-                                status: 'PENDING'
+                        },
+                        include: {
+                            creator: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
                             },
-                            include: {
-                                creator: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true
-                                    }
+                            fight: {
+                                include: {
+                                    fighterA: true,
+                                    fighterB: true,
+                                    dayEvent: true
                                 }
                             }
-                        });
-                        // 3. Mettre à jour les statistiques de la journée
-                        // Convertir en BigInt si le champ est de type BigInt dans le schéma
-                        const totalAmountIncrement = BigInt(Math.floor(data.amount));
-                        yield tx.dayEvent.update({
-                            where: { id: fight.dayEventId },
-                            data: {
-                                totalBets: { increment: 1 },
-                                totalAmount: { increment: totalAmountIncrement }
-                            }
-                        });
-                        return newBet;
-                    }), {
-                        maxWait: 10000,
-                        timeout: 20000
+                        }
                     });
-                    // ========== OPÉRATIONS NON-CRITIQUES (après la transaction) ==========
-                    // Audit log (non-bloquant)
-                    try {
-                        yield this.prisma.auditLog.create({
-                            data: {
-                                action: 'CREATE_BET',
-                                table: 'bets',
-                                recordId: bet.id,
-                                newData: JSON.stringify(bet),
-                                userId
-                            }
-                        });
-                    }
-                    catch (auditError) {
-                        logger_1.default.error('Erreur audit log (non-bloquant):', auditError);
-                    }
-                    // Notification (non-bloquant)
-                    try {
-                        yield this.prisma.notification.create({
-                            data: {
-                                userId: userId,
-                                type: 'BET_CREATED',
-                                title: 'Pari créé',
-                                message: `Vous avez créé un pari de ${data.amount} FCFA sur ${bet.chosenFighter === 'A' ? bet.fight.fighterA.name : bet.fight.fighterB.name}. Attendez qu'un autre joueur l'accepte.`,
-                            }
-                        });
-                    }
-                    catch (notifError) {
-                        logger_1.default.error('Erreur notification (non-bloquant):', notifError);
-                    }
-                    logger_1.default.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
-                    return bet;
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la création du pari:', error);
-                    throw error;
-                }
-            });
-        }
-        /**
-         * Récupérer les paris avec statut PENDING
-         */
-        getPendingBets(filters) {
-            return __awaiter(this, void 0, void 0, function* () {
+                    // 3. Mettre à jour les statistiques de la journée
+                    // Convertir en BigInt si le champ est de type BigInt dans le schéma
+                    const totalAmountIncrement = BigInt(Math.floor(data.amount));
+                    yield tx.dayEvent.update({
+                        where: { id: fight.dayEventId },
+                        data: {
+                            totalBets: { increment: 1 },
+                            totalAmount: { increment: totalAmountIncrement }
+                        }
+                    });
+                    return newBet;
+                }), {
+                    maxWait: 10000,
+                    timeout: 20000
+                });
+                // ========== OPÉRATIONS NON-CRITIQUES (après la transaction) ==========
+                // Audit log (non-bloquant)
                 try {
-                    const { userId, fightId, dayEventId, limit = 20, offset = 0 } = filters;
-                    const where = {
-                        status: 'PENDING'
+                    yield this.prisma.auditLog.create({
+                        data: {
+                            action: 'CREATE_BET',
+                            table: 'bets',
+                            recordId: bet.id,
+                            newData: JSON.stringify(bet),
+                            userId
+                        }
+                    });
+                }
+                catch (auditError) {
+                    logger_1.default.error('Erreur audit log (non-bloquant):', auditError);
+                }
+                // Notification (non-bloquant)
+                try {
+                    yield this.prisma.notification.create({
+                        data: {
+                            userId: userId,
+                            type: 'BET_CREATED',
+                            title: 'Pari créé',
+                            message: `Vous avez créé un pari de ${data.amount} FCFA sur ${bet.chosenFighter === 'A' ? bet.fight.fighterA.name : bet.fight.fighterB.name}. Attendez qu'un autre joueur l'accepte.`,
+                        }
+                    });
+                }
+                catch (notifError) {
+                    logger_1.default.error('Erreur notification (non-bloquant):', notifError);
+                }
+                logger_1.default.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
+                return bet;
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la création du pari:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Récupérer les paris avec statut PENDING
+     */
+    getPendingBets(filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId, fightId, dayEventId, limit = 20, offset = 0 } = filters;
+                const where = {
+                    status: 'PENDING'
+                };
+                if (userId) {
+                    where.OR = [
+                        { creatorId: userId },
+                        { acceptorId: userId }
+                    ];
+                }
+                if (fightId) {
+                    where.fightId = fightId;
+                }
+                if (dayEventId) {
+                    where.fight = {
+                        dayEventId: dayEventId
                     };
-                    if (userId) {
-                        where.OR = [
-                            { creatorId: userId },
-                            { acceptorId: userId }
-                        ];
-                    }
-                    if (fightId) {
-                        where.fightId = fightId;
-                    }
-                    if (dayEventId) {
-                        where.fight = {
-                            dayEventId: dayEventId
-                        };
-                    }
-                    // Vérifier que le combat n'a pas encore commencé
-                    where.fight = Object.assign(Object.assign({}, where.fight), { status: 'SCHEDULED', dayEvent: {
-                            status: 'SCHEDULED'
-                        } });
-                    const [bets, total] = yield Promise.all([
-                        this.prisma.bet.findMany({
-                            where,
-                            include: {
-                                creator: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                acceptor: {
-                                    select: {
-                                        id: true,
-                                        name: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: {
-                                            select: {
-                                                id: true,
-                                                title: true,
-                                                date: true,
-                                                status: true
-                                            }
+                }
+                // Vérifier que le combat n'a pas encore commencé
+                where.fight = Object.assign(Object.assign({}, where.fight), { status: 'SCHEDULED', dayEvent: {
+                        status: 'SCHEDULED'
+                    } });
+                const [bets, total] = yield Promise.all([
+                    this.prisma.bet.findMany({
+                        where,
+                        include: {
+                            creator: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
+                            },
+                            acceptor: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            },
+                            fight: {
+                                include: {
+                                    fighterA: true,
+                                    fighterB: true,
+                                    dayEvent: {
+                                        select: {
+                                            id: true,
+                                            title: true,
+                                            date: true,
+                                            status: true
                                         }
                                     }
                                 }
-                            },
-                            take: limit,
-                            skip: offset,
-                            orderBy: { createdAt: 'desc' }
-                        }),
-                        this.prisma.bet.count({ where })
-                    ]);
-                    // Filtrer les paris qui sont dans la fenêtre de 30 minutes avant le combat
+                            }
+                        },
+                        take: limit,
+                        skip: offset,
+                        orderBy: { createdAt: 'desc' }
+                    }),
+                    this.prisma.bet.count({ where })
+                ]);
+                // Filtrer les paris qui sont dans la fenêtre de 30 minutes avant le combat
+                const now = new Date();
+                const filteredBets = bets.filter(bet => {
+                    if (!bet.fight)
+                        return false;
+                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
+                    return (0, date_fns_1.isAfter)(thirtyMinutesBeforeFight, now);
+                });
+                return {
+                    bets: filteredBets,
+                    total: total,
+                    limit,
+                    offset
+                };
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des paris en attente:', error);
+                throw error;
+            }
+        });
+    }
+    acceptBet(acceptorId, betId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let bet;
+                const result = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    var _a, _b;
+                    bet = yield tx.bet.findUnique({
+                        where: { id: betId },
+                        include: {
+                            creator: true,
+                            fight: {
+                                include: {
+                                    fighterA: true,
+                                    fighterB: true,
+                                    dayEvent: true
+                                }
+                            }
+                        }
+                    });
+                    if (!bet) {
+                        throw new Error('Pari non trouvé');
+                    }
+                    if (bet.status !== 'PENDING') {
+                        throw new Error('Ce pari n\'est pas disponible');
+                    }
+                    // L'accepteur ne peut pas être le créateur
+                    if (bet.creatorId === acceptorId) {
+                        throw new Error('Vous ne pouvez pas accepter votre propre pari');
+                    }
+                    // Vérifier si le combat a commencé (c'est la seule limitation pour l'acceptation)
+                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
                     const now = new Date();
-                    const filteredBets = bets.filter(bet => {
-                        if (!bet.fight)
-                            return false;
-                        const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
-                        const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
-                        return (0, date_fns_1.isAfter)(thirtyMinutesBeforeFight, now);
-                    });
-                    return {
-                        bets: filteredBets,
-                        total: total,
-                        limit,
-                        offset
-                    };
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des paris en attente:', error);
-                    throw error;
-                }
-            });
-        }
-        acceptBet(acceptorId, betId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    let bet;
-                    const result = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                        var _a, _b;
-                        bet = yield tx.bet.findUnique({
-                            where: { id: betId },
-                            include: {
-                                creator: true,
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true
-                                    }
-                                }
-                            }
-                        });
-                        if (!bet) {
-                            throw new Error('Pari non trouvé');
-                        }
-                        if (bet.status !== 'PENDING') {
-                            throw new Error('Ce pari n\'est pas disponible');
-                        }
-                        // L'accepteur ne peut pas être le créateur
-                        if (bet.creatorId === acceptorId) {
-                            throw new Error('Vous ne pouvez pas accepter votre propre pari');
-                        }
-                        // Vérifier si le combat a commencé (c'est la seule limitation pour l'acceptation)
-                        const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
-                        const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
-                        const now = new Date();
-                        if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
-                            throw new Error('Impossible d\'accepter un pari moins de 30 minutes avant le combat');
-                        }
-                        // Vérifier les fonds de l'accepteur
-                        const acceptorWallet = yield tx.wallet.findUnique({
-                            where: { userId: acceptorId }
-                        });
-                        if (!acceptorWallet) {
-                            throw new Error('Portefeuille non trouvé');
-                        }
-                        // Vérifier que le solde est suffisant
-                        if (acceptorWallet.balance < bet.amount) {
-                            throw new Error('Solde insuffisant pour accepter ce pari');
-                        }
-                        // SOUSTRAIRE DU SOLDE et bloquer les fonds de l'accepteur
-                        const amountToLock = BigInt(Math.floor(bet.amount));
-                        yield tx.wallet.update({
-                            where: { userId: acceptorId },
-                            data: {
-                                balance: { decrement: amountToLock },
-                                lockedBalance: { increment: amountToLock }
-                            }
-                        });
-                        // Mettre à jour le pari
-                        const updatedBet = yield tx.bet.update({
-                            where: { id: betId },
-                            data: {
-                                acceptorId: acceptorId,
-                                status: 'ACCEPTED',
-                                acceptedAt: new Date(),
-                                canCancelUntil: null // Désactiver l'annulation après acceptation
-                            },
-                            include: {
-                                creator: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                acceptor: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true
-                                    }
-                                }
-                            }
-                        });
-                        // Notifier le créateur (simplifié pour être plus rapide)
-                        yield tx.notification.create({
-                            data: {
-                                userId: bet.creatorId,
-                                type: 'BET_ACCEPTED',
-                                title: 'Pari accepté !',
-                                message: `${(_a = updatedBet.acceptor) === null || _a === void 0 ? void 0 : _a.name} a accepté votre pari de ${bet.amount} FCFA.`,
-                            }
-                        });
-                        logger_1.default.info(`Pari accepté: ${bet.id} par ${(_b = updatedBet.acceptor) === null || _b === void 0 ? void 0 : _b.name}`);
-                        return updatedBet;
-                    }), {
-                        maxWait: 10000,
-                        timeout: 15000
-                    });
-                    // Notifier l'accepteur (en dehors de la transaction pour la performance)
-                    try {
-                        yield this.prisma.notification.create({
-                            data: {
-                                userId: acceptorId,
-                                type: 'BET_ACCEPTED',
-                                title: 'Pari accepté',
-                                message: `Vous avez accepté le pari de ${bet.creator.name} de ${bet.amount} FCFA.`,
-                            }
-                        });
+                    if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
+                        throw new Error('Impossible d\'accepter un pari moins de 30 minutes avant le combat');
                     }
-                    catch (notifError) {
-                        logger_1.default.error('Erreur notification accepteur:', notifError);
-                    }
-                    return result;
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de l\'acceptation du pari:', error);
-                    throw error;
-                }
-            });
-        }
-        cancelBet(betId_1, userId_1) {
-            return __awaiter(this, arguments, void 0, function* (betId, userId, isAdmin = false) {
-                try {
-                    return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                        const bet = yield tx.bet.findUnique({
-                            where: { id: betId },
-                            include: {
-                                creator: true,
-                                acceptor: true,
-                                fight: {
-                                    include: {
-                                        dayEvent: true
-                                    }
-                                }
-                            }
-                        });
-                        if (!bet) {
-                            throw new Error('Pari non trouvé');
-                        }
-                        // Vérifier les permissions
-                        if (!isAdmin && bet.creatorId !== userId && bet.acceptorId !== userId) {
-                            throw new Error('Non autorisé à annuler ce pari');
-                        }
-                        // Vérifier le statut
-                        if (bet.status !== 'PENDING' && bet.status !== 'ACCEPTED') {
-                            throw new Error('Impossible d\'annuler ce pari');
-                        }
-                        // Vérifier la fenêtre d'annulation (seulement pour le créateur)
-                        const now = new Date();
-                        if (bet.creatorId === userId && bet.canCancelUntil && (0, date_fns_1.isAfter)(now, bet.canCancelUntil)) {
-                            throw new Error('La fenêtre d\'annulation de 20 minutes est expirée');
-                        }
-                        // Vérifier si le combat a commencé
-                        const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
-                        if ((0, date_fns_1.isAfter)(now, fightStartTime)) {
-                            throw new Error('Impossible d\'annuler un pari sur un combat déjà commencé');
-                        }
-                        // REMBOURSER ET libérer les fonds du créateur
-                        const amountToRefund = BigInt(Math.floor(bet.amount));
-                        yield tx.wallet.update({
-                            where: { userId: bet.creatorId },
-                            data: {
-                                balance: { increment: amountToRefund },
-                                lockedBalance: { decrement: amountToRefund }
-                            }
-                        });
-                        // REMBOURSER ET libérer les fonds de l'accepteur si présent
-                        if (bet.acceptorId) {
-                            yield tx.wallet.update({
-                                where: { userId: bet.acceptorId },
-                                data: {
-                                    balance: { increment: amountToRefund },
-                                    lockedBalance: { decrement: amountToRefund }
-                                }
-                            });
-                        }
-                        // Mettre à jour le pari
-                        const cancelledBet = yield tx.bet.update({
-                            where: { id: betId },
-                            data: {
-                                status: 'CANCELLED',
-                                cancelledAt: now
-                            },
-                            include: {
-                                creator: true,
-                                acceptor: true,
-                                fight: {
-                                    include: {
-                                        dayEvent: true
-                                    }
-                                }
-                            }
-                        });
-                        // Mettre à jour les statistiques de la journée
-                        // Convertir en BigInt si le champ est de type BigInt dans le schéma
-                        const totalAmountDecrement = BigInt(Math.floor(bet.amount));
-                        yield tx.dayEvent.update({
-                            where: { id: bet.fight.dayEventId },
-                            data: {
-                                totalBets: { decrement: 1 },
-                                totalAmount: { decrement: totalAmountDecrement }
-                            }
-                        });
-                        return cancelledBet;
-                    }), {
-                        maxWait: 10000,
-                        timeout: 15000
+                    // Vérifier les fonds de l'accepteur
+                    const acceptorWallet = yield tx.wallet.findUnique({
+                        where: { userId: acceptorId }
                     });
-                    // Opérations non-critiques après la transaction
-                    yield this.handlePostCancelOperations(betId, userId, isAdmin);
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de l\'annulation du pari:', error);
-                    throw error;
-                }
-            });
-        }
-        handlePostCancelOperations(betId, userId, isAdmin) {
-            return __awaiter(this, void 0, void 0, function* () {
+                    if (!acceptorWallet) {
+                        throw new Error('Portefeuille non trouvé');
+                    }
+                    // Vérifier que le solde est suffisant
+                    if (acceptorWallet.balance < bet.amount) {
+                        throw new Error('Solde insuffisant pour accepter ce pari');
+                    }
+                    // SOUSTRAIRE DU SOLDE et bloquer les fonds de l'accepteur
+                    const amountToLock = BigInt(Math.floor(bet.amount));
+                    yield tx.wallet.update({
+                        where: { userId: acceptorId },
+                        data: {
+                            balance: { decrement: amountToLock },
+                            lockedBalance: { increment: amountToLock }
+                        }
+                    });
+                    // Mettre à jour le pari
+                    const updatedBet = yield tx.bet.update({
+                        where: { id: betId },
+                        data: {
+                            acceptorId: acceptorId,
+                            status: 'ACCEPTED',
+                            acceptedAt: new Date(),
+                            canCancelUntil: null // Désactiver l'annulation après acceptation
+                        },
+                        include: {
+                            creator: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
+                            },
+                            acceptor: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
+                            },
+                            fight: {
+                                include: {
+                                    fighterA: true,
+                                    fighterB: true,
+                                    dayEvent: true
+                                }
+                            }
+                        }
+                    });
+                    // Notifier le créateur (simplifié pour être plus rapide)
+                    yield tx.notification.create({
+                        data: {
+                            userId: bet.creatorId,
+                            type: 'BET_ACCEPTED',
+                            title: 'Pari accepté !',
+                            message: `${(_a = updatedBet.acceptor) === null || _a === void 0 ? void 0 : _a.name} a accepté votre pari de ${bet.amount} FCFA.`,
+                        }
+                    });
+                    logger_1.default.info(`Pari accepté: ${bet.id} par ${(_b = updatedBet.acceptor) === null || _b === void 0 ? void 0 : _b.name}`);
+                    return updatedBet;
+                }), {
+                    maxWait: 10000,
+                    timeout: 15000
+                });
+                // Notifier l'accepteur (en dehors de la transaction pour la performance)
                 try {
-                    const bet = yield this.prisma.bet.findUnique({
+                    yield this.prisma.notification.create({
+                        data: {
+                            userId: acceptorId,
+                            type: 'BET_ACCEPTED',
+                            title: 'Pari accepté',
+                            message: `Vous avez accepté le pari de ${bet.creator.name} de ${bet.amount} FCFA.`,
+                        }
+                    });
+                }
+                catch (notifError) {
+                    logger_1.default.error('Erreur notification accepteur:', notifError);
+                }
+                return result;
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de l\'acceptation du pari:', error);
+                throw error;
+            }
+        });
+    }
+    cancelBet(betId_1, userId_1) {
+        return __awaiter(this, arguments, void 0, function* (betId, userId, isAdmin = false) {
+            try {
+                return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    const bet = yield tx.bet.findUnique({
                         where: { id: betId },
                         include: {
                             creator: true,
@@ -559,193 +431,158 @@ let BetService = (() => {
                             }
                         }
                     });
-                    if (!bet)
-                        return;
-                    // Créer des transactions de remboursement si accepté
-                    if (bet.status === 'ACCEPTED') {
-                        yield Promise.all([
-                            this.prisma.transaction.create({
-                                data: {
-                                    type: 'BET_REFUND',
-                                    amount: bet.amount,
-                                    userId: bet.creatorId,
-                                    status: 'COMPLETED',
-                                    notes: `Annulation du pari ${bet.id}`
-                                }
-                            }),
-                            bet.acceptorId ? this.prisma.transaction.create({
-                                data: {
-                                    type: 'BET_REFUND',
-                                    amount: bet.amount,
-                                    userId: bet.acceptorId,
-                                    status: 'COMPLETED',
-                                    notes: `Annulation du pari ${bet.id}`
-                                }
-                            }) : Promise.resolve()
-                        ]);
+                    if (!bet) {
+                        throw new Error('Pari non trouvé');
                     }
-                    // Notifications
-                    yield Promise.all([
-                        this.prisma.notification.create({
+                    // Vérifier les permissions
+                    if (!isAdmin && bet.creatorId !== userId && bet.acceptorId !== userId) {
+                        throw new Error('Non autorisé à annuler ce pari');
+                    }
+                    // Vérifier le statut
+                    if (bet.status !== 'PENDING' && bet.status !== 'ACCEPTED') {
+                        throw new Error('Impossible d\'annuler ce pari');
+                    }
+                    // Vérifier la fenêtre d'annulation (seulement pour le créateur)
+                    const now = new Date();
+                    if (bet.creatorId === userId && bet.canCancelUntil && (0, date_fns_1.isAfter)(now, bet.canCancelUntil)) {
+                        throw new Error('La fenêtre d\'annulation de 20 minutes est expirée');
+                    }
+                    // Vérifier si le combat a commencé
+                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    if ((0, date_fns_1.isAfter)(now, fightStartTime)) {
+                        throw new Error('Impossible d\'annuler un pari sur un combat déjà commencé');
+                    }
+                    // REMBOURSER ET libérer les fonds du créateur
+                    const amountToRefund = BigInt(Math.floor(bet.amount));
+                    yield tx.wallet.update({
+                        where: { userId: bet.creatorId },
+                        data: {
+                            balance: { increment: amountToRefund },
+                            lockedBalance: { decrement: amountToRefund }
+                        }
+                    });
+                    // REMBOURSER ET libérer les fonds de l'accepteur si présent
+                    if (bet.acceptorId) {
+                        yield tx.wallet.update({
+                            where: { userId: bet.acceptorId },
                             data: {
+                                balance: { increment: amountToRefund },
+                                lockedBalance: { decrement: amountToRefund }
+                            }
+                        });
+                    }
+                    // Mettre à jour le pari
+                    const cancelledBet = yield tx.bet.update({
+                        where: { id: betId },
+                        data: {
+                            status: 'CANCELLED',
+                            cancelledAt: now
+                        },
+                        include: {
+                            creator: true,
+                            acceptor: true,
+                            fight: {
+                                include: {
+                                    dayEvent: true
+                                }
+                            }
+                        }
+                    });
+                    // Mettre à jour les statistiques de la journée
+                    // Convertir en BigInt si le champ est de type BigInt dans le schéma
+                    const totalAmountDecrement = BigInt(Math.floor(bet.amount));
+                    yield tx.dayEvent.update({
+                        where: { id: bet.fight.dayEventId },
+                        data: {
+                            totalBets: { decrement: 1 },
+                            totalAmount: { decrement: totalAmountDecrement }
+                        }
+                    });
+                    return cancelledBet;
+                }), {
+                    maxWait: 10000,
+                    timeout: 15000
+                });
+                // Opérations non-critiques après la transaction
+                yield this.handlePostCancelOperations(betId, userId, isAdmin);
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de l\'annulation du pari:', error);
+                throw error;
+            }
+        });
+    }
+    handlePostCancelOperations(betId, userId, isAdmin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const bet = yield this.prisma.bet.findUnique({
+                    where: { id: betId },
+                    include: {
+                        creator: true,
+                        acceptor: true,
+                        fight: {
+                            include: {
+                                dayEvent: true
+                            }
+                        }
+                    }
+                });
+                if (!bet)
+                    return;
+                // Créer des transactions de remboursement si accepté
+                if (bet.status === 'ACCEPTED') {
+                    yield Promise.all([
+                        this.prisma.transaction.create({
+                            data: {
+                                type: 'BET_REFUND',
+                                amount: bet.amount,
                                 userId: bet.creatorId,
-                                type: 'BET_CANCELLED',
-                                title: 'Pari annulé',
-                                message: `Votre pari de ${bet.amount} FCFA sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
+                                status: 'COMPLETED',
+                                notes: `Annulation du pari ${bet.id}`
                             }
                         }),
-                        bet.acceptorId ? this.prisma.notification.create({
+                        bet.acceptorId ? this.prisma.transaction.create({
                             data: {
+                                type: 'BET_REFUND',
+                                amount: bet.amount,
                                 userId: bet.acceptorId,
-                                type: 'BET_CANCELLED',
-                                title: 'Pari annulé',
-                                message: `Le pari que vous avez accepté sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
+                                status: 'COMPLETED',
+                                notes: `Annulation du pari ${bet.id}`
                             }
                         }) : Promise.resolve()
                     ]);
-                    logger_1.default.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
                 }
-                catch (error) {
-                    logger_1.default.error('Erreur dans les opérations post-annulation:', error);
-                }
-            });
-        }
-        settleBet(betId, winner) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                        const bet = yield tx.bet.findUnique({
-                            where: { id: betId },
-                            include: {
-                                creator: true,
-                                acceptor: true,
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true
-                                    }
-                                }
-                            }
-                        });
-                        if (!bet) {
-                            throw new Error('Pari non trouvé');
+                // Notifications
+                yield Promise.all([
+                    this.prisma.notification.create({
+                        data: {
+                            userId: bet.creatorId,
+                            type: 'BET_CANCELLED',
+                            title: 'Pari annulé',
+                            message: `Votre pari de ${bet.amount} FCFA sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
                         }
-                        if (bet.status !== 'ACCEPTED') {
-                            throw new Error('Pari non accepté, impossible de le régler');
+                    }),
+                    bet.acceptorId ? this.prisma.notification.create({
+                        data: {
+                            userId: bet.acceptorId,
+                            type: 'BET_CANCELLED',
+                            title: 'Pari annulé',
+                            message: `Le pari que vous avez accepté sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
                         }
-                        if (!bet.acceptorId) {
-                            throw new Error('Pari sans accepteur, impossible de le régler');
-                        }
-                        const now = new Date();
-                        let updatedBet;
-                        if (winner === 'DRAW') {
-                            // Match nul - remboursement complet des deux parties
-                            const betAmountBigInt = BigInt(Math.floor(bet.amount));
-                            yield Promise.all([
-                                // REMBOURSEMENT créateur
-                                tx.wallet.update({
-                                    where: { userId: bet.creatorId },
-                                    data: {
-                                        balance: { increment: betAmountBigInt },
-                                        lockedBalance: { decrement: betAmountBigInt }
-                                    }
-                                }),
-                                // REMBOURSEMENT accepteur
-                                tx.wallet.update({
-                                    where: { userId: bet.acceptorId },
-                                    data: {
-                                        balance: { increment: betAmountBigInt },
-                                        lockedBalance: { decrement: betAmountBigInt }
-                                    }
-                                })
-                            ]);
-                            updatedBet = yield tx.bet.update({
-                                where: { id: betId },
-                                data: {
-                                    status: 'REFUNDED',
-                                    settledAt: now
-                                }
-                            });
-                        }
-                        else {
-                            // Déterminer le gagnant
-                            const isCreatorWinner = bet.chosenFighter === winner;
-                            const winnerId = isCreatorWinner ? bet.creatorId : bet.acceptorId;
-                            const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
-                            // Calculer le gain
-                            const totalPot = bet.amount * 2;
-                            const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
-                            const winAmount = totalPot - commission;
-                            // Convertir en BigInt
-                            const betAmountBigInt = BigInt(Math.floor(bet.amount));
-                            const winAmountBigInt = BigInt(Math.floor(winAmount));
-                            // Mettre à jour les wallets en parallèle
-                            yield Promise.all([
-                                // Perdant - juste libérer les fonds bloqués (le solde a déjà été déduit)
-                                tx.wallet.update({
-                                    where: { userId: loserId },
-                                    data: {
-                                        lockedBalance: { decrement: betAmountBigInt },
-                                        totalLost: { increment: betAmountBigInt }
-                                    }
-                                }),
-                                // Gagnant - libérer fonds bloqués + ajouter gain
-                                tx.wallet.update({
-                                    where: { userId: winnerId },
-                                    data: {
-                                        balance: { increment: winAmountBigInt },
-                                        lockedBalance: { decrement: betAmountBigInt },
-                                        totalWon: { increment: winAmountBigInt }
-                                    }
-                                })
-                            ]);
-                            // Créer transaction de gain
-                            const transaction = yield tx.transaction.create({
-                                data: {
-                                    type: 'BET_WIN',
-                                    amount: winAmount,
-                                    userId: winnerId,
-                                    status: 'COMPLETED',
-                                    notes: `Gain du pari ${bet.id}`
-                                }
-                            });
-                            // Mettre à jour le pari
-                            updatedBet = yield tx.bet.update({
-                                where: { id: betId },
-                                data: {
-                                    status: isCreatorWinner ? 'CREATOR_WON' : 'ACCEPTOR_WON',
-                                    winAmount: winAmount,
-                                    settledAt: now,
-                                    transactionId: transaction.id
-                                }
-                            });
-                            // Enregistrer la commission
-                            yield tx.systemFee.create({
-                                data: {
-                                    betId: bet.id,
-                                    amount: commission
-                                }
-                            });
-                        }
-                        return updatedBet;
-                    }), {
-                        maxWait: 10000,
-                        timeout: 15000
-                    });
-                    // Opérations non-critiques après la transaction
-                    yield this.handlePostSettleOperations(betId, winner);
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors du traitement du pari:', error);
-                    throw error;
-                }
-            });
-        }
-        handlePostSettleOperations(betId, winner) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const bet = yield this.prisma.bet.findUnique({
+                    }) : Promise.resolve()
+                ]);
+                logger_1.default.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
+            }
+            catch (error) {
+                logger_1.default.error('Erreur dans les opérations post-annulation:', error);
+            }
+        });
+    }
+    settleBet(betId, winner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    const bet = yield tx.bet.findUnique({
                         where: { id: betId },
                         include: {
                             creator: true,
@@ -759,98 +596,370 @@ let BetService = (() => {
                             }
                         }
                     });
-                    if (!bet)
-                        return;
+                    if (!bet) {
+                        throw new Error('Pari non trouvé');
+                    }
+                    if (bet.status !== 'ACCEPTED') {
+                        throw new Error('Pari non accepté, impossible de le régler');
+                    }
+                    if (!bet.acceptorId) {
+                        throw new Error('Pari sans accepteur, impossible de le régler');
+                    }
+                    const now = new Date();
+                    let updatedBet;
                     if (winner === 'DRAW') {
-                        // Transactions de remboursement pour match nul
+                        // Match nul - remboursement complet des deux parties
+                        const betAmountBigInt = BigInt(Math.floor(bet.amount));
                         yield Promise.all([
-                            this.prisma.transaction.create({
+                            // REMBOURSEMENT créateur
+                            tx.wallet.update({
+                                where: { userId: bet.creatorId },
                                 data: {
-                                    type: 'BET_REFUND',
-                                    amount: bet.amount,
-                                    userId: bet.creatorId,
-                                    status: 'COMPLETED',
-                                    notes: `Remboursement match nul - Pari ${bet.id}`
+                                    balance: { increment: betAmountBigInt },
+                                    lockedBalance: { decrement: betAmountBigInt }
                                 }
                             }),
-                            this.prisma.transaction.create({
+                            // REMBOURSEMENT accepteur
+                            tx.wallet.update({
+                                where: { userId: bet.acceptorId },
                                 data: {
-                                    type: 'BET_REFUND',
-                                    amount: bet.amount,
-                                    userId: bet.acceptorId,
-                                    status: 'COMPLETED',
-                                    notes: `Remboursement match nul - Pari ${bet.id}`
+                                    balance: { increment: betAmountBigInt },
+                                    lockedBalance: { decrement: betAmountBigInt }
                                 }
                             })
                         ]);
-                        // Notifications pour match nul
-                        yield Promise.all([
-                            this.prisma.notification.create({
-                                data: {
-                                    userId: bet.creatorId,
-                                    type: 'BET_REFUNDED',
-                                    title: 'Match nul - Remboursement',
-                                    message: `Votre pari de ${bet.amount} FCFA a été remboursé suite au match nul.`,
-                                }
-                            }),
-                            this.prisma.notification.create({
-                                data: {
-                                    userId: bet.acceptorId,
-                                    type: 'BET_REFUNDED',
-                                    title: 'Match nul - Remboursement',
-                                    message: `Votre pari de ${bet.amount} FCFA a été remboursé suite au match nul.`,
-                                }
-                            })
-                        ]);
+                        updatedBet = yield tx.bet.update({
+                            where: { id: betId },
+                            data: {
+                                status: 'REFUNDED',
+                                settledAt: now
+                            }
+                        });
                     }
                     else {
                         // Déterminer le gagnant
                         const isCreatorWinner = bet.chosenFighter === winner;
                         const winnerId = isCreatorWinner ? bet.creatorId : bet.acceptorId;
                         const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
-                        // Calculer la commission
+                        // Calculer le gain
                         const totalPot = bet.amount * 2;
                         const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
-                        // Notifications
+                        const winAmount = totalPot - commission;
+                        // Convertir en BigInt
+                        const betAmountBigInt = BigInt(Math.floor(bet.amount));
+                        const winAmountBigInt = BigInt(Math.floor(winAmount));
+                        // Mettre à jour les wallets en parallèle
                         yield Promise.all([
-                            this.prisma.notification.create({
+                            // Perdant - juste libérer les fonds bloqués (le solde a déjà été déduit)
+                            tx.wallet.update({
+                                where: { userId: loserId },
                                 data: {
-                                    userId: winnerId,
-                                    type: 'BET_WON',
-                                    title: 'Pari gagné !',
-                                    message: `Félicitations ! Vous avez gagné ${bet.winAmount} FCFA sur votre pari.`,
+                                    lockedBalance: { decrement: betAmountBigInt },
+                                    totalLost: { increment: betAmountBigInt }
                                 }
                             }),
-                            this.prisma.notification.create({
+                            // Gagnant - libérer fonds bloqués + ajouter gain
+                            tx.wallet.update({
+                                where: { userId: winnerId },
                                 data: {
-                                    userId: loserId,
-                                    type: 'BET_LOST',
-                                    title: 'Pari perdu',
-                                    message: `Votre pari de ${bet.amount} FCFA a été perdu.`,
+                                    balance: { increment: winAmountBigInt },
+                                    lockedBalance: { decrement: betAmountBigInt },
+                                    totalWon: { increment: winAmountBigInt }
                                 }
                             })
                         ]);
+                        // Créer transaction de gain
+                        const transaction = yield tx.transaction.create({
+                            data: {
+                                type: 'BET_WIN',
+                                amount: winAmount,
+                                userId: winnerId,
+                                status: 'COMPLETED',
+                                notes: `Gain du pari ${bet.id}`
+                            }
+                        });
+                        // Mettre à jour le pari
+                        updatedBet = yield tx.bet.update({
+                            where: { id: betId },
+                            data: {
+                                status: isCreatorWinner ? 'CREATOR_WON' : 'ACCEPTOR_WON',
+                                winAmount: winAmount,
+                                settledAt: now,
+                                transactionId: transaction.id
+                            }
+                        });
+                        // Enregistrer la commission
+                        yield tx.systemFee.create({
+                            data: {
+                                betId: bet.id,
+                                amount: commission
+                            }
+                        });
                     }
-                    logger_1.default.info(`Pari traité: ${bet.id} - Statut: ${bet.status}`);
+                    return updatedBet;
+                }), {
+                    maxWait: 10000,
+                    timeout: 15000
+                });
+                // Opérations non-critiques après la transaction
+                yield this.handlePostSettleOperations(betId, winner);
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors du traitement du pari:', error);
+                throw error;
+            }
+        });
+    }
+    handlePostSettleOperations(betId, winner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const bet = yield this.prisma.bet.findUnique({
+                    where: { id: betId },
+                    include: {
+                        creator: true,
+                        acceptor: true,
+                        fight: {
+                            include: {
+                                fighterA: true,
+                                fighterB: true,
+                                dayEvent: true
+                            }
+                        }
+                    }
+                });
+                if (!bet)
+                    return;
+                if (winner === 'DRAW') {
+                    // Transactions de remboursement pour match nul
+                    yield Promise.all([
+                        this.prisma.transaction.create({
+                            data: {
+                                type: 'BET_REFUND',
+                                amount: bet.amount,
+                                userId: bet.creatorId,
+                                status: 'COMPLETED',
+                                notes: `Remboursement match nul - Pari ${bet.id}`
+                            }
+                        }),
+                        this.prisma.transaction.create({
+                            data: {
+                                type: 'BET_REFUND',
+                                amount: bet.amount,
+                                userId: bet.acceptorId,
+                                status: 'COMPLETED',
+                                notes: `Remboursement match nul - Pari ${bet.id}`
+                            }
+                        })
+                    ]);
+                    // Notifications pour match nul
+                    yield Promise.all([
+                        this.prisma.notification.create({
+                            data: {
+                                userId: bet.creatorId,
+                                type: 'BET_REFUNDED',
+                                title: 'Match nul - Remboursement',
+                                message: `Votre pari de ${bet.amount} FCFA a été remboursé suite au match nul.`,
+                            }
+                        }),
+                        this.prisma.notification.create({
+                            data: {
+                                userId: bet.acceptorId,
+                                type: 'BET_REFUNDED',
+                                title: 'Match nul - Remboursement',
+                                message: `Votre pari de ${bet.amount} FCFA a été remboursé suite au match nul.`,
+                            }
+                        })
+                    ]);
                 }
-                catch (error) {
-                    logger_1.default.error('Erreur dans les opérations post-traitement:', error);
+                else {
+                    // Déterminer le gagnant
+                    const isCreatorWinner = bet.chosenFighter === winner;
+                    const winnerId = isCreatorWinner ? bet.creatorId : bet.acceptorId;
+                    const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
+                    // Calculer la commission
+                    const totalPot = bet.amount * 2;
+                    const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
+                    // Notifications
+                    yield Promise.all([
+                        this.prisma.notification.create({
+                            data: {
+                                userId: winnerId,
+                                type: 'BET_WON',
+                                title: 'Pari gagné !',
+                                message: `Félicitations ! Vous avez gagné ${bet.winAmount} FCFA sur votre pari.`,
+                            }
+                        }),
+                        this.prisma.notification.create({
+                            data: {
+                                userId: loserId,
+                                type: 'BET_LOST',
+                                title: 'Pari perdu',
+                                message: `Votre pari de ${bet.amount} FCFA a été perdu.`,
+                            }
+                        })
+                    ]);
                 }
-            });
-        }
-        getBet(betId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const bet = yield this.prisma.bet.findUnique({
-                        where: { id: betId },
+                logger_1.default.info(`Pari traité: ${bet.id} - Statut: ${bet.status}`);
+            }
+            catch (error) {
+                logger_1.default.error('Erreur dans les opérations post-traitement:', error);
+            }
+        });
+    }
+    getBet(betId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const bet = yield this.prisma.bet.findUnique({
+                    where: { id: betId },
+                    include: {
+                        creator: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true
+                            }
+                        },
+                        acceptor: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true
+                            }
+                        },
+                        fight: {
+                            include: {
+                                fighterA: true,
+                                fighterB: true,
+                                dayEvent: true,
+                                result: true
+                            }
+                        },
+                        transaction: true
+                    }
+                });
+                if (!bet) {
+                    throw new Error('Pari non trouvé');
+                }
+                return bet;
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération du pari:', error);
+                throw error;
+            }
+        });
+    }
+    listBets(filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId, fightId, dayEventId, status, limit = 20, offset = 0 } = filters;
+                const where = {};
+                if (userId) {
+                    where.OR = [
+                        { creatorId: userId },
+                        { acceptorId: userId }
+                    ];
+                }
+                if (fightId) {
+                    where.fightId = fightId;
+                }
+                if (dayEventId) {
+                    where.fight = {
+                        dayEventId: dayEventId
+                    };
+                }
+                if (status) {
+                    where.status = status;
+                }
+                const [bets, total] = yield Promise.all([
+                    this.prisma.bet.findMany({
+                        where,
                         include: {
                             creator: {
                                 select: {
                                     id: true,
-                                    name: true,
-                                    phone: true
+                                    name: true
                                 }
                             },
+                            acceptor: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            },
+                            fight: {
+                                include: {
+                                    fighterA: true,
+                                    fighterB: true,
+                                    dayEvent: true
+                                }
+                            }
+                        },
+                        take: limit,
+                        skip: offset,
+                        orderBy: { createdAt: 'desc' }
+                    }),
+                    this.prisma.bet.count({ where })
+                ]);
+                return {
+                    bets,
+                    total,
+                    limit,
+                    offset
+                };
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des paris:', error);
+                throw error;
+            }
+        });
+    }
+    getAvailableBets(fightId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const now = new Date();
+                return yield this.prisma.bet.findMany({
+                    where: {
+                        fightId: fightId,
+                        status: 'PENDING',
+                        fight: {
+                            status: 'SCHEDULED',
+                            dayEvent: {
+                                status: 'SCHEDULED'
+                            }
+                        }
+                    },
+                    include: {
+                        creator: {
+                            select: {
+                                id: true,
+                                name: true,
+                                phone: true
+                            }
+                        },
+                        fight: {
+                            include: {
+                                fighterA: true,
+                                fighterB: true,
+                                dayEvent: true
+                            }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                });
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des paris disponibles:', error);
+                throw error;
+            }
+        });
+    }
+    getUserBets(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const [createdBets, acceptedBets] = yield Promise.all([
+                    this.prisma.bet.findMany({
+                        where: { creatorId: userId },
+                        include: {
                             acceptor: {
                                 select: {
                                     id: true,
@@ -865,101 +974,12 @@ let BetService = (() => {
                                     dayEvent: true,
                                     result: true
                                 }
-                            },
-                            transaction: true
-                        }
-                    });
-                    if (!bet) {
-                        throw new Error('Pari non trouvé');
-                    }
-                    return bet;
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération du pari:', error);
-                    throw error;
-                }
-            });
-        }
-        listBets(filters) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const { userId, fightId, dayEventId, status, limit = 20, offset = 0 } = filters;
-                    const where = {};
-                    if (userId) {
-                        where.OR = [
-                            { creatorId: userId },
-                            { acceptorId: userId }
-                        ];
-                    }
-                    if (fightId) {
-                        where.fightId = fightId;
-                    }
-                    if (dayEventId) {
-                        where.fight = {
-                            dayEventId: dayEventId
-                        };
-                    }
-                    if (status) {
-                        where.status = status;
-                    }
-                    const [bets, total] = yield Promise.all([
-                        this.prisma.bet.findMany({
-                            where,
-                            include: {
-                                creator: {
-                                    select: {
-                                        id: true,
-                                        name: true
-                                    }
-                                },
-                                acceptor: {
-                                    select: {
-                                        id: true,
-                                        name: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true
-                                    }
-                                }
-                            },
-                            take: limit,
-                            skip: offset,
-                            orderBy: { createdAt: 'desc' }
-                        }),
-                        this.prisma.bet.count({ where })
-                    ]);
-                    return {
-                        bets,
-                        total,
-                        limit,
-                        offset
-                    };
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des paris:', error);
-                    throw error;
-                }
-            });
-        }
-        getAvailableBets(fightId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const now = new Date();
-                    return yield this.prisma.bet.findMany({
-                        where: {
-                            fightId: fightId,
-                            status: 'PENDING',
-                            fight: {
-                                status: 'SCHEDULED',
-                                dayEvent: {
-                                    status: 'SCHEDULED'
-                                }
                             }
                         },
+                        orderBy: { createdAt: 'desc' }
+                    }),
+                    this.prisma.bet.findMany({
+                        where: { acceptorId: userId },
                         include: {
                             creator: {
                                 select: {
@@ -972,131 +992,79 @@ let BetService = (() => {
                                 include: {
                                     fighterA: true,
                                     fighterB: true,
-                                    dayEvent: true
+                                    dayEvent: true,
+                                    result: true
                                 }
                             }
                         },
-                        orderBy: { createdAt: 'desc' }
-                    });
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des paris disponibles:', error);
-                    throw error;
-                }
-            });
-        }
-        getUserBets(userId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const [createdBets, acceptedBets] = yield Promise.all([
-                        this.prisma.bet.findMany({
-                            where: { creatorId: userId },
+                        orderBy: { acceptedAt: 'desc' }
+                    })
+                ]);
+                return {
+                    created: createdBets,
+                    accepted: acceptedBets
+                };
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des paris de l\'utilisateur:', error);
+                throw error;
+            }
+        });
+    }
+    getActiveBetsForUser(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const now = new Date();
+                return yield this.prisma.bet.findMany({
+                    where: {
+                        OR: [
+                            { creatorId: userId },
+                            { acceptorId: userId }
+                        ],
+                        status: {
+                            in: ['PENDING', 'ACCEPTED']
+                        },
+                        fight: {
+                            status: 'SCHEDULED',
+                            dayEvent: {
+                                status: 'SCHEDULED'
+                            }
+                        }
+                    },
+                    include: {
+                        creator: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        },
+                        acceptor: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        },
+                        fight: {
                             include: {
-                                acceptor: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true,
-                                        result: true
-                                    }
-                                }
-                            },
-                            orderBy: { createdAt: 'desc' }
-                        }),
-                        this.prisma.bet.findMany({
-                            where: { acceptorId: userId },
-                            include: {
-                                creator: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        phone: true
-                                    }
-                                },
-                                fight: {
-                                    include: {
-                                        fighterA: true,
-                                        fighterB: true,
-                                        dayEvent: true,
-                                        result: true
-                                    }
-                                }
-                            },
-                            orderBy: { acceptedAt: 'desc' }
-                        })
-                    ]);
-                    return {
-                        created: createdBets,
-                        accepted: acceptedBets
-                    };
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des paris de l\'utilisateur:', error);
-                    throw error;
-                }
-            });
-        }
-        getActiveBetsForUser(userId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const now = new Date();
-                    return yield this.prisma.bet.findMany({
-                        where: {
-                            OR: [
-                                { creatorId: userId },
-                                { acceptorId: userId }
-                            ],
-                            status: {
-                                in: ['PENDING', 'ACCEPTED']
-                            },
-                            fight: {
-                                status: 'SCHEDULED',
-                                dayEvent: {
-                                    status: 'SCHEDULED'
-                                }
+                                fighterA: true,
+                                fighterB: true,
+                                dayEvent: true
                             }
-                        },
-                        include: {
-                            creator: {
-                                select: {
-                                    id: true,
-                                    name: true
-                                }
-                            },
-                            acceptor: {
-                                select: {
-                                    id: true,
-                                    name: true
-                                }
-                            },
-                            fight: {
-                                include: {
-                                    fighterA: true,
-                                    fighterB: true,
-                                    dayEvent: true
-                                }
-                            }
-                        },
-                        orderBy: { createdAt: 'desc' }
-                    });
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des paris actifs:', error);
-                    throw error;
-                }
-            });
-        }
-        getBetStats(userId) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const stats = yield this.prisma.$queryRaw `
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                });
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des paris actifs:', error);
+                throw error;
+            }
+        });
+    }
+    getBetStats(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const stats = yield this.prisma.$queryRaw `
         SELECT 
           COUNT(*) as total_bets,
           SUM(CASE WHEN status = 'ACCEPTED' THEN 1 ELSE 0 END) as accepted_bets,
@@ -1109,90 +1077,85 @@ let BetService = (() => {
         FROM bets 
         WHERE creatorId = ${userId} OR acceptorId = ${userId}
       `;
-                    return stats[0];
-                }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de la récupération des statistiques:', error);
-                    throw error;
-                }
-            });
-        }
-        expirePendingBetsBeforeFight() {
-            return __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                try {
-                    const now = new Date();
-                    // Trouver les combats qui commencent dans moins de 30 minutes
-                    const upcomingFights = yield this.prisma.fight.findMany({
-                        where: {
-                            status: 'SCHEDULED',
-                            OR: [
-                                { scheduledTime: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now } },
-                                {
-                                    dayEvent: {
-                                        date: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now }
-                                    }
-                                }
-                            ]
-                        },
-                        include: {
-                            bets: {
-                                where: {
-                                    status: 'PENDING'
+                return stats[0];
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de la récupération des statistiques:', error);
+                throw error;
+            }
+        });
+    }
+    expirePendingBetsBeforeFight() {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const now = new Date();
+                // Trouver les combats qui commencent dans moins de 30 minutes
+                const upcomingFights = yield this.prisma.fight.findMany({
+                    where: {
+                        status: 'SCHEDULED',
+                        OR: [
+                            { scheduledTime: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now } },
+                            {
+                                dayEvent: {
+                                    date: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now }
                                 }
                             }
-                        }
-                    });
-                    let expiredCount = 0;
-                    for (const fight of upcomingFights) {
-                        for (const bet of fight.bets) {
-                            // REMBOURSER les fonds (solde + libérer)
-                            const amountBigInt = BigInt(Math.floor(bet.amount));
-                            yield this.prisma.wallet.update({
-                                where: { userId: bet.creatorId },
-                                data: {
-                                    balance: { increment: amountBigInt },
-                                    lockedBalance: { decrement: amountBigInt }
-                                }
-                            });
-                            // Marquer le pari comme expiré
-                            yield this.prisma.bet.update({
-                                where: { id: bet.id },
-                                data: {
-                                    status: 'CANCELLED',
-                                    cancelledAt: now
-                                }
-                            });
-                            // Notification
-                            yield this.prisma.notification.create({
-                                data: {
-                                    userId: bet.creatorId,
-                                    type: 'BET_EXPIRED',
-                                    title: 'Pari expiré',
-                                    message: `Votre pari sur "${(_a = fight.dayEvent) === null || _a === void 0 ? void 0 : _a.title}" a été annulé car le combat commence bientôt. Les fonds ont été remboursés.`,
-                                }
-                            });
-                            expiredCount++;
-                            logger_1.default.info(`Pari expiré: ${bet.id} pour le combat: ${fight.id}`);
+                        ]
+                    },
+                    include: {
+                        bets: {
+                            where: {
+                                status: 'PENDING'
+                            }
                         }
                     }
-                    return expiredCount;
+                });
+                let expiredCount = 0;
+                for (const fight of upcomingFights) {
+                    for (const bet of fight.bets) {
+                        // REMBOURSER les fonds (solde + libérer)
+                        const amountBigInt = BigInt(Math.floor(bet.amount));
+                        yield this.prisma.wallet.update({
+                            where: { userId: bet.creatorId },
+                            data: {
+                                balance: { increment: amountBigInt },
+                                lockedBalance: { decrement: amountBigInt }
+                            }
+                        });
+                        // Marquer le pari comme expiré
+                        yield this.prisma.bet.update({
+                            where: { id: bet.id },
+                            data: {
+                                status: 'CANCELLED',
+                                cancelledAt: now
+                            }
+                        });
+                        // Notification
+                        yield this.prisma.notification.create({
+                            data: {
+                                userId: bet.creatorId,
+                                type: 'BET_EXPIRED',
+                                title: 'Pari expiré',
+                                message: `Votre pari sur "${(_a = fight.dayEvent) === null || _a === void 0 ? void 0 : _a.title}" a été annulé car le combat commence bientôt. Les fonds ont été remboursés.`,
+                            }
+                        });
+                        expiredCount++;
+                        logger_1.default.info(`Pari expiré: ${bet.id} pour le combat: ${fight.id}`);
+                    }
                 }
-                catch (error) {
-                    logger_1.default.error('Erreur lors de l\'expiration des paris:', error);
-                    throw error;
-                }
-            });
-        }
-    };
-    __setFunctionName(_classThis, "BetService");
-    (() => {
-        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
-        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
-        BetService = _classThis = _classDescriptor.value;
-        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
-        __runInitializers(_classThis, _classExtraInitializers);
-    })();
-    return BetService = _classThis;
-})();
+                return expiredCount;
+            }
+            catch (error) {
+                logger_1.default.error('Erreur lors de l\'expiration des paris:', error);
+                throw error;
+            }
+        });
+    }
+};
 exports.BetService = BetService;
+exports.BetService = BetService = __decorate([
+    (0, typedi_1.Service)(),
+    __metadata("design:paramtypes", [client_1.PrismaClient,
+        WebSocketService_1.WebSocketService])
+], BetService);

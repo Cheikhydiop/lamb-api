@@ -32,14 +32,13 @@ const customErrors_1 = require("../errors/customErrors");
 const userValidator_1 = __importDefault(require("../utils/validators/userValidator"));
 const SessionRepository_1 = require("../repositories/SessionRepository");
 const Logger_1 = __importDefault(require("../utils/Logger"));
-const EmailService_1 = require("./EmailService");
 const client_1 = require("@prisma/client");
-const typedi_1 = require("typedi");
+// import { Service, Container } from 'typedi';
 const DeviceDetectionService_1 = require("./DeviceDetectionService");
 const MultiDeviceAuthService_1 = require("./MultiDeviceAuthService");
 const env_1 = require("../config/env");
 class AuthService {
-    constructor(userRepository, walletRepository, emailVerificationService, sessionRepository, emailService, otpCodeRepository, auditLogRepository, prisma) {
+    constructor(userRepository, walletRepository, emailVerificationService, sessionRepository, emailService, otpCodeRepository, auditLogRepository, prisma, webSocketService) {
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.emailVerificationService = emailVerificationService;
@@ -48,6 +47,7 @@ class AuthService {
         this.otpCodeRepository = otpCodeRepository;
         this.auditLogRepository = auditLogRepository;
         this.prisma = prisma;
+        this.webSocketService = webSocketService;
         this.MAX_LOGIN_ATTEMPTS = 5;
         this.LOGIN_WINDOW_MS = 15 * 60 * 1000;
     }
@@ -116,7 +116,7 @@ class AuthService {
                 const isAdmin = user.role === client_1.UserRole.ADMIN || user.role === client_1.UserRole.SUPER_ADMIN;
                 if (!isKnownDevice || isAdmin) {
                     // 3. Vérifier s'il y a d'autres sessions actives
-                    const multiDeviceAuthService = new MultiDeviceAuthService_1.MultiDeviceAuthService(this.prisma, typedi_1.Container.get(EmailService_1.EmailService), typedi_1.Container.get(require('./WebSocketService').WebSocketService));
+                    const multiDeviceAuthService = new MultiDeviceAuthService_1.MultiDeviceAuthService(this.prisma, this.emailService, this.webSocketService);
                     const { hasActiveSessions, sessions } = yield multiDeviceAuthService.checkActiveSessions(user.id);
                     // Pour les admins, on exige TOUJOURS la vérification, même si c'est la seule session
                     if (hasActiveSessions || isAdmin) {
@@ -124,8 +124,7 @@ class AuthService {
                         // 4. Créer session en attente + OTP
                         const { session, otpCode } = yield multiDeviceAuthService.createPendingSession(user.id, detectedDevice, req);
                         // 5. Envoyer email
-                        const emailService = typedi_1.Container.get(EmailService_1.EmailService);
-                        yield emailService.sendDeviceVerificationOTP(user.email, user.name || 'Utilisateur', otpCode, detectedDevice);
+                        yield this.emailService.sendDeviceVerificationOTP(user.email, user.name || 'Utilisateur', otpCode, detectedDevice);
                         return {
                             requiresDeviceVerification: true,
                             sessionId: session.id,
@@ -263,11 +262,13 @@ class AuthService {
                 // ⚡ CORRECTION : Puis créer le wallet pour cet utilisateur
                 const wallet = yield this.walletRepository.create({
                     userId: newUser.id,
-                    balance: 0,
-                    lockedBalance: 0
+                    balance: BigInt(0),
+                    lockedBalance: BigInt(0)
                 });
                 // Envoi de l'email de vérification
-                yield this.emailVerificationService.sendVerificationEmail(newUser.id, newUser.email);
+                if (newUser.email) {
+                    yield this.emailVerificationService.sendVerificationEmail(newUser.id, newUser.email);
+                }
                 // Génération du token
                 const token = (0, tokenUtils_1.generateToken)({
                     userId: newUser.id,
@@ -346,8 +347,13 @@ class AuthService {
     verifyEmail(userId, otpCode, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                // Retrieve user first to get email for verification
+                const existingUser = yield this.userRepository.findById(userId);
+                if (!existingUser) {
+                    throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
+                }
                 // Vérifier l'OTP
-                const isValid = yield this.emailVerificationService.verifyOTP(userId, otpCode);
+                const isValid = yield this.emailVerificationService.verifyOTP(existingUser.email, otpCode, 'EMAIL_VERIFICATION');
                 if (!isValid) {
                     throw new customErrors_1.AuthenticationError('Code OTP invalide ou expiré', {
                         userId,
@@ -355,8 +361,7 @@ class AuthService {
                     });
                 }
                 // Mettre à jour le statut de vérification et activer le compte
-                const user = yield this.userRepository.update({
-                    id: userId,
+                const user = yield this.userRepository.update(userId, {
                     isEmailVerified: true,
                     isActive: true
                 });
@@ -405,7 +410,7 @@ class AuthService {
     logout(userId, sessionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.sessionRepository.invalidateSession(sessionId);
+                yield this.sessionRepository.revokeSession(sessionId);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'USER_LOGOUT',
@@ -458,7 +463,7 @@ class AuthService {
                     });
                 }
                 // Récupérer l'utilisateur
-                const user = yield this.userRepository.findById(session.userId);
+                const user = yield this.userRepository.findByIdWithWallet(session.userId);
                 if (!user) {
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId: session.userId });
                 }
@@ -479,7 +484,9 @@ class AuthService {
                 // Générer un nouveau refresh token
                 const newRefreshToken = crypto_1.default.randomBytes(40).toString('hex');
                 // Mettre à jour la session
-                yield this.sessionRepository.updateRefreshToken(session.id, newRefreshToken);
+                // Calculate proper expiry if needed, or reuse session expiry logic
+                const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+                yield this.sessionRepository.rotateRefreshToken(refreshToken, newRefreshToken, newExpiry);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'TOKEN_REFRESHED',
@@ -586,7 +593,7 @@ class AuthService {
                 }
                 // Envoyer l'email de réinitialisation
                 try {
-                    yield this.sendPasswordResetEmail(user.email, user.name, resetToken);
+                    yield this.sendPasswordResetEmail(user.email, user.name || 'Utilisateur', resetToken);
                     Logger_1.default.info(`📤 Email envoyé à: ${user.email}`);
                 }
                 catch (emailError) {
@@ -805,7 +812,7 @@ class AuthService {
                     }
                 }
                 // Mettre à jour le profil
-                const updatedUser = yield this.userRepository.update(Object.assign(Object.assign({ id: userId }, (name && { name })), (phone && { phone })));
+                const updatedUser = yield this.userRepository.update(userId, Object.assign(Object.assign({}, (name && { name })), (phone && { phone })));
                 if (!updatedUser) {
                     Logger_1.default.warn(`❌ Utilisateur non trouvé lors de la mise à jour: ${userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
@@ -859,8 +866,7 @@ class AuthService {
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
                 }
                 // Désactiver le compte
-                yield this.userRepository.update({
-                    id: userId,
+                yield this.userRepository.update(userId, {
                     isActive: false
                 });
                 // Révoquer toutes les sessions
@@ -904,7 +910,7 @@ class AuthService {
             try {
                 Logger_1.default.info(`🔄 Tentative de réactivation pour: ${email}`);
                 // Rechercher l'utilisateur
-                const user = yield this.userRepository.findByEmail(email);
+                const user = yield this.userRepository.findByEmailWithWallet(email);
                 if (!user) {
                     Logger_1.default.warn(`❌ Utilisateur non trouvé: ${email}`);
                     throw new customErrors_1.AuthenticationError('Identifiants invalides', {
@@ -932,8 +938,7 @@ class AuthService {
                 }
                 Logger_1.default.info(`👤 Compte trouvé et désactivé: ${user.id}`);
                 // Réactiver le compte
-                const updatedUser = yield this.userRepository.update({
-                    id: user.id,
+                const updatedUser = yield this.userRepository.update(user.id, {
                     isActive: true
                 });
                 if (!updatedUser) {
@@ -944,8 +949,8 @@ class AuthService {
                 const token = (0, tokenUtils_1.generateToken)({
                     userId: updatedUser.id,
                     role: updatedUser.role,
-                    email: updatedUser.email,
-                    walletId: (_a = updatedUser.wallet) === null || _a === void 0 ? void 0 : _a.id
+                    email: updatedUser.email, // Email shouldn't be null
+                    walletId: (_a = user.wallet) === null || _a === void 0 ? void 0 : _a.id // Use validation from initial fetch
                 });
                 const { password: _ } = updatedUser, userWithoutPassword = __rest(updatedUser, ["password"]);
                 // Log d'audit
@@ -1022,7 +1027,7 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 Logger_1.default.info(`💻 Récupération sessions demandée pour: ${userId}`);
-                const sessions = yield this.sessionRepository.findByUserId(userId);
+                const sessions = yield this.sessionRepository.findSessionsByUser(userId);
                 Logger_1.default.info(`✅ ${sessions.length} sessions trouvées pour: ${userId}`);
                 return sessions.map(session => ({
                     id: session.id,
@@ -1055,7 +1060,7 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 Logger_1.default.info(`🔒 Tentative de révocation session: ${sessionId} pour utilisateur: ${userId}`);
-                const session = yield this.sessionRepository.findById(sessionId);
+                const session = yield this.sessionRepository.findSessionById(sessionId);
                 if (!session) {
                     Logger_1.default.warn(`❌ Session non trouvée: ${sessionId}`);
                     throw new customErrors_1.NotFoundError('Session non trouvée', { sessionId });
@@ -1067,7 +1072,7 @@ class AuthService {
                         reason: 'SESSION_OWNERSHIP_MISMATCH'
                     });
                 }
-                yield this.sessionRepository.invalidateSession(sessionId);
+                yield this.sessionRepository.revokeSession(sessionId);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'SESSION_REVOKED',

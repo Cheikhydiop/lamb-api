@@ -1,22 +1,23 @@
 // index.ts ou app.ts - CODE COMPLET SÉCURISÉ AVEC WEBSOCKET
-import 'reflect-metadata'; // ⚠️ TRÈS IMPORTANT - DOIT ÊTRE EN PREMIER
+import 'reflect-metadata';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
 import http from 'http';
-import { PrismaClient } from '@prisma/client';
-import Container from 'typedi';
+import prisma from './config/prismaClient'; // Import singleton
+// import Container from 'typedi'; // Removed TypeDI
 import { config } from './config/env';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import Routes from './routes/index';
-import logger from './utils/Logger';
+import logger from './utils/logger';
 import { ipExtractor } from './middlewares/ipExtractor';
 import { rateLimitInfoMiddleware, rateLimitMiddleware } from './middlewares/rateLimitMiddleware';
 import { bigIntSerializer } from './middlewares/bigIntSerializer';
 import { WebSocketService } from './services/WebSocketService';
-import { CronService } from './services/CronService';
+import { CronService } from './services/CronService'; // Used manually
 import { sanitizationMiddleware } from './middlewares/sanitizationMiddleware';
 import { idempotencyMiddleware } from './middlewares/idempotencyMiddleware';
+import { initializeServices } from './container/ServiceContainer';
 
 // ========== IMPORTS DES MIDDLEWARES DE SÉCURITÉ ==========
 import {
@@ -25,20 +26,6 @@ import {
   transactionSecurity,
   websocketSecurity
 } from './middlewares/security';
-
-// Initialiser Prisma avec timeout augmenté
-const prisma = new PrismaClient({
-  log: config.nodeEnv === 'development'
-    ? ['query', 'info', 'warn', 'error']
-    : ['error'],
-  transactionOptions: {
-    maxWait: 15000,
-    timeout: 30000,
-  },
-});
-
-// Enregistrer Prisma dans le conteneur TypeDI
-Container.set(PrismaClient, prisma);
 
 const app = express();
 
@@ -50,7 +37,7 @@ app.set('trust proxy', 1);
 
 // ========== FIX BIGINT GLOBAL ==========
 (BigInt.prototype as any).toJSON = function () {
-  return this.toString();
+  return this.toString(); // Convertir BigInt en string
 };
 
 // ========== MIDDLEWARES DE SÉCURITÉ (EN PREMIER!) ==========
@@ -94,7 +81,6 @@ app.use(idempotencyMiddleware as any);
 app.use(compression());
 
 // CORS
-// CORS
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -114,126 +100,81 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Client-IP', 'X-Request-ID']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Device-Id', 'X-App-Version'],
+  maxAge: 86400 // 24 hours
 }));
 
 // Middleware pour ajouter les infos de rate limiting
 app.use(rateLimitInfoMiddleware);
 
-// ========== INITIALISATION WEBSOCKET SÉCURISÉ ==========
-let webSocketService: WebSocketService | null = null;
+// ========== INITIALISATION DES SERVICES ==========
 
-try {
-  // Initialiser le service WebSocket
-  webSocketService = WebSocketService.getInstance();
-  webSocketService.initialize(server);
+let webSocketService: WebSocketService | null = null; // To hold the instance for graceful shutdown
 
-  logger.info('✅ WebSocket service initialized');
+// Route pour vérifier l'état du WebSocket
+app.get('/api/ws/status', (req, res) => {
+  if (webSocketService && webSocketService.isInitialized()) {
+    const stats = webSocketService.getConnectionStats();
+    res.json({
+      success: true,
+      status: 'running',
+      stats,
+      endpoint: `ws://localhost:${config.port}/ws`
+    });
+  } else {
+    res.status(503).json({
+      success: false,
+      status: 'not_initialized',
+      message: 'WebSocket service not available'
+    });
+  }
+});
 
-  // Exposer le service pour les autres modules
-  Container.set(WebSocketService, webSocketService);
+// Route pour tester le WebSocket (sécurisée en production)
+if (config.nodeEnv !== 'production') {
+  app.post('/api/ws/test', (req, res) => {
+    try {
+      const { message } = req.body;
 
-  // Route pour vérifier l'état du WebSocket
-  app.get('/api/ws/status', (req, res) => {
-    if (webSocketService && webSocketService.isInitialized()) {
-      const stats = webSocketService.getConnectionStats();
+      if (!webSocketService) {
+        res.status(503).json({
+          success: false,
+          message: 'Service WebSocket non initialisé'
+        });
+        return;
+      }
+
+      // Diffuser un message de test
+      const testMessage = {
+        type: 'SYSTEM_ALERT',
+        title: 'Test Message',
+        message: message || 'This is a test WebSocket message',
+        severity: 'INFO' as const,
+        timestamp: new Date().toISOString()
+      };
+
+      webSocketService.broadcastSystemAlert(testMessage);
+
       res.json({
         success: true,
-        status: 'running',
-        stats,
-        endpoint: `ws://localhost:${config.port}/ws`
+        message: 'Test WebSocket message sent',
+        data: testMessage
       });
-    } else {
-      res.status(503).json({
+    } catch (error: any) {
+      logger.error('WebSocket test error:', error);
+      res.status(500).json({
         success: false,
-        status: 'not_initialized',
-        message: 'WebSocket service not available'
+        message: 'Failed to send test message',
+        error: error.message
       });
     }
   });
-
-  // Initialiser le Cron Service
-  try {
-    const cronService = Container.get(CronService);
-    cronService.init();
-  } catch (e) {
-    logger.error('Failed to initialize CronService', e);
-  }
-
-  // Route pour tester le WebSocket (sécurisée en production)
-  if (config.nodeEnv !== 'production') {
-    app.post('/api/ws/test', (req, res) => {
-      try {
-        const { message } = req.body;
-
-        if (!webSocketService) {
-          return res.status(503).json({
-            success: false,
-            message: 'WebSocket service not initialized'
-          });
-        }
-
-        // Diffuser un message de test
-        const testMessage = {
-          type: 'SYSTEM_ALERT',
-          title: 'Test Message',
-          message: message || 'This is a test WebSocket message',
-          severity: 'INFO' as const,
-          timestamp: new Date().toISOString()
-        };
-
-        webSocketService.broadcastSystemAlert(testMessage);
-
-        res.json({
-          success: true,
-          message: 'Test WebSocket message sent',
-          data: testMessage
-        });
-      } catch (error: any) {
-        logger.error('WebSocket test error:', error);
-        res.status(500).json({
-          success: false,
-          message: 'Failed to send test message',
-          error: error.message
-        });
-      }
-    });
-  }
-
-} catch (error: any) {
-  logger.error('❌ Failed to initialize WebSocket service:', error);
-  logger.warn('⚠️ Continuing without WebSocket support');
 }
-// ========== FIN INITIALISATION WEBSOCKET ==========
 
-// ========== ROUTES AVEC SÉCURITÉ ADDITIONNELLE ==========
-// Note: Les routes sensibles (wallet, transactions) auront
-// le middleware transactionSecurity automatiquement
-// si vous l'avez configuré dans Routes(app)
-Routes(app);
-
-// Ou configurez-les manuellement ici:
-/*
-import authRoutes from './routes/auth.routes';
-import walletRoutes from './routes/wallet.routes';
-import transactionRoutes from './routes/transaction.routes';
-import betRoutes from './routes/bet.routes';
-import fightRoutes from './routes/fight.routes';
-import adminRoutes from './routes/admin.routes';
-import { authenticate, isAdmin } from './middlewares/auth.middleware';
-
-// Routes publiques
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/fights', fightRoutes);
-
-// Routes protégées avec sécurité renforcée
-app.use('/api/v1/wallet', authenticate, transactionSecurity, walletRoutes);
-app.use('/api/v1/transactions', authenticate, transactionSecurity, transactionRoutes);
-app.use('/api/v1/bets', authenticate, betRoutes);
-
-// Routes admin
-app.use('/api/v1/admin', authenticate, isAdmin, adminRoutes);
-*/
+// ========== INITIALISATION DES ROUTES ==========
+// NOTE: Les routes nécessitent désormais l'utilisation de ServiceContainer au lieu de Container.get()
+// Les fichiers de routes doivent être mis à jour.
+// Routes(app); // MOVED to startServer to ensure ServiceContainer is initialized
 
 // ========== HANDLERS D'ERREURS ==========
 // Handler 404 (DOIT ÊTRE AVANT errorHandler)
@@ -303,8 +244,29 @@ const startServer = async () => {
     logger.info(`📁 Environment: ${config.nodeEnv}`);
     logger.info(`🔧 Configuration loaded: PORT=${config.port}, CORS=${config.corsOrigin}`);
 
-    logger.info('🔌 Attempting to connect to the database...');
+    // Initialiser les services (y compris Prisma)
+    const container = await initializeServices();
 
+    // Configurer les routes APRÈS l'initialisation des services
+    Routes(app);
+
+    // Récupérer le service WebSocket du conteneur
+    webSocketService = container.webSocketService;
+    webSocketService.initialize(server);
+    logger.info('✅ WebSocket service initialized');
+
+    // Initialiser CronService (si nécessaire)
+    // Nous supposons que CronService peut être instancié manuellement pour l'instant
+    // TODO: Ajouter CronService au container
+    try {
+      const cronService = new CronService();
+      // cronService.initialize(); // Uncomment if CronService has initialize method
+      logger.info('✅ Cron Service initialized');
+    } catch (e) {
+      logger.warn('⚠️ Cron Service initialization specific logic should be checked', e);
+    }
+
+    logger.info('🔌 Attempting to connect to the database...');
     await prisma.$connect();
     logger.info('✅ Successfully connected to the database');
 

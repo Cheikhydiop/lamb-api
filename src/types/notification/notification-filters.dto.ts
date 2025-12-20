@@ -5,7 +5,7 @@ import {
   NotificationPriority,
   NotificationStatus,
   NotificationType,
-} from '../../types/notification-types';
+} from '../notification-types';
 
 export class NotificationFiltersDto {
   @IsOptional()

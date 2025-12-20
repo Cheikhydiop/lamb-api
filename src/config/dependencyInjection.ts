@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Container } from 'typedi';
 import { PrismaClient } from '@prisma/client';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 export async function setupDependencyInjection() {
   try {

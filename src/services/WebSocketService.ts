@@ -1,7 +1,7 @@
-import { Service } from 'typedi';
+// import { Service } from 'typedi';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 import jwt from 'jsonwebtoken';
 import config from '../config/env';
 
@@ -73,7 +73,7 @@ export interface NotificationPayload {
   timestamp: string;
 }
 
-@Service()
+// @Service() - Removed TypeDI
 export class WebSocketService {
   private static instance: WebSocketService | null = null;
   private io: SocketIOServer | null = null;
@@ -226,6 +226,11 @@ export class WebSocketService {
   public broadcastSystemAlert(alert: any): void {
     if (!this.io) return;
     this.io.emit(WebSocketEvent.SYSTEM_ALERT, { ...alert, timestamp: new Date().toISOString() });
+  }
+
+  public sendToUser(userId: string, payload: any): void {
+    if (!this.io) return;
+    this.io.to(`user:${userId}`).emit(payload.type, payload.data);
   }
 
   public getConnectionStats(): any {

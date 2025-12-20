@@ -1,8 +1,9 @@
 // src/dto/auth/user.ts
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsNotEmpty } from 'class-validator';
-import { Organization } from '../../entity/Organization';
-import { UserStatus } from '../../entity/User';
+// Remove non-existent entity imports
+// import { Organization } from '../../entity/Organization';
+// import { UserStatus } from '../../entity/User';
 
 export class SignUpDto {
   @IsNotEmpty()
@@ -31,35 +32,34 @@ export class SignInDto {
 @Exclude()
 export class UserDto {
   @Expose()
-  id: number;
+  id: string; // Prisma uses String (CUID)
 
   @Expose()
-  first_name: string;
-
-  @Expose()
-  last_name: string;
+  name: string; // user table has name, not first_name/last_name explicitly in schema?
+  // Schema has 'name', but DTO asks for first_name/last_name?
+  // If schema only has 'name', we should map or use name.
+  // The schema says: name String.
 
   @Expose()
   email: string;
 
   @Expose()
-  status: string;
+  role: string;
 
   @Expose()
-  is_email_verified: boolean;
+  isActive: boolean;
 
   @Expose()
-  organization?: Organization;
+  isEmailVerified: boolean;
 }
 
 export interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  organization?: Organization;
-  status?: UserStatus;
+  id: string;
+  name: string;
+  email: string; // nullable in schema but usually required for auth users
+  password?: string;
+  role?: string;
+  isActive?: boolean;
 }
 
 export interface UserSingIn {

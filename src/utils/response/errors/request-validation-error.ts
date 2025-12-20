@@ -11,7 +11,6 @@ export class RequestValidationError extends CustomError {
   }
 
   serializeErrors() {
-    if (typeof this.errors === 'object') return this.errors;
-    return {};
+    return [{ message: 'Invalid request parameters', errors: this.errors }];
   }
 }

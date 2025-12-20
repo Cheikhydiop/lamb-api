@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { Service } from 'typedi';
-import { TransactionService } from '../services/transaction.service';
+import { TransactionService } from '../services/TransactionService';
 import logger from '../utils/logger';
 
 @Service()
 export class TransactionController {
-  constructor(private transactionService: TransactionService) {}
+  constructor(private transactionService: TransactionService) { }
 
   async createTransaction(req: Request, res: Response, next: NextFunction) {
     try {

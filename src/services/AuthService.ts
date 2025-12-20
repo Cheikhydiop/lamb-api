@@ -10,23 +10,24 @@ import {
   ConflictError,
   ForbiddenError
 } from '../errors/customErrors';
-import Login from '../interfaces/UserInterface';
-import type { Register } from '../interfaces/UserInterface';
+import { SignUpDto as Register } from '../types/auth/sign-up';
+import { SignInDto as Login } from '../types/auth/sign-in';
 import UserValidator from '../utils/validators/userValidator';
 import { UserRepository } from '../repositories/UserRepository';
 import { WalletRepository } from '../repositories/WalletRepository';
 import { EmailVerificationService } from './EmailVerificationService';
 import { SessionRepository, DeviceType, SessionStatus } from '../repositories/SessionRepository';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 import { Request } from 'express';
 import { EmailService } from './EmailService';
 import { OtpCodeRepository } from '../repositories/OtpCodeRepository';
 import { AuditLogRepository } from '../repositories/AuditLogRepository';
 import { UserRole, PrismaClient } from '@prisma/client';
-import { Service, Container } from 'typedi';
+// import { Service, Container } from 'typedi';
 import { DeviceDetectionService } from './DeviceDetectionService';
 import { MultiDeviceAuthService } from './MultiDeviceAuthService';
 import { config } from '../config/env';
+import { WebSocketService } from './WebSocketService';
 
 // Types pour les nouvelles fonctionnalités
 interface ChangePasswordData {
@@ -64,7 +65,8 @@ export class AuthService {
     private emailService: EmailService,
     private otpCodeRepository: OtpCodeRepository,
     private auditLogRepository: AuditLogRepository,
-    private prisma: PrismaClient
+    private prisma: PrismaClient,
+    private webSocketService: WebSocketService
   ) { }
 
   /**
@@ -154,8 +156,8 @@ export class AuthService {
         // 3. Vérifier s'il y a d'autres sessions actives
         const multiDeviceAuthService = new MultiDeviceAuthService(
           this.prisma,
-          Container.get(EmailService),
-          Container.get(require('./WebSocketService').WebSocketService)
+          this.emailService,
+          this.webSocketService
         );
 
         const { hasActiveSessions, sessions } = await multiDeviceAuthService.checkActiveSessions(user.id);
@@ -171,9 +173,12 @@ export class AuthService {
             req as any
           );
 
+          if (!user.email) {
+            throw new Error('Email requis pour la vérification de l\'appareil');
+          }
+
           // 5. Envoyer email
-          const emailService = Container.get(EmailService);
-          await emailService.sendDeviceVerificationOTP(
+          await this.emailService.sendDeviceVerificationOTP(
             user.email,
             user.name || 'Utilisateur',
             otpCode,
@@ -338,12 +343,14 @@ export class AuthService {
       // ⚡ CORRECTION : Puis créer le wallet pour cet utilisateur
       const wallet = await this.walletRepository.create({
         userId: newUser.id,
-        balance: 0,
-        lockedBalance: 0
+        balance: BigInt(0),
+        lockedBalance: BigInt(0)
       });
 
       // Envoi de l'email de vérification
-      await this.emailVerificationService.sendVerificationEmail(newUser.id, newUser.email);
+      if (newUser.email) {
+        await this.emailVerificationService.sendVerificationEmail(newUser.id, newUser.email);
+      }
 
       // Génération du token
       const token = generateToken({
@@ -355,7 +362,7 @@ export class AuthService {
 
       // Extraction des infos de l'appareil
       let deviceInfo = {
-        deviceType: DeviceType.UNKNOWN,
+        deviceType: DeviceType.UNKNOWN as DeviceType,
         ipAddress: undefined as string | undefined,
         userAgent: undefined as string | undefined
       };
@@ -433,8 +440,14 @@ export class AuthService {
     message: string;
   }> {
     try {
+      // Retrieve user first to get email for verification
+      const existingUser = await this.userRepository.findById(userId);
+      if (!existingUser) {
+        throw new NotFoundError('Utilisateur non trouvé', { userId });
+      }
+
       // Vérifier l'OTP
-      const isValid = await this.emailVerificationService.verifyOTP(userId, otpCode);
+      const isValid = await this.emailVerificationService.verifyOTP(existingUser.email!, otpCode, 'EMAIL_VERIFICATION');
 
       if (!isValid) {
         throw new AuthenticationError('Code OTP invalide ou expiré', {
@@ -444,8 +457,7 @@ export class AuthService {
       }
 
       // Mettre à jour le statut de vérification et activer le compte
-      const user = await this.userRepository.update({
-        id: userId,
+      const user = await this.userRepository.update(userId, {
         isEmailVerified: true,
         isActive: true
       });
@@ -500,7 +512,7 @@ export class AuthService {
    */
   async logout(userId: string, sessionId: string): Promise<void> {
     try {
-      await this.sessionRepository.invalidateSession(sessionId);
+      await this.sessionRepository.revokeSession(sessionId);
 
       // Log d'audit
       await this.auditLogRepository.create({
@@ -561,7 +573,7 @@ export class AuthService {
       }
 
       // Récupérer l'utilisateur
-      const user = await this.userRepository.findById(session.userId);
+      const user = await this.userRepository.findByIdWithWallet(session.userId);
 
       if (!user) {
         throw new NotFoundError('Utilisateur non trouvé', { userId: session.userId });
@@ -587,7 +599,9 @@ export class AuthService {
       const newRefreshToken = crypto.randomBytes(40).toString('hex');
 
       // Mettre à jour la session
-      await this.sessionRepository.updateRefreshToken(session.id, newRefreshToken);
+      // Calculate proper expiry if needed, or reuse session expiry logic
+      const newExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      await this.sessionRepository.rotateRefreshToken(refreshToken, newRefreshToken, newExpiry);
 
       // Log d'audit
       await this.auditLogRepository.create({
@@ -711,9 +725,13 @@ export class AuthService {
         });
       }
 
+      if (!user.email) {
+        throw new Error('Utilisateur sans email');
+      }
+
       // Envoyer l'email de réinitialisation
       try {
-        await this.sendPasswordResetEmail(user.email, user.name, resetToken);
+        await this.sendPasswordResetEmail(user.email, user.name || 'Utilisateur', resetToken);
         logger.info(`📤 Email envoyé à: ${user.email}`);
       } catch (emailError: any) {
         logger.error(`❌ Erreur envoi email: ${emailError.message}`);
@@ -972,8 +990,7 @@ export class AuthService {
       }
 
       // Mettre à jour le profil
-      const updatedUser = await this.userRepository.update({
-        id: userId,
+      const updatedUser = await this.userRepository.update(userId, {
         ...(name && { name }),
         ...(phone && { phone })
       });
@@ -1040,8 +1057,7 @@ export class AuthService {
       }
 
       // Désactiver le compte
-      await this.userRepository.update({
-        id: userId,
+      await this.userRepository.update(userId, {
         isActive: false
       });
 
@@ -1094,7 +1110,7 @@ export class AuthService {
       logger.info(`🔄 Tentative de réactivation pour: ${email}`);
 
       // Rechercher l'utilisateur
-      const user = await this.userRepository.findByEmail(email);
+      const user = await this.userRepository.findByEmailWithWallet(email);
 
       if (!user) {
         logger.warn(`❌ Utilisateur non trouvé: ${email}`);
@@ -1128,8 +1144,7 @@ export class AuthService {
       logger.info(`👤 Compte trouvé et désactivé: ${user.id}`);
 
       // Réactiver le compte
-      const updatedUser = await this.userRepository.update({
-        id: user.id,
+      const updatedUser = await this.userRepository.update(user.id, {
         isActive: true
       });
 
@@ -1142,8 +1157,8 @@ export class AuthService {
       const token = generateToken({
         userId: updatedUser.id,
         role: updatedUser.role,
-        email: updatedUser.email,
-        walletId: updatedUser.wallet?.id
+        email: updatedUser.email!, // Email shouldn't be null
+        walletId: user.wallet?.id // Use validation from initial fetch
       });
 
       const { password: _, ...userWithoutPassword } = updatedUser;
@@ -1232,7 +1247,7 @@ export class AuthService {
     try {
       logger.info(`💻 Récupération sessions demandée pour: ${userId}`);
 
-      const sessions = await this.sessionRepository.findByUserId(userId);
+      const sessions = await this.sessionRepository.findSessionsByUser(userId);
 
       logger.info(`✅ ${sessions.length} sessions trouvées pour: ${userId}`);
 
@@ -1268,7 +1283,7 @@ export class AuthService {
     try {
       logger.info(`🔒 Tentative de révocation session: ${sessionId} pour utilisateur: ${userId}`);
 
-      const session = await this.sessionRepository.findById(sessionId);
+      const session = await this.sessionRepository.findSessionById(sessionId);
 
       if (!session) {
         logger.warn(`❌ Session non trouvée: ${sessionId}`);
@@ -1283,7 +1298,7 @@ export class AuthService {
         });
       }
 
-      await this.sessionRepository.invalidateSession(sessionId);
+      await this.sessionRepository.revokeSession(sessionId);
 
       // Log d'audit
       await this.auditLogRepository.create({

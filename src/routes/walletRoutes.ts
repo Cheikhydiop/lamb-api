@@ -4,7 +4,6 @@ import { WalletController } from '../controllers/WalletController';
 import { requireAuth } from '../middlewares/authMiddleware';
 
 const router = Router();
-const walletController = Container.get(WalletController);
 
 /**
  * @route   GET /api/v1/wallet/balance
@@ -14,7 +13,10 @@ const walletController = Container.get(WalletController);
 router.get(
     '/balance',
     requireAuth,
-    (req, res) => walletController.getBalance(req, res)
+    (req, res) => {
+        const walletController = Container.get(WalletController);
+        walletController.getBalance(req, res);
+    }
 );
 
 /**
@@ -25,7 +27,10 @@ router.get(
 router.post(
     '/deposit',
     requireAuth,
-    (req, res) => walletController.deposit(req, res)
+    (req, res) => {
+        const walletController = Container.get(WalletController);
+        walletController.deposit(req, res);
+    }
 );
 
 /**
@@ -36,7 +41,10 @@ router.post(
 router.post(
     '/withdraw',
     requireAuth,
-    (req, res) => walletController.withdraw(req, res)
+    (req, res) => {
+        const walletController = Container.get(WalletController);
+        walletController.withdraw(req, res);
+    }
 );
 
 /**
@@ -47,7 +55,10 @@ router.post(
 router.get(
     '/transactions',
     requireAuth,
-    (req, res) => walletController.getTransactions(req, res)
+    (req, res) => {
+        const walletController = Container.get(WalletController);
+        walletController.getTransactions(req, res);
+    }
 );
 
 export default router;

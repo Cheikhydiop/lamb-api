@@ -1,7 +1,7 @@
 // src/services/EmailService.ts
 import { Service } from 'typedi';
 import nodemailer, { Transporter } from 'nodemailer';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 import { User, Bet, Fight, Winning, TransactionType } from '@prisma/client';
 
 // Interface Fighter car elle n'est pas exportée par Prisma
@@ -769,6 +769,50 @@ export class EmailService {
     return this.sendEmailSafe({
       to: email,
       subject: '🔒 Code de vérification nouvel appareil - Xbeur',
+      html,
+    });
+  }
+
+  // Notification de confirmation de connexion
+  async sendDeviceConnectionConfirmation(
+    email: string,
+    name: string,
+    deviceInfo: any,
+    time: string
+  ): Promise<boolean> {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
+          <p style="color: #666; font-size: 16px; margin-top: 10px;">Nouvelle connexion détectée</p>
+        </div>
+
+        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h2 style="color: #333; font-size: 24px; margin-top: 0; text-align: center;">Connexion Confirmée</h2>
+          <p>Bonjour ${name},</p>
+          <p>Une nouvelle connexion à votre compte a été effectuée avec succès.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>📅 Date :</strong> ${time}</p>
+            <p style="margin: 5px 0;"><strong>📱 Appareil :</strong> ${deviceInfo.deviceName || 'Inconnu'}</p>
+            <p style="margin: 5px 0;"><strong>🌐 Navigateur :</strong> ${deviceInfo.browser || 'Inconnu'}</p>
+            <p style="margin: 5px 0;"><strong>💻 OS :</strong> ${deviceInfo.os || 'Inconnu'}</p>
+          </div>
+
+          <p>Si c'était vous, vous pouvez ignorer cet email.</p>
+          
+          <div style="background-color: #fff4e5; padding: 15px; border-radius: 6px; border-left: 4px solid #ff9800; margin-top: 30px;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              <strong>⚠️ Sécurité :</strong> Si vous ne reconnaissez pas cette activité, veuillez changer votre mot de passe immédiatement.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return this.sendEmailSafe({
+      to: email,
+      subject: 'Connexion à votre compte Xbeur',
       html,
     });
   }

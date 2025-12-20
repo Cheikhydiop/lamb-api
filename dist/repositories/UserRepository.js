@@ -202,8 +202,8 @@ class UserRepository {
                         data: {
                             email: userData.email,
                             password: userData.password,
-                            name: userData.name,
-                            phone: userData.phone,
+                            name: userData.name || '', // Prisma typically expects string if required or null if optional, but here error says undefined not assignable to string. If field is required in schema, must provide string. If optional, likely string | null. Assuming required or defaulting to empty string based on error. Actually, let's use || null if schema allows, but error "Type 'undefined' is not assignable to type 'string'" suggests strictly string.
+                            phone: userData.phone || '',
                             role: userData.role,
                             isActive: userData.isActive,
                             isEmailVerified: userData.isEmailVerified,

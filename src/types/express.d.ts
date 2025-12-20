@@ -9,7 +9,10 @@ declare global {
         role?: string;
       };
     }
+    interface Response {
+      successResponse<T>(data: T): Response;
+    }
   }
 }
 
-export {};
+export { };

@@ -1,0 +1,142 @@
+import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prismaClient'; // Import singleton
+import logger from '../utils/logger';
+import { UserService } from '../services/UserService';
+import { AuthService } from '../services/AuthService';
+import { WebSocketService } from '../services/WebSocketService';
+import { EmailService } from '../services/EmailService';
+import { EmailVerificationService } from '../services/EmailVerificationService';
+import { UserRepository } from '../repositories/UserRepository';
+import { WalletRepository } from '../repositories/WalletRepository';
+import { SessionRepository } from '../repositories/SessionRepository';
+import { OtpCodeRepository } from '../repositories/OtpCodeRepository';
+import { AuditLogRepository } from '../repositories/AuditLogRepository';
+import { AuditService } from '../services/AuditService';
+import { AuditMiddleware } from '../middlewares/AuditMiddleware';
+import { BetService } from '../services/BetService';
+import { MultiDeviceAuthService } from '../services/MultiDeviceAuthService';
+
+export class ServiceContainer {
+  private static instance: ServiceContainer;
+  private initialized = false;
+
+  public prisma!: typeof prisma; // Changed type to match the imported singleton
+
+  // Repositories
+  public userRepository!: UserRepository;
+  public walletRepository!: WalletRepository;
+  public sessionRepository!: SessionRepository;
+  public otpCodeRepository!: OtpCodeRepository;
+  public auditLogRepository!: AuditLogRepository;
+
+  // Services
+  public userService!: UserService;
+  public authService!: AuthService;
+  public emailService!: EmailService;
+  public emailVerificationService!: EmailVerificationService;
+  public webSocketService!: WebSocketService;
+  public auditService!: AuditService;
+  public auditMiddleware!: AuditMiddleware;
+  public betService!: BetService;
+  public multiDeviceAuthService!: MultiDeviceAuthService;
+
+  private constructor() { }
+
+  public static getInstance(): ServiceContainer {
+    if (!ServiceContainer.instance) {
+      ServiceContainer.instance = new ServiceContainer();
+    }
+    return ServiceContainer.instance;
+  }
+
+  public async initialize(): Promise<void> {
+    if (this.initialized) {
+      logger.info('Service container already initialized');
+      return;
+    }
+
+    logger.info('Initializing service container...');
+
+    try {
+      this.initializePrisma();
+      this.initializeRepositories();
+      this.initializeServices();
+
+      this.initialized = true;
+      logger.info('Service container initialized successfully');
+    } catch (error) {
+      logger.error('Failed to initialize service container', error);
+      throw error;
+    }
+  }
+
+  private initializePrisma(): void {
+    this.prisma = prisma;
+  }
+
+  private initializeRepositories(): void {
+    this.userRepository = new UserRepository(this.prisma);
+    this.walletRepository = new WalletRepository(this.prisma);
+    this.sessionRepository = new SessionRepository(this.prisma);
+    this.otpCodeRepository = new OtpCodeRepository(this.prisma);
+    this.auditLogRepository = new AuditLogRepository(this.prisma);
+
+    logger.info('Repositories initialized');
+  }
+
+  private initializeServices(): void {
+    // Infrastructure Services
+    this.emailService = new EmailService();
+    this.webSocketService = new WebSocketService();
+
+    // Core Services
+    this.auditService = new AuditService(this.prisma);
+    this.auditMiddleware = new AuditMiddleware(this.auditService);
+
+    // Domain Services
+    this.emailVerificationService = new EmailVerificationService(
+      this.emailService,
+      this.userRepository
+    );
+
+    this.userService = new UserService(
+      this.userRepository,
+      this.walletRepository,
+      this.emailVerificationService,
+      this.sessionRepository,
+      this.prisma
+    );
+
+    this.authService = new AuthService(
+      this.userRepository,
+      this.walletRepository,
+      this.emailVerificationService,
+      this.sessionRepository,
+      this.emailService,
+      this.otpCodeRepository,
+      this.auditLogRepository,
+      this.prisma,
+      this.webSocketService
+    );
+
+    this.betService = new BetService(
+      this.prisma,
+      this.webSocketService
+    );
+
+    this.multiDeviceAuthService = new MultiDeviceAuthService(
+      this.prisma,
+      this.emailService,
+      this.webSocketService
+    );
+
+    logger.info('Services initialized');
+  }
+}
+
+export const initializeServices = async (): Promise<ServiceContainer> => {
+  const container = ServiceContainer.getInstance();
+  await container.initialize();
+  return container;
+};
+

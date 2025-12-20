@@ -4,7 +4,6 @@ import { NotificationController } from '../controllers/NotificationController';
 import { requireAuth, requireAdmin } from '../middlewares/authMiddleware';
 
 const router = Router();
-const notificationController = Container.get(NotificationController);
 
 // All routes require authentication
 router.use(requireAuth);
@@ -16,7 +15,10 @@ router.use(requireAuth);
  */
 router.get(
     '/',
-    (req, res, next) => notificationController.getNotifications(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.getNotifications(req, res, next);
+    }
 );
 
 /**
@@ -26,7 +28,10 @@ router.get(
  */
 router.get(
     '/unread',
-    (req, res, next) => notificationController.getUnreadNotifications(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.getUnreadNotifications(req, res, next);
+    }
 );
 
 /**
@@ -36,7 +41,10 @@ router.get(
  */
 router.get(
     '/unread/count',
-    (req, res, next) => notificationController.getUnreadCount(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.getUnreadCount(req, res, next);
+    }
 );
 
 /**
@@ -46,7 +54,10 @@ router.get(
  */
 router.patch(
     '/:id/read',
-    (req, res, next) => notificationController.markAsRead(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.markAsRead(req, res, next);
+    }
 );
 
 /**
@@ -56,7 +67,10 @@ router.patch(
  */
 router.patch(
     '/read-all',
-    (req, res, next) => notificationController.markAllAsRead(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.markAllAsRead(req, res, next);
+    }
 );
 
 /**
@@ -66,7 +80,10 @@ router.patch(
  */
 router.delete(
     '/:id',
-    (req, res, next) => notificationController.deleteNotification(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.deleteNotification(req, res, next);
+    }
 );
 
 /**
@@ -77,7 +94,10 @@ router.delete(
 router.post(
     '/admin/send',
     requireAdmin,
-    (req, res, next) => notificationController.sendAdminNotification(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.sendAdminNotification(req, res, next);
+    }
 );
 
 /**
@@ -88,7 +108,10 @@ router.post(
 router.post(
     '/admin/broadcast',
     requireAdmin,
-    (req, res, next) => notificationController.broadcastAdminNotification(req, res, next)
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.broadcastAdminNotification(req, res, next);
+    }
 );
 
 export default router;

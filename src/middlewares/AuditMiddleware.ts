@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { Service } from 'typedi';
 import { AuditService } from '../services/AuditService';
-import logger from '../utils/Logger';
+import logger from '../utils/logger';
 
 // Enums adaptés à votre modèle
 export enum AuditAction {
@@ -77,6 +76,7 @@ export enum AuditSeverity {
   CRITICAL = 'CRITICAL',
 }
 
+// ...
 export interface AuditConfig {
   action: AuditAction;
   resourceType: AuditResourceType;
@@ -87,7 +87,6 @@ export interface AuditConfig {
   shouldAudit?: (req: Request, res: Response) => boolean;
 }
 
-@Service()
 export class AuditMiddleware {
   constructor(private auditService: AuditService) { }
 

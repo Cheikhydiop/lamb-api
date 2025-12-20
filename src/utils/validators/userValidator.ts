@@ -1,5 +1,5 @@
 // src/utils/validators/userValidator.ts
-import { Register, Login } from '../../interfaces/UserInterface';
+import { Register, Login } from '../../types/user';
 import { ValidationError, ValidationErrorField } from '../../errors/customErrors';
 
 class UserValidator {
@@ -11,8 +11,8 @@ class UserValidator {
       PATTERN: /^[a-zA-ZÀ-ÿ\s'-]+$/,
       MESSAGES: {
         REQUIRED: 'Le nom est requis',
-        TOO_SHORT: `Le nom doit contenir au moins ${this.MIN_LENGTH} caractères`,
-        TOO_LONG: `Le nom ne peut pas dépasser ${this.MAX_LENGTH} caractères`,
+        TOO_SHORT: 'Le nom doit contenir au moins 2 caractères',
+        TOO_LONG: 'Le nom ne peut pas dépasser 50 caractères',
         INVALID_FORMAT: 'Le nom ne peut contenir que des lettres, espaces, apostrophes et tirets'
       }
     },
@@ -22,7 +22,7 @@ class UserValidator {
       MESSAGES: {
         REQUIRED: "L'adresse email est requise",
         INVALID_FORMAT: "L'adresse email n'est pas valide",
-        TOO_LONG: `L'adresse email ne peut pas dépasser ${this.MAX_LENGTH} caractères`
+        TOO_LONG: "L'adresse email ne peut pas dépasser 100 caractères"
       }
     },
     PHONE: {
@@ -44,8 +44,8 @@ class UserValidator {
       },
       MESSAGES: {
         REQUIRED: 'Le mot de passe est requis',
-        TOO_SHORT: `Le mot de passe doit contenir au moins ${this.MIN_LENGTH} caractères`,
-        TOO_LONG: `Le mot de passe ne peut pas dépasser ${this.MAX_LENGTH} caractères`,
+        TOO_SHORT: 'Le mot de passe doit contenir au moins 8 caractères',
+        TOO_LONG: 'Le mot de passe ne peut pas dépasser 100 caractères',
         NO_UPPERCASE: 'Le mot de passe doit contenir au moins une lettre majuscule',
         NO_LOWERCASE: 'Le mot de passe doit contenir au moins une lettre minuscule',
         NO_NUMBER: 'Le mot de passe doit contenir au moins un chiffre',
