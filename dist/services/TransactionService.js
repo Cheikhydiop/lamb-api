@@ -75,7 +75,7 @@ let TransactionService = class TransactionService {
                     type: data.type,
                     amount: data.amount,
                     userId,
-                    provider: data.provider,
+                    provider: data.provider, // Cast to any or MobileMoneyProvider to resolve mismatch
                     notes: data.notes,
                 },
             });

@@ -10,14 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const BetService_1 = require("../services/BetService");
 const asyncHandler_1 = require("../middlewares/asyncHandler");
-const client_1 = require("@prisma/client");
-const WebSocketService_1 = require("../services/WebSocketService");
-const prisma = new client_1.PrismaClient();
-const webSocketService = new WebSocketService_1.WebSocketService();
-const betService = new BetService_1.BetService(prisma, webSocketService);
+const ServiceContainer_1 = require("../container/ServiceContainer");
 class BetController {
+    static get services() {
+        return ServiceContainer_1.ServiceContainer.getInstance();
+    }
 }
 _a = BetController;
 /**
@@ -51,10 +49,10 @@ BetController.createBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
     }
     const betData = {
         fightId,
-        amount: Number(amount),
+        amount: BigInt(amount),
         chosenFighter: chosenFighter
     };
-    const bet = yield betService.createBet(userId, betData);
+    const bet = yield _a.services.betService.createBet(userId, betData);
     res.status(201).json({
         success: true,
         message: 'Pari créé avec succès',
@@ -83,7 +81,7 @@ BetController.acceptBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
         });
         return;
     }
-    const bet = yield betService.acceptBet(userId, betId);
+    const bet = yield _a.services.betService.acceptBet(userId, betId);
     res.status(200).json({
         success: true,
         message: 'Pari accepté avec succès',
@@ -113,7 +111,7 @@ BetController.cancelBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
         });
         return;
     }
-    const bet = yield betService.cancelBet(betId, userId, isAdmin);
+    const bet = yield _a.services.betService.cancelBet(betId, userId, isAdmin);
     res.status(200).json({
         success: true,
         message: 'Pari annulé avec succès',
@@ -133,7 +131,7 @@ BetController.getBet = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(
         });
         return;
     }
-    const bet = yield betService.getBet(betId);
+    const bet = yield _a.services.betService.getBet(betId);
     res.status(200).json({
         success: true,
         data: bet
@@ -150,7 +148,7 @@ BetController.listBets = (0, asyncHandler_1.asyncHandler)((req, res) => __awaite
     const status = req.query.status;
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
-    const result = yield betService.listBets({
+    const result = yield _a.services.betService.listBets({
         userId,
         fightId,
         dayEventId,
@@ -175,7 +173,7 @@ BetController.getPendingBets = (0, asyncHandler_1.asyncHandler)((req, res) => __
     const dayEventId = req.query.dayEventId;
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
     const offset = req.query.offset ? parseInt(req.query.offset) : 0;
-    const result = yield betService.getPendingBets({
+    const result = yield _a.services.betService.getPendingBets({
         userId,
         fightId,
         dayEventId,
@@ -206,7 +204,7 @@ BetController.getAvailableBets = (0, asyncHandler_1.asyncHandler)((req, res) => 
         });
         return;
     }
-    const bets = yield betService.getAvailableBets(fightId);
+    const bets = yield _a.services.betService.getAvailableBets(fightId);
     res.status(200).json({
         success: true,
         data: bets
@@ -226,7 +224,7 @@ BetController.getMyBets = (0, asyncHandler_1.asyncHandler)((req, res) => __await
         });
         return;
     }
-    const bets = yield betService.getUserBets(userId);
+    const bets = yield _a.services.betService.getUserBets(userId);
     res.status(200).json({
         success: true,
         data: bets
@@ -246,7 +244,7 @@ BetController.getActiveBets = (0, asyncHandler_1.asyncHandler)((req, res) => __a
         });
         return;
     }
-    const bets = yield betService.getActiveBetsForUser(userId);
+    const bets = yield _a.services.betService.getActiveBetsForUser(userId);
     res.status(200).json({
         success: true,
         data: bets
@@ -266,7 +264,7 @@ BetController.getBetStats = (0, asyncHandler_1.asyncHandler)((req, res) => __awa
         });
         return;
     }
-    const stats = yield betService.getBetStats(userId);
+    const stats = yield _a.services.betService.getBetStats(userId);
     res.status(200).json({
         success: true,
         data: stats
@@ -302,7 +300,7 @@ BetController.settleBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
         });
         return;
     }
-    const bet = yield betService.settleBet(betId, winner);
+    const bet = yield _a.services.betService.settleBet(betId, winner);
     res.status(200).json({
         success: true,
         message: 'Pari réglé avec succès',
@@ -323,7 +321,7 @@ BetController.checkExpiredBets = (0, asyncHandler_1.asyncHandler)((req, res) => 
         });
         return;
     }
-    const expiredPending = yield betService.expirePendingBetsBeforeFight();
+    const expiredPending = yield _a.services.betService.expirePendingBetsBeforeFight();
     res.status(200).json({
         success: true,
         message: 'Vérification des paris expirés effectuée',

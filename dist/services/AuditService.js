@@ -1,13 +1,4 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,12 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditService = void 0;
-const typedi_1 = require("typedi");
-const Logger_1 = __importDefault(require("../utils/Logger"));
-const client_1 = require("@prisma/client");
-let AuditService = class AuditService {
-    constructor() {
-        this.prisma = new client_1.PrismaClient();
+const logger_1 = __importDefault(require("../utils/logger"));
+// refactored for manual DI
+class AuditService {
+    constructor(prisma) {
+        this.prisma = prisma;
     }
     createAuditLog(params) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -45,7 +35,7 @@ let AuditService = class AuditService {
                 });
                 // Log additionnel pour les événements critiques
                 if (params.severity === 'HIGH' || params.severity === 'CRITICAL') {
-                    Logger_1.default.warn(`CRITICAL AUDIT: ${params.action}`, {
+                    logger_1.default.warn(`CRITICAL AUDIT: ${params.action}`, {
                         userId: params.userId,
                         resourceId: params.resourceId,
                         ipAddress: params.ipAddress,
@@ -55,7 +45,7 @@ let AuditService = class AuditService {
                 return auditLog;
             }
             catch (error) {
-                Logger_1.default.error(`Failed to create audit log: `);
+                logger_1.default.error(`Failed to create audit log: `);
                 // Fallback: log to console/file
                 this.logToFile(params);
             }
@@ -64,7 +54,7 @@ let AuditService = class AuditService {
     logToFile(params) {
         const logEntry = Object.assign({ timestamp: new Date().toISOString() }, params);
         // Log dans un fichier dédié ou dans les logs système
-        Logger_1.default.error('AUDIT LOG FALLBACK:', logEntry);
+        logger_1.default.error('AUDIT LOG FALLBACK:', logEntry);
     }
     getAuditLogs(filters) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -89,13 +79,9 @@ let AuditService = class AuditService {
                     createdAt: { lt: cutoffDate },
                 },
             });
-            Logger_1.default.info(`Cleaned up ${result.count} old audit logs`);
+            logger_1.default.info(`Cleaned up ${result.count} old audit logs`);
             return result.count;
         });
     }
-};
+}
 exports.AuditService = AuditService;
-exports.AuditService = AuditService = __decorate([
-    (0, typedi_1.Service)(),
-    __metadata("design:paramtypes", [])
-], AuditService);

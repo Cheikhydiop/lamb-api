@@ -16,23 +16,25 @@ class RateLimitUtils {
                 return null;
             }
             // Headers selon RFC 6585 et pratiques courantes
-            const remaining = this.parseHeader(req, [
+            const remainingHeader = this.parseHeader(req, [
                 'RateLimit-Remaining',
                 'X-RateLimit-Remaining',
                 'ratelimit-remaining'
             ]);
-            const limit = this.parseHeader(req, [
+            const remaining = remainingHeader !== null ? parseInt(remainingHeader, 10) : null;
+            const limitHeader = this.parseHeader(req, [
                 'RateLimit-Limit',
                 'X-RateLimit-Limit',
                 'ratelimit-limit'
             ], this.DEFAULT_LIMIT);
+            const limit = limitHeader !== null ? parseInt(limitHeader, 10) : this.DEFAULT_LIMIT;
             const resetTimestamp = this.parseHeader(req, [
                 'RateLimit-Reset',
                 'X-RateLimit-Reset',
                 'ratelimit-reset',
                 'X-RateLimit-Reset-Timestamp'
             ]);
-            const retryAfter = this.parseHeader(req, [
+            const retryAfterHeader = this.parseHeader(req, [
                 'Retry-After',
                 'X-Retry-After'
             ]);
@@ -64,13 +66,14 @@ class RateLimitUtils {
             }
             // Calculer combien de tentatives ont été utilisées
             const used = limit - (remaining !== null ? remaining : 0);
+            const retryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
             return {
                 remaining: remaining !== null ? remaining : Math.max(0, limit - used),
                 limit,
                 resetTime,
                 windowMs: this.calculateWindowMs(resetTime),
                 used,
-                retryAfter: retryAfter ? parseInt(retryAfter, 10) : undefined
+                retryAfter
             };
         }
         catch (error) {

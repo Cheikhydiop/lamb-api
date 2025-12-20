@@ -17,7 +17,7 @@
 // import { RateLimitService } from '../services/RateLimitService';
 // import { SessionRepository } from '../repositories/SessionRepository';
 // import { LoginAttemptManager } from '../utils/LoginAttemptManager';
-// import logger from '../utils/Logger';
+// import logger from '../utils/logger';
 // // Initialiser Prisma et les services
 // const prisma = new PrismaClient();
 // const userRepository = new UserRepository(prisma);

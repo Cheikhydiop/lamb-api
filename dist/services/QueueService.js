@@ -28,7 +28,7 @@ exports.QueueService = void 0;
 const bullmq_1 = require("bullmq");
 const typedi_1 = require("typedi");
 const RedisService_1 = require("./RedisService");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 let QueueService = class QueueService {
     constructor(redisService) {
         this.redisService = redisService;
@@ -40,12 +40,12 @@ let QueueService = class QueueService {
             yield this.processWinnings(job);
         }), { connection });
         this.worker.on('completed', (job) => {
-            Logger_1.default.info(`Job ${job.id} completed successfully`);
+            logger_1.default.info(`Job ${job.id} completed successfully`);
         });
         this.worker.on('failed', (job, err) => {
-            Logger_1.default.error(`Job ${job === null || job === void 0 ? void 0 : job.id} failed: ${err.message}`);
+            logger_1.default.error(`Job ${job === null || job === void 0 ? void 0 : job.id} failed: ${err.message}`);
         });
-        Logger_1.default.info('Queue system initialized');
+        logger_1.default.info('Queue system initialized');
     }
     /**
      * Ajoute un combat à la file d'attente pour la distribution des gains
@@ -59,7 +59,7 @@ let QueueService = class QueueService {
                     delay: 5000,
                 },
             });
-            Logger_1.default.info(`Added winnings distribution job for fight ${fightId}`);
+            logger_1.default.info(`Added winnings distribution job for fight ${fightId}`);
         });
     }
     /**
@@ -68,7 +68,7 @@ let QueueService = class QueueService {
     processWinnings(job) {
         return __awaiter(this, void 0, void 0, function* () {
             const { fightId, winner } = job.data;
-            Logger_1.default.info(`Processing winnings for fight ${fightId}, winner: ${winner}`);
+            logger_1.default.info(`Processing winnings for fight ${fightId}, winner: ${winner}`);
             // NOTE: Ici, nous injecterons normalement BetService pour appeler settleAllBetsForFight
             // Pour éviter les dépendances circulaires, nous pourrions avoir besoin d'une approche différente
             // ou d'utiliser Container.get(BetService) au moment du traitement.

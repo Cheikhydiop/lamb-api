@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.websocketSecurity = exports.transactionSecurity = exports.cspViolationReport = exports.securityHeaders = void 0;
 const helmet_1 = __importDefault(require("helmet"));
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 exports.securityHeaders = [
     // Configuration de base de Helmet
     (0, helmet_1.default)(),
@@ -127,7 +127,7 @@ const cspViolationReport = (req, res) => {
         res.status(204).end();
     }
     catch (error) {
-        Logger_1.default.error('Error processing CSP violation report', { error });
+        logger_1.default.error('Error processing CSP violation report', { error });
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -158,7 +158,7 @@ const transactionSecurity = (req, res, next) => {
     if (req.path.includes('/transactions') || req.path.includes('/withdraw')) {
         // Ici, vous pourriez intégrer un système de rate limiting
         // basé sur l'IP ou l'utilisateur
-        Logger_1.default.info(`Transaction attempt from ${req.ip}`, {
+        logger_1.default.info(`Transaction attempt from ${req.ip}`, {
             userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.id, // Supposant que l'utilisateur est attaché à req
             path: req.path,
             method: req.method,
@@ -186,7 +186,7 @@ const websocketSecurity = (ws, req) => {
         return;
     }
     // Logging des connexions WebSocket
-    Logger_1.default.info('WebSocket connection established', {
+    logger_1.default.info('WebSocket connection established', {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
         path: req.path,

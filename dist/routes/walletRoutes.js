@@ -8,29 +8,102 @@ const typedi_1 = __importDefault(require("typedi"));
 const WalletController_1 = require("../controllers/WalletController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
-const walletController = typedi_1.default.get(WalletController_1.WalletController);
 /**
- * @route   GET /api/v1/wallet/balance
- * @desc    Get user wallet balance
- * @access  Private
+ * @swagger
+ * tags:
+ *   name: Wallet
+ *   description: Wallet management
  */
-router.get('/balance', authMiddleware_1.requireAuth, (req, res) => walletController.getBalance(req, res));
 /**
- * @route   POST /api/v1/wallet/deposit
- * @desc    Initiate a deposit
- * @access  Private
+ * @swagger
+ * /api/v1/wallet/balance:
+ *   get:
+ *     summary: Get wallet balance
+ *     tags: [Wallet]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Wallet balance
  */
-router.post('/deposit', authMiddleware_1.requireAuth, (req, res) => walletController.deposit(req, res));
+router.get('/balance', authMiddleware_1.requireAuth, (req, res) => {
+    const walletController = typedi_1.default.get(WalletController_1.WalletController);
+    walletController.getBalance(req, res);
+});
 /**
- * @route   POST /api/v1/wallet/withdraw
- * @desc    Initiate a withdrawal
- * @access  Private
+ * @swagger
+ * /api/v1/wallet/deposit:
+ *   post:
+ *     summary: Initiate a deposit
+ *     tags: [Wallet]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *               - provider
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               provider:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Deposit initiated
  */
-router.post('/withdraw', authMiddleware_1.requireAuth, (req, res) => walletController.withdraw(req, res));
+router.post('/deposit', authMiddleware_1.requireAuth, (req, res) => {
+    const walletController = typedi_1.default.get(WalletController_1.WalletController);
+    walletController.deposit(req, res);
+});
 /**
- * @route   GET /api/v1/wallet/transactions
- * @desc    Get transaction history
- * @access  Private
+ * @swagger
+ * /api/v1/wallet/withdraw:
+ *   post:
+ *     summary: Initiate a withdrawal
+ *     tags: [Wallet]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - amount
+ *               - provider
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               provider:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Withdrawal initiated
  */
-router.get('/transactions', authMiddleware_1.requireAuth, (req, res) => walletController.getTransactions(req, res));
+router.post('/withdraw', authMiddleware_1.requireAuth, (req, res) => {
+    const walletController = typedi_1.default.get(WalletController_1.WalletController);
+    walletController.withdraw(req, res);
+});
+/**
+ * @swagger
+ * /api/v1/wallet/transactions:
+ *   get:
+ *     summary: Get transaction history
+ *     tags: [Wallet]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Transaction history
+ */
+router.get('/transactions', authMiddleware_1.requireAuth, (req, res) => {
+    const walletController = typedi_1.default.get(WalletController_1.WalletController);
+    walletController.getTransactions(req, res);
+});
 exports.default = router;

@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Routes;
-const authRoutes_1 = __importDefault(require("./authRoutes"));
+const authRoutes_1 = require("./authRoutes");
 const fightRoutes_1 = __importDefault(require("./fightRoutes"));
 const fighterRoutes_1 = __importDefault(require("./fighterRoutes"));
 const betRoutes_1 = __importDefault(require("./betRoutes"));
-const admin_routes_1 = __importDefault(require("./admin.routes"));
+const admin_routes_1 = require("./admin.routes");
 const transaction_routes_1 = __importDefault(require("./transaction.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
 const walletRoutes_1 = __importDefault(require("./walletRoutes"));
@@ -18,7 +18,8 @@ const authMiddleware_1 = require("../middlewares/authMiddleware");
 function Routes(app) {
     // ==================== ROUTES PUBLIQUES ====================
     // Routes d'authentification
-    app.use('/api/auth', authRoutes_1.default);
+    // Routes d'authentification
+    app.use('/api/auth', (0, authRoutes_1.createAuthRoutes)());
     // Routes des combattants (lecture publique)
     app.use('/api/fighter', fighterRoutes_1.default);
     // Routes des combats (lecture publique, création admin)
@@ -35,7 +36,7 @@ function Routes(app) {
     // Routes notifications (authentification requise)
     app.use('/api/notifications', notificationRoutes_1.default);
     // Routes d'administration (protégées par le router lui-même)
-    app.use('/api/admin', admin_routes_1.default);
+    app.use('/api/admin', (0, admin_routes_1.createAdminRoutes)());
     // ==================== ROUTES DE SANTÉ ET STATUS ====================
     // Route de santé de l'API
     app.get('/api/health', (req, res) => {

@@ -24,6 +24,8 @@ const webSocketService = new WebSocketService_1.WebSocketService();
 const betService = new BetService_1.BetService(prisma, webSocketService);
 // Créer une instance du service avec les dépendances
 const fightService = new FightService_1.FightService(prisma, betService, webSocketService);
+// Déclaration globale pour req.user
+// (Global declaration removed to avoid conflict with express.d.ts)
 class FightController {
     // ========== COMBATS INDIVIDUELS ==========
     createFight(req, res, next) {

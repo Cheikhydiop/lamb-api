@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginAttemptManager = void 0;
-const Logger_1 = __importDefault(require("./Logger"));
+const logger_1 = __importDefault(require("./logger"));
 // Store en mémoire pour compter les tentatives par IP
 const failedLoginAttempts = new Map();
 // Nettoyer le store toutes les 15 minutes
@@ -23,7 +23,7 @@ class LoginAttemptManager {
     static clearFailedAttempts(ip) {
         if (failedLoginAttempts.has(ip)) {
             failedLoginAttempts.delete(ip);
-            Logger_1.default.info(`✅ Successful login for IP ${ip} - failed attempts counter reset`);
+            logger_1.default.info(`✅ Successful login for IP ${ip} - failed attempts counter reset`);
         }
     }
     /**
@@ -43,9 +43,9 @@ class LoginAttemptManager {
         failedLoginAttempts.set(ip, attempts);
         const remaining = Math.max(0, this.MAX_ATTEMPTS - attempts.count);
         const isBlocked = attempts.count >= this.MAX_ATTEMPTS;
-        Logger_1.default.info(`🔍 IP ${ip} - Attempt ${attempts.count}/${this.MAX_ATTEMPTS}, ${remaining} remaining - Reset in ${this.WINDOW_MS / 1000}s`);
+        logger_1.default.info(`🔍 IP ${ip} - Attempt ${attempts.count}/${this.MAX_ATTEMPTS}, ${remaining} remaining - Reset in ${this.WINDOW_MS / 1000}s`);
         if (isBlocked) {
-            Logger_1.default.error(`🚨 SECURITY ALERT: Rate limit exceeded for IP ${ip} - ${attempts.count} failed attempts - Wait ${this.WINDOW_MS / 1000}s`);
+            logger_1.default.error(`🚨 SECURITY ALERT: Rate limit exceeded for IP ${ip} - ${attempts.count} failed attempts - Wait ${this.WINDOW_MS / 1000}s`);
         }
         return {
             count: attempts.count,

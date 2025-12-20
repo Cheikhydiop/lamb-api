@@ -136,7 +136,7 @@ const rateLimitMiddleware = (config = {}) => {
                 const resetTime = new Date(data.firstAttempt.getTime() + windowMs);
                 const retryAfter = Math.ceil((resetTime.getTime() - now.getTime()) / 1000);
                 res.setHeader('Retry-After', retryAfter);
-                return res.status(429).json({
+                res.status(429).json({
                     success: false,
                     message,
                     error: {
@@ -147,6 +147,7 @@ const rateLimitMiddleware = (config = {}) => {
                         scope
                     }
                 });
+                return;
             }
             // Si la requête réussit et qu'on doit ignorer les succès
             if (skipSuccessfulRequests) {

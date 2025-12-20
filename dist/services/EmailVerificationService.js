@@ -25,7 +25,7 @@ exports.EmailVerificationService = void 0;
 // src/services/EmailVerificationService.ts
 const typedi_1 = require("typedi");
 const EmailService_1 = require("./EmailService");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const not_found_error_1 = require("../utils/response/errors/not-found-error");
 const UserRepository_1 = require("../repositories/UserRepository");
 const prismaClient_1 = __importDefault(require("../config/prismaClient"));
@@ -39,22 +39,22 @@ let EmailVerificationService = class EmailVerificationService {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                Logger_1.default.info(`📧 [EMAIL VERIFICATION] Début pour ${email} (${userId})`);
+                logger_1.default.info(`📧 [EMAIL VERIFICATION] Début pour ${email} (${userId})`);
                 // Récupérer l'utilisateur
                 const user = yield prismaClient_1.default.user.findUnique({
                     where: { id: userId }
                 });
                 if (!user) {
-                    Logger_1.default.error(`❌ [EMAIL VERIFICATION] Utilisateur non trouvé: ${userId}`);
+                    logger_1.default.error(`❌ [EMAIL VERIFICATION] Utilisateur non trouvé: ${userId}`);
                     throw new not_found_error_1.NotFoundError('Utilisateur non trouvé');
                 }
-                Logger_1.default.info(`✅ [EMAIL VERIFICATION] Utilisateur trouvé: ${user.email}`);
+                logger_1.default.info(`✅ [EMAIL VERIFICATION] Utilisateur trouvé: ${user.email}`);
                 // Créer et envoyer la vérification
                 yield this.createVerification(user);
-                Logger_1.default.info(`✅ [EMAIL VERIFICATION] Email envoyé avec succès à ${email}`);
+                logger_1.default.info(`✅ [EMAIL VERIFICATION] Email envoyé avec succès à ${email}`);
             }
             catch (error) {
-                Logger_1.default.error(`❌ [EMAIL VERIFICATION] Échec pour ${email}`, {
+                logger_1.default.error(`❌ [EMAIL VERIFICATION] Échec pour ${email}`, {
                     userId,
                     email,
                     errorName: (_a = error === null || error === void 0 ? void 0 : error.constructor) === null || _a === void 0 ? void 0 : _a.name,
@@ -70,7 +70,7 @@ let EmailVerificationService = class EmailVerificationService {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                Logger_1.default.info(`🔐 [CREATE VERIFICATION] Début pour ${user.email}`);
+                logger_1.default.info(`🔐 [CREATE VERIFICATION] Début pour ${user.email}`);
                 // Invalider les anciens codes
                 yield prismaClient_1.default.otpCode.updateMany({
                     where: {
@@ -82,7 +82,7 @@ let EmailVerificationService = class EmailVerificationService {
                 // Générer un nouveau code
                 const code = this.generateCode();
                 const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-                Logger_1.default.info(`📝 [CREATE VERIFICATION] Code généré pour ${user.email}`);
+                logger_1.default.info(`📝 [CREATE VERIFICATION] Code généré pour ${user.email}`);
                 // Créer l'OTP en base
                 const otpCode = yield prismaClient_1.default.otpCode.create({
                     data: {
@@ -93,18 +93,21 @@ let EmailVerificationService = class EmailVerificationService {
                         userId: user.id,
                     }
                 });
-                Logger_1.default.info(`✅ [CREATE VERIFICATION] OTP créé: ${otpCode.id}`);
+                logger_1.default.info(`✅ [CREATE VERIFICATION] OTP créé: ${otpCode.id}`);
+                if (!user.email) {
+                    throw new Error('User email is required for verification');
+                }
                 // ⚠️ POINT CRITIQUE : Envoyer l'email
                 const emailSent = yield this.emailService.sendVerificationCode(user.email, code);
                 if (!emailSent) {
-                    Logger_1.default.warn(`⚠️ [CREATE VERIFICATION] Email non envoyé (mode dev ou erreur silencieuse)`);
+                    logger_1.default.warn(`⚠️ [CREATE VERIFICATION] Email non envoyé (mode dev ou erreur silencieuse)`);
                     // En mode dev, on continue quand même
                     // En prod, vous pourriez vouloir throw une erreur
                 }
-                Logger_1.default.info(`✅ [CREATE VERIFICATION] Terminé pour ${user.email}`);
+                logger_1.default.info(`✅ [CREATE VERIFICATION] Terminé pour ${user.email}`);
             }
             catch (error) {
-                Logger_1.default.error(`❌ [CREATE VERIFICATION] Échec pour ${user.email}`, {
+                logger_1.default.error(`❌ [CREATE VERIFICATION] Échec pour ${user.email}`, {
                     userId: user.id,
                     email: user.email,
                     errorName: (_a = error === null || error === void 0 ? void 0 : error.constructor) === null || _a === void 0 ? void 0 : _a.name,

@@ -11,9 +11,7 @@ class RequestValidationError extends custom_error_1.CustomError {
         Object.setPrototypeOf(this, RequestValidationError.prototype);
     }
     serializeErrors() {
-        if (typeof this.errors === 'object')
-            return this.errors;
-        return {};
+        return [{ message: 'Invalid request parameters', errors: this.errors }];
     }
 }
 exports.RequestValidationError = RequestValidationError;

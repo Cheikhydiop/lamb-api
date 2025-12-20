@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,32 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const AuthService_1 = require("../services/AuthService");
-const UserRepository_1 = require("../repositories/UserRepository");
-const WalletRepository_1 = require("../repositories/WalletRepository");
-const SessionRepository_1 = require("../repositories/SessionRepository");
-const EmailVerificationService_1 = require("../services/EmailVerificationService");
-const EmailService_1 = require("../services/EmailService");
-const OtpCodeRepository_1 = require("../repositories/OtpCodeRepository");
-const AuditLogRepository_1 = require("../repositories/AuditLogRepository");
 const customErrors_1 = require("../errors/customErrors");
 const asyncHandler_1 = require("../middlewares/asyncHandler");
-const client_1 = require("@prisma/client");
 const RateLimitService_1 = require("../services/RateLimitService");
 const LoginAttemptManager_1 = require("../utils/LoginAttemptManager");
-const typedi_1 = require("typedi");
+const ServiceContainer_1 = require("../container/ServiceContainer");
 const tokenUtils_1 = require("../utils/tokenUtils");
-const Logger_1 = __importDefault(require("../utils/Logger"));
-const prisma = new client_1.PrismaClient();
-const userRepository = new UserRepository_1.UserRepository(prisma);
-const walletRepository = new WalletRepository_1.WalletRepository(prisma);
-const sessionRepository = new SessionRepository_1.SessionRepository(prisma);
-const emailService = new EmailService_1.EmailService();
-const otpCodeRepository = new OtpCodeRepository_1.OtpCodeRepository(prisma);
-const auditLogRepository = new AuditLogRepository_1.AuditLogRepository(prisma);
-const emailVerificationService = new EmailVerificationService_1.EmailVerificationService(emailService, userRepository);
-const authService = new AuthService_1.AuthService(userRepository, walletRepository, emailVerificationService, sessionRepository, emailService, otpCodeRepository, auditLogRepository, prisma);
+const logger_1 = __importDefault(require("../utils/logger"));
 class AuthController {
+    static get services() {
+        return ServiceContainer_1.ServiceContainer.getInstance();
+    }
 }
 _a = AuthController;
 /**
@@ -96,7 +48,7 @@ AuthController.login = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(
     }
     const loginData = req.body;
     try {
-        const result = yield authService.login(loginData, req);
+        const result = yield _a.services.authService.login(loginData, req);
         // Réinitialiser les tentatives échouées en cas de succès
         LoginAttemptManager_1.LoginAttemptManager.clearFailedAttempts(clientIp);
         // Ajouter les headers de rate limit
@@ -105,22 +57,23 @@ AuthController.login = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(
             res.setHeader('RateLimit-Limit', rateLimitCheck.rateLimitInfo.limit);
             res.setHeader('RateLimit-Reset', Math.floor(rateLimitCheck.rateLimitInfo.resetTime.getTime() / 1000));
         }
+        const authResult = result;
         res.status(200).json({
             success: true,
-            message: result.message,
+            message: authResult.message,
             data: {
-                user: result.user,
-                token: result.token,
-                refreshToken: result.refreshToken,
-                sessionId: result.sessionId,
-                deviceInfo: result.deviceInfo,
-                requiresDeviceVerification: result.requiresDeviceVerification,
-                existingSessions: result.existingSessions
+                user: authResult.user,
+                token: authResult.token,
+                refreshToken: authResult.refreshToken,
+                sessionId: authResult.sessionId,
+                deviceInfo: authResult.deviceInfo,
+                requiresDeviceVerification: authResult.requiresDeviceVerification,
+                existingSessions: authResult.existingSessions
             }
         });
     }
     catch (error) {
-        Logger_1.default.error('❌ Échec de connexion dans le contrôleur', {
+        logger_1.default.error('❌ Échec de connexion dans le contrôleur', {
             email: loginData.email,
             errorType: error.constructor.name,
             errorMessage: error.message,
@@ -156,7 +109,7 @@ AuthController.register = (0, asyncHandler_1.asyncHandler)((req, res) => __await
         throw new customErrors_1.RateLimitError('Trop de tentatives d\'inscription', rateLimitCheck.rateLimitInfo);
     }
     const userData = req.body;
-    const result = yield authService.register(userData, req);
+    const result = yield _a.services.authService.register(userData, req);
     // Ajouter les headers de rate limit
     if (rateLimitCheck.rateLimitInfo) {
         res.setHeader('RateLimit-Remaining', rateLimitCheck.rateLimitInfo.remaining);
@@ -197,7 +150,7 @@ AuthController.verifyEmail = (0, asyncHandler_1.asyncHandler)((req, res) => __aw
             constraint: 'required'
         })));
     }
-    const result = yield authService.verifyEmail(userId, otpCode, req);
+    const result = yield _a.services.authService.verifyEmail(userId, otpCode, req);
     res.status(200).json({
         success: true,
         message: result.message,
@@ -219,7 +172,7 @@ AuthController.logout = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter
             { field: 'sessionId', message: 'Session ID est requis', constraint: 'required' }
         ]);
     }
-    yield authService.logout(userId, sessionId);
+    yield _a.services.authService.logout(userId, sessionId);
     res.status(200).json({
         success: true,
         message: 'Déconnexion réussie'
@@ -236,7 +189,7 @@ AuthController.refreshToken = (0, asyncHandler_1.asyncHandler)((req, res) => __a
             { field: 'refreshToken', message: 'Refresh token est requis', constraint: 'required' }
         ]);
     }
-    const result = yield authService.refreshToken(refreshToken, req);
+    const result = yield _a.services.authService.refreshToken(refreshToken, req);
     res.status(200).json({
         success: true,
         message: 'Token rafraîchi avec succès',
@@ -261,7 +214,7 @@ AuthController.forgotPassword = (0, asyncHandler_1.asyncHandler)((req, res) => _
             { field: 'email', message: 'Email est requis', constraint: 'required' }
         ]);
     }
-    const result = yield authService.forgotPassword({ email }, req);
+    const result = yield _a.services.authService.forgotPassword({ email }, req);
     res.status(200).json({
         success: true,
         message: result.message
@@ -293,7 +246,7 @@ AuthController.resetPassword = (0, asyncHandler_1.asyncHandler)((req, res) => __
             constraint: 'required'
         })));
     }
-    const result = yield authService.resetPassword({ token, newPassword }, req);
+    const result = yield _a.services.authService.resetPassword({ token, newPassword }, req);
     res.status(200).json({
         success: true,
         message: result.message
@@ -331,7 +284,7 @@ AuthController.changePassword = (0, asyncHandler_1.asyncHandler)((req, res) => _
             constraint: 'validation'
         })));
     }
-    const result = yield authService.changePassword(userId, { currentPassword, newPassword }, req);
+    const result = yield _a.services.authService.changePassword(userId, { currentPassword, newPassword }, req);
     res.status(200).json({
         success: true,
         message: result.message
@@ -382,7 +335,7 @@ AuthController.updateProfile = (0, asyncHandler_1.asyncHandler)((req, res) => __
             { field: 'general', message: 'Fournissez au moins un champ à mettre à jour', constraint: 'required' }
         ]);
     }
-    const result = yield authService.updateProfile(userId, updateData, req);
+    const result = yield _a.services.authService.updateProfile(userId, updateData, req);
     res.status(200).json({
         success: true,
         message: result.message,
@@ -403,7 +356,7 @@ AuthController.getProfile = (0, asyncHandler_1.asyncHandler)((req, res) => __awa
             { field: 'userId', message: 'Utilisateur non authentifié', constraint: 'auth_required' }
         ]);
     }
-    const user = yield authService.getProfile(userId);
+    const user = yield _a.services.authService.getProfile(userId);
     res.status(200).json({
         success: true,
         data: {
@@ -424,7 +377,7 @@ AuthController.deactivateAccount = (0, asyncHandler_1.asyncHandler)((req, res) =
             { field: 'userId', message: 'Utilisateur non authentifié', constraint: 'auth_required' }
         ]);
     }
-    const result = yield authService.deactivateAccount(userId, { reason }, req);
+    const result = yield _a.services.authService.deactivateAccount(userId, { reason }, req);
     res.status(200).json({
         success: true,
         message: result.message
@@ -449,7 +402,7 @@ AuthController.reactivateAccount = (0, asyncHandler_1.asyncHandler)((req, res) =
             constraint: 'required'
         })));
     }
-    const result = yield authService.reactivateAccount(email, password, req);
+    const result = yield _a.services.authService.reactivateAccount(email, password, req);
     res.status(200).json({
         success: true,
         message: result.message,
@@ -471,7 +424,7 @@ AuthController.getSessions = (0, asyncHandler_1.asyncHandler)((req, res) => __aw
             { field: 'userId', message: 'Utilisateur non authentifié', constraint: 'auth_required' }
         ]);
     }
-    const sessions = yield authService.getUserSessions(userId);
+    const sessions = yield _a.services.authService.getUserSessions(userId);
     res.status(200).json({
         success: true,
         data: {
@@ -497,7 +450,7 @@ AuthController.revokeSession = (0, asyncHandler_1.asyncHandler)((req, res) => __
             { field: 'sessionId', message: 'Session ID est requis', constraint: 'required' }
         ]);
     }
-    yield authService.revokeSession(userId, sessionId);
+    yield _a.services.authService.revokeSession(userId, sessionId);
     res.status(200).json({
         success: true,
         message: 'Session révoquée avec succès'
@@ -517,11 +470,11 @@ AuthController.revokeAllSessions = (0, asyncHandler_1.asyncHandler)((req, res) =
         ]);
     }
     // Récupérer toutes les sessions
-    const sessions = yield authService.getUserSessions(userId);
+    const sessions = yield _a.services.authService.getUserSessions(userId);
     // Révoquer toutes les sessions sauf la session actuelle
     const sessionsToRevoke = sessions.filter(session => session.id !== currentSessionId);
     for (const session of sessionsToRevoke) {
-        yield authService.revokeSession(userId, session.id);
+        yield _a.services.authService.revokeSession(userId, session.id);
     }
     res.status(200).json({
         success: true,
@@ -544,12 +497,12 @@ AuthController.resendVerificationCode = (0, asyncHandler_1.asyncHandler)((req, r
         ]);
     }
     // Récupérer l'utilisateur
-    const user = yield prisma.user.findUnique({ where: { id: userId } });
+    const user = yield _a.services.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
         throw new customErrors_1.NotFoundError('Utilisateur non trouvé');
     }
     // Renvoyer l'email de vérification
-    const emailVerificationService = typedi_1.Container.get(EmailVerificationService_1.EmailVerificationService);
+    const emailVerificationService = _a.services.emailVerificationService;
     yield emailVerificationService.sendVerificationEmail(user.id, user.email);
     res.status(200).json({
         success: true,
@@ -569,8 +522,8 @@ AuthController.verifyDevice = (0, asyncHandler_1.asyncHandler)((req, res) => __a
         ]);
     }
     // Importer le service
-    const { MultiDeviceAuthService } = yield Promise.resolve().then(() => __importStar(require('../services/MultiDeviceAuthService')));
-    const multiDeviceService = new MultiDeviceAuthService(prisma, typedi_1.Container.get(EmailService_1.EmailService), typedi_1.Container.get(require('../services/WebSocketService').WebSocketService));
+    // const { MultiDeviceAuthService } = await import('../services/MultiDeviceAuthService');
+    const multiDeviceService = _a.services.multiDeviceAuthService;
     const result = yield multiDeviceService.verifyDeviceOTP(sessionId, otpCode);
     if (!result.success) {
         throw new customErrors_1.ValidationError('Code invalide ou expiré', [
@@ -578,7 +531,7 @@ AuthController.verifyDevice = (0, asyncHandler_1.asyncHandler)((req, res) => __a
         ]);
     }
     // Récupérer le rôle réel de l'utilisateur
-    const userRole = yield prisma.user.findUnique({
+    const userRole = yield _a.services.prisma.user.findUnique({
         where: { id: result.session.userId },
         select: { role: true }
     });
@@ -610,8 +563,7 @@ AuthController.resendDeviceOTP = (0, asyncHandler_1.asyncHandler)((req, res) => 
             { field: 'sessionId', message: 'Session ID requis', constraint: 'required' }
         ]);
     }
-    const { MultiDeviceAuthService } = yield Promise.resolve().then(() => __importStar(require('../services/MultiDeviceAuthService')));
-    const multiDeviceService = new MultiDeviceAuthService(prisma, typedi_1.Container.get(EmailService_1.EmailService), typedi_1.Container.get(require('../services/WebSocketService').WebSocketService));
+    const multiDeviceService = _a.services.multiDeviceAuthService;
     const result = yield multiDeviceService.resendDeviceOTP(sessionId);
     if (!result.success) {
         throw new customErrors_1.ValidationError(result.error || 'Impossible de renvoyer le code', [

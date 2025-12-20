@@ -25,7 +25,7 @@ exports.RedisService = void 0;
 const ioredis_1 = __importDefault(require("ioredis"));
 const typedi_1 = require("typedi");
 const env_1 = __importDefault(require("../config/env"));
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 let RedisService = class RedisService {
     constructor() {
         this.isConnected = false;
@@ -40,11 +40,11 @@ let RedisService = class RedisService {
         });
         this.client.on('connect', () => {
             this.isConnected = true;
-            Logger_1.default.info('Redis connected successfully');
+            logger_1.default.info('Redis connected successfully');
         });
         this.client.on('error', (error) => {
             this.isConnected = false;
-            Logger_1.default.error('Redis connection error:', error);
+            logger_1.default.error('Redis connection error:', error);
         });
     }
     getClient() {
@@ -56,7 +56,7 @@ let RedisService = class RedisService {
                 return yield this.client.get(key);
             }
             catch (error) {
-                Logger_1.default.error(`Redis post GET error for key ${key}:`, error);
+                logger_1.default.error(`Redis post GET error for key ${key}:`, error);
                 return null;
             }
         });
@@ -72,7 +72,7 @@ let RedisService = class RedisService {
                 }
             }
             catch (error) {
-                Logger_1.default.error(`Redis set error for key ${key}:`, error);
+                logger_1.default.error(`Redis set error for key ${key}:`, error);
             }
         });
     }
@@ -82,7 +82,7 @@ let RedisService = class RedisService {
                 yield this.client.del(key);
             }
             catch (error) {
-                Logger_1.default.error(`Redis delete error for key ${key}:`, error);
+                logger_1.default.error(`Redis delete error for key ${key}:`, error);
             }
         });
     }
@@ -93,7 +93,7 @@ let RedisService = class RedisService {
                 return result === 1;
             }
             catch (error) {
-                Logger_1.default.error(`Redis exists check error for key ${key}:`, error);
+                logger_1.default.error(`Redis exists check error for key ${key}:`, error);
                 return false;
             }
         });

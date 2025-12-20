@@ -1,13 +1,4 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,9 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuditMiddleware = exports.AuditSeverity = exports.AuditResourceType = exports.AuditAction = void 0;
-const typedi_1 = require("typedi");
-const AuditService_1 = require("../services/AuditService");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 // Enums adaptés à votre modèle
 var AuditAction;
 (function (AuditAction) {
@@ -90,7 +79,7 @@ var AuditSeverity;
     AuditSeverity["HIGH"] = "HIGH";
     AuditSeverity["CRITICAL"] = "CRITICAL";
 })(AuditSeverity || (exports.AuditSeverity = AuditSeverity = {}));
-let AuditMiddleware = class AuditMiddleware {
+class AuditMiddleware {
     constructor(auditService) {
         this.auditService = auditService;
     }
@@ -167,11 +156,11 @@ let AuditMiddleware = class AuditMiddleware {
                     ipAddress,
                     userAgent,
                 });
-                Logger_1.default.info(`Audit log created: ${config.action} - ${isSuccessful ? 'SUCCESS' : 'FAILED'}`);
+                logger_1.default.info(`Audit log created: ${config.action} - ${isSuccessful ? 'SUCCESS' : 'FAILED'}`);
             }
             catch (auditError) {
                 const errorMessage = auditError instanceof Error ? auditError.message : String(auditError);
-                Logger_1.default.error(`Failed to create audit log: ${errorMessage}`);
+                logger_1.default.error(`Failed to create audit log: ${errorMessage}`);
             }
         });
     }
@@ -455,9 +444,5 @@ let AuditMiddleware = class AuditMiddleware {
             getDetails: () => details,
         });
     }
-};
+}
 exports.AuditMiddleware = AuditMiddleware;
-exports.AuditMiddleware = AuditMiddleware = __decorate([
-    (0, typedi_1.Service)(),
-    __metadata("design:paramtypes", [AuditService_1.AuditService])
-], AuditMiddleware);

@@ -32,11 +32,11 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], SignUpDto.prototype, "first_name", void 0);
+], SignUpDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], SignUpDto.prototype, "last_name", void 0);
+], SignUpDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)

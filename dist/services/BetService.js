@@ -1,13 +1,4 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -22,13 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetService = void 0;
-// services/BetService.ts - VERSION CORRIGÉE POUR TYPES PRISMA
-const typedi_1 = require("typedi");
 const client_1 = require("@prisma/client");
+const library_1 = require("@prisma/client/runtime/library");
 const date_fns_1 = require("date-fns");
-const WebSocketService_1 = require("./WebSocketService");
 const logger_1 = __importDefault(require("../utils/logger"));
-let BetService = class BetService {
+class BetService {
     constructor(prisma, webSocketService) {
         this.prisma = prisma;
         this.webSocketService = webSocketService;
@@ -73,7 +62,7 @@ let BetService = class BetService {
                     throw new Error('Impossible de parier sur un combat terminé ou annulé');
                 }
                 // Vérifier si le combat commence bientôt
-                const fightStartTime = fight.scheduledTime || fight.dayEvent.date;
+                const fightStartTime = fight.scheduledAt || fight.dayEvent.date;
                 const now = new Date();
                 const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
                 if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
@@ -87,14 +76,15 @@ let BetService = class BetService {
                     throw new Error('Portefeuille non trouvé');
                 }
                 // Vérifier que le solde est suffisant (pas besoin de calculer availableBalance)
-                if (wallet.balance < data.amount) {
+                const amountBigInt = data.amount;
+                if (wallet.balance < amountBigInt) {
                     throw new Error('Solde insuffisant');
                 }
                 if (data.amount <= 0) {
                     throw new Error('Le montant du pari doit être supérieur à 0');
                 }
                 // Calculer le gain potentiel (pour l'annoncer)
-                const potentialWin = data.amount * this.WIN_MULTIPLIER;
+                const potentialWin = Number(data.amount) * this.WIN_MULTIPLIER;
                 // Calculer la date limite d'annulation
                 const canCancelUntil = (0, date_fns_1.addMinutes)(new Date(), this.CANCELLATION_WINDOW_MINUTES);
                 // Vérifier s'il existe déjà un pari similaire non accepté
@@ -112,7 +102,7 @@ let BetService = class BetService {
                 // ========== TRANSACTION (opérations critiques uniquement) ==========
                 const bet = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                     // 1. SOUSTRAIRE DU SOLDE et bloquer les fonds
-                    const amountBigInt = BigInt(Math.floor(data.amount));
+                    const amountBigInt = data.amount;
                     yield tx.wallet.update({
                         where: { userId },
                         data: {
@@ -123,7 +113,7 @@ let BetService = class BetService {
                     // 2. Créer le pari
                     const newBet = yield tx.bet.create({
                         data: {
-                            amount: data.amount,
+                            amount: data.amount.toString(),
                             chosenFighter: data.chosenFighter,
                             fightId: data.fightId,
                             creatorId: userId,
@@ -149,7 +139,7 @@ let BetService = class BetService {
                     });
                     // 3. Mettre à jour les statistiques de la journée
                     // Convertir en BigInt si le champ est de type BigInt dans le schéma
-                    const totalAmountIncrement = BigInt(Math.floor(data.amount));
+                    const totalAmountIncrement = data.amount;
                     yield tx.dayEvent.update({
                         where: { id: fight.dayEventId },
                         data: {
@@ -183,7 +173,7 @@ let BetService = class BetService {
                     yield this.prisma.notification.create({
                         data: {
                             userId: userId,
-                            type: 'BET_CREATED',
+                            type: 'BET_PLACED',
                             title: 'Pari créé',
                             message: `Vous avez créé un pari de ${data.amount} FCFA sur ${bet.chosenFighter === 'A' ? bet.fight.fighterA.name : bet.fight.fighterB.name}. Attendez qu'un autre joueur l'accepte.`,
                         }
@@ -270,9 +260,10 @@ let BetService = class BetService {
                 // Filtrer les paris qui sont dans la fenêtre de 30 minutes avant le combat
                 const now = new Date();
                 const filteredBets = bets.filter(bet => {
+                    var _a;
                     if (!bet.fight)
                         return false;
-                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    const fightStartTime = bet.fight.scheduledAt || ((_a = bet.fight.dayEvent) === null || _a === void 0 ? void 0 : _a.date);
                     const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
                     return (0, date_fns_1.isAfter)(thirtyMinutesBeforeFight, now);
                 });
@@ -294,7 +285,7 @@ let BetService = class BetService {
             try {
                 let bet;
                 const result = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                    var _a, _b;
+                    var _a, _b, _c;
                     bet = yield tx.bet.findUnique({
                         where: { id: betId },
                         include: {
@@ -319,7 +310,7 @@ let BetService = class BetService {
                         throw new Error('Vous ne pouvez pas accepter votre propre pari');
                     }
                     // Vérifier si le combat a commencé (c'est la seule limitation pour l'acceptation)
-                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    const fightStartTime = bet.fight.scheduledAt || ((_a = bet.fight.dayEvent) === null || _a === void 0 ? void 0 : _a.date);
                     const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
                     const now = new Date();
                     if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
@@ -333,7 +324,9 @@ let BetService = class BetService {
                         throw new Error('Portefeuille non trouvé');
                     }
                     // Vérifier que le solde est suffisant
-                    if (acceptorWallet.balance < bet.amount) {
+                    // bet.amount is Decimal from Prisma, convert to BigInt for comparison with wallet.balance
+                    const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
+                    if (acceptorWallet.balance < betAmountBigInt) {
                         throw new Error('Solde insuffisant pour accepter ce pari');
                     }
                     // SOUSTRAIRE DU SOLDE et bloquer les fonds de l'accepteur
@@ -384,10 +377,10 @@ let BetService = class BetService {
                             userId: bet.creatorId,
                             type: 'BET_ACCEPTED',
                             title: 'Pari accepté !',
-                            message: `${(_a = updatedBet.acceptor) === null || _a === void 0 ? void 0 : _a.name} a accepté votre pari de ${bet.amount} FCFA.`,
+                            message: `${(_b = updatedBet.acceptor) === null || _b === void 0 ? void 0 : _b.name} a accepté votre pari de ${bet.amount} FCFA.`,
                         }
                     });
-                    logger_1.default.info(`Pari accepté: ${bet.id} par ${(_b = updatedBet.acceptor) === null || _b === void 0 ? void 0 : _b.name}`);
+                    logger_1.default.info(`Pari accepté: ${bet.id} par ${(_c = updatedBet.acceptor) === null || _c === void 0 ? void 0 : _c.name}`);
                     return updatedBet;
                 }), {
                     maxWait: 10000,
@@ -398,7 +391,7 @@ let BetService = class BetService {
                     yield this.prisma.notification.create({
                         data: {
                             userId: acceptorId,
-                            type: 'BET_ACCEPTED',
+                            type: client_1.NotificationType.BET_ACCEPTED,
                             title: 'Pari accepté',
                             message: `Vous avez accepté le pari de ${bet.creator.name} de ${bet.amount} FCFA.`,
                         }
@@ -419,6 +412,7 @@ let BetService = class BetService {
         return __awaiter(this, arguments, void 0, function* (betId, userId, isAdmin = false) {
             try {
                 return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    var _a;
                     const bet = yield tx.bet.findUnique({
                         where: { id: betId },
                         include: {
@@ -448,12 +442,12 @@ let BetService = class BetService {
                         throw new Error('La fenêtre d\'annulation de 20 minutes est expirée');
                     }
                     // Vérifier si le combat a commencé
-                    const fightStartTime = bet.fight.scheduledTime || bet.fight.dayEvent.date;
+                    const fightStartTime = bet.fight.scheduledAt || ((_a = bet.fight.dayEvent) === null || _a === void 0 ? void 0 : _a.date);
                     if ((0, date_fns_1.isAfter)(now, fightStartTime)) {
                         throw new Error('Impossible d\'annuler un pari sur un combat déjà commencé');
                     }
                     // REMBOURSER ET libérer les fonds du créateur
-                    const amountToRefund = BigInt(Math.floor(bet.amount));
+                    const amountToRefund = BigInt(Math.floor(Number(bet.amount)));
                     yield tx.wallet.update({
                         where: { userId: bet.creatorId },
                         data: {
@@ -488,16 +482,17 @@ let BetService = class BetService {
                             }
                         }
                     });
-                    // Mettre à jour les statistiques de la journée
-                    // Convertir en BigInt si le champ est de type BigInt dans le schéma
-                    const totalAmountDecrement = BigInt(Math.floor(bet.amount));
-                    yield tx.dayEvent.update({
-                        where: { id: bet.fight.dayEventId },
-                        data: {
-                            totalBets: { decrement: 1 },
-                            totalAmount: { decrement: totalAmountDecrement }
-                        }
-                    });
+                    // Mettre à jour les statistiques de la journée si elle existe
+                    if (bet.fight.dayEventId) {
+                        const totalAmountDecrement = BigInt(Math.floor(Number(bet.amount)));
+                        yield tx.dayEvent.update({
+                            where: { id: bet.fight.dayEventId },
+                            data: {
+                                totalBets: { decrement: 1 },
+                                totalAmount: { decrement: totalAmountDecrement }
+                            }
+                        });
+                    }
                     return cancelledBet;
                 }), {
                     maxWait: 10000,
@@ -514,6 +509,7 @@ let BetService = class BetService {
     }
     handlePostCancelOperations(betId, userId, isAdmin) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
                 const bet = yield this.prisma.bet.findUnique({
                     where: { id: betId },
@@ -534,43 +530,45 @@ let BetService = class BetService {
                     yield Promise.all([
                         this.prisma.transaction.create({
                             data: {
-                                type: 'BET_REFUND',
-                                amount: bet.amount,
+                                type: client_1.TransactionType.BET_REFUND,
+                                amount: BigInt(Math.floor(Number(bet.amount))),
                                 userId: bet.creatorId,
-                                status: 'COMPLETED',
+                                status: client_1.TransactionStatus.CONFIRMED,
                                 notes: `Annulation du pari ${bet.id}`
                             }
                         }),
                         bet.acceptorId ? this.prisma.transaction.create({
                             data: {
-                                type: 'BET_REFUND',
-                                amount: bet.amount,
+                                type: client_1.TransactionType.BET_REFUND,
+                                amount: BigInt(Math.floor(Number(bet.amount))),
                                 userId: bet.acceptorId,
-                                status: 'COMPLETED',
+                                status: client_1.TransactionStatus.CONFIRMED,
                                 notes: `Annulation du pari ${bet.id}`
                             }
                         }) : Promise.resolve()
                     ]);
                 }
                 // Notifications
-                yield Promise.all([
-                    this.prisma.notification.create({
-                        data: {
-                            userId: bet.creatorId,
-                            type: 'BET_CANCELLED',
-                            title: 'Pari annulé',
-                            message: `Votre pari de ${bet.amount} FCFA sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
-                        }
-                    }),
-                    bet.acceptorId ? this.prisma.notification.create({
+                const notifications = [];
+                notifications.push(this.prisma.notification.create({
+                    data: {
+                        userId: bet.creatorId,
+                        type: 'BET_CANCELLED',
+                        title: 'Pari annulé',
+                        message: `Votre pari de ${bet.amount} FCFA sur "${(_a = bet.fight.dayEvent) === null || _a === void 0 ? void 0 : _a.title}" a été annulé. Les fonds ont été remboursés.`,
+                    }
+                }));
+                if (bet.acceptorId) {
+                    notifications.push(this.prisma.notification.create({
                         data: {
                             userId: bet.acceptorId,
                             type: 'BET_CANCELLED',
                             title: 'Pari annulé',
-                            message: `Le pari que vous avez accepté sur "${bet.fight.dayEvent.title}" a été annulé. Les fonds ont été remboursés.`,
+                            message: `Le pari que vous avez accepté sur "${(_b = bet.fight.dayEvent) === null || _b === void 0 ? void 0 : _b.title}" a été annulé. Les fonds ont été remboursés.`,
                         }
-                    }) : Promise.resolve()
-                ]);
+                    }));
+                }
+                yield Promise.all(notifications);
                 logger_1.default.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
             }
             catch (error) {
@@ -609,7 +607,7 @@ let BetService = class BetService {
                     let updatedBet;
                     if (winner === 'DRAW') {
                         // Match nul - remboursement complet des deux parties
-                        const betAmountBigInt = BigInt(Math.floor(bet.amount));
+                        const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
                         yield Promise.all([
                             // REMBOURSEMENT créateur
                             tx.wallet.update({
@@ -642,11 +640,12 @@ let BetService = class BetService {
                         const winnerId = isCreatorWinner ? bet.creatorId : bet.acceptorId;
                         const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
                         // Calculer le gain
-                        const totalPot = bet.amount * 2;
+                        const betAmountNumber = Number(bet.amount);
+                        const totalPot = betAmountNumber * 2;
                         const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
                         const winAmount = totalPot - commission;
                         // Convertir en BigInt
-                        const betAmountBigInt = BigInt(Math.floor(bet.amount));
+                        const betAmountBigInt = BigInt(Math.floor(betAmountNumber));
                         const winAmountBigInt = BigInt(Math.floor(winAmount));
                         // Mettre à jour les wallets en parallèle
                         yield Promise.all([
@@ -672,9 +671,9 @@ let BetService = class BetService {
                         const transaction = yield tx.transaction.create({
                             data: {
                                 type: 'BET_WIN',
-                                amount: winAmount,
+                                amount: winAmountBigInt,
                                 userId: winnerId,
-                                status: 'COMPLETED',
+                                status: client_1.TransactionStatus.CONFIRMED,
                                 notes: `Gain du pari ${bet.id}`
                             }
                         });
@@ -682,17 +681,22 @@ let BetService = class BetService {
                         updatedBet = yield tx.bet.update({
                             where: { id: betId },
                             data: {
-                                status: isCreatorWinner ? 'CREATOR_WON' : 'ACCEPTOR_WON',
-                                winAmount: winAmount,
+                                status: client_1.BetStatus.WON,
+                                actualWin: winAmountBigInt,
                                 settledAt: now,
-                                transactionId: transaction.id
+                                // transactionId field in Bet? Schema check: Bet does NOT have transactionId.
+                                // Bet has listings of Winnings.
+                                // So removing transactionId update.
+                                // And using actualWin instead of winAmount.
                             }
                         });
                         // Enregistrer la commission
-                        yield tx.systemFee.create({
+                        yield tx.commission.create({
                             data: {
-                                betId: bet.id,
-                                amount: commission
+                                transactionId: transaction.id,
+                                type: 'BET',
+                                amount: BigInt(Math.floor(commission)),
+                                betId: bet.id
                             }
                         });
                     }
@@ -735,18 +739,18 @@ let BetService = class BetService {
                         this.prisma.transaction.create({
                             data: {
                                 type: 'BET_REFUND',
-                                amount: bet.amount,
+                                amount: BigInt(Math.floor(Number(bet.amount))),
                                 userId: bet.creatorId,
-                                status: 'COMPLETED',
+                                status: client_1.TransactionStatus.CONFIRMED,
                                 notes: `Remboursement match nul - Pari ${bet.id}`
                             }
                         }),
                         this.prisma.transaction.create({
                             data: {
                                 type: 'BET_REFUND',
-                                amount: bet.amount,
+                                amount: BigInt(Math.floor(Number(bet.amount))),
                                 userId: bet.acceptorId,
-                                status: 'COMPLETED',
+                                status: client_1.TransactionStatus.CONFIRMED,
                                 notes: `Remboursement match nul - Pari ${bet.id}`
                             }
                         })
@@ -777,8 +781,8 @@ let BetService = class BetService {
                     const winnerId = isCreatorWinner ? bet.creatorId : bet.acceptorId;
                     const loserId = isCreatorWinner ? bet.acceptorId : bet.creatorId;
                     // Calculer la commission
-                    const totalPot = bet.amount * 2;
-                    const commission = totalPot * (this.COMMISSION_PERCENTAGE / 100);
+                    const totalPot = new library_1.Decimal(bet.amount).mul(2);
+                    const commission = totalPot.mul(this.COMMISSION_PERCENTAGE / 100);
                     // Notifications
                     yield Promise.all([
                         this.prisma.notification.create({
@@ -786,7 +790,7 @@ let BetService = class BetService {
                                 userId: winnerId,
                                 type: 'BET_WON',
                                 title: 'Pari gagné !',
-                                message: `Félicitations ! Vous avez gagné ${bet.winAmount} FCFA sur votre pari.`,
+                                message: `Félicitations ! Vous avez gagné ${bet.actualWin} FCFA sur votre pari.`,
                             }
                         }),
                         this.prisma.notification.create({
@@ -834,7 +838,6 @@ let BetService = class BetService {
                                 result: true
                             }
                         },
-                        transaction: true
                     }
                 });
                 if (!bet) {
@@ -1095,7 +1098,7 @@ let BetService = class BetService {
                     where: {
                         status: 'SCHEDULED',
                         OR: [
-                            { scheduledTime: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now } },
+                            { scheduledAt: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now } },
                             {
                                 dayEvent: {
                                     date: { lte: (0, date_fns_1.addMinutes)(now, 30), gt: now }
@@ -1104,6 +1107,7 @@ let BetService = class BetService {
                         ]
                     },
                     include: {
+                        dayEvent: true,
                         bets: {
                             where: {
                                 status: 'PENDING'
@@ -1115,7 +1119,13 @@ let BetService = class BetService {
                 for (const fight of upcomingFights) {
                     for (const bet of fight.bets) {
                         // REMBOURSER les fonds (solde + libérer)
-                        const amountBigInt = BigInt(Math.floor(bet.amount));
+                        // Bet amount should be Decimal or string. If Decimal, we might need to be careful with precision.
+                        // Assuming amount is stored as string in decimal field or Decimal type in Prisma.
+                        // Prisma Decimal -> Number -> BigInt (floor)
+                        // Or if it's already a string/number.
+                        // Using BigInt constructor on string is safest if integer. If decimal, it throws.
+                        // We floor it first. 
+                        const amountBigInt = BigInt(Math.floor(Number(bet.amount)));
                         yield this.prisma.wallet.update({
                             where: { userId: bet.creatorId },
                             data: {
@@ -1135,7 +1145,7 @@ let BetService = class BetService {
                         yield this.prisma.notification.create({
                             data: {
                                 userId: bet.creatorId,
-                                type: 'BET_EXPIRED',
+                                type: 'BET_REFUNDED',
                                 title: 'Pari expiré',
                                 message: `Votre pari sur "${(_a = fight.dayEvent) === null || _a === void 0 ? void 0 : _a.title}" a été annulé car le combat commence bientôt. Les fonds ont été remboursés.`,
                             }
@@ -1152,10 +1162,5 @@ let BetService = class BetService {
             }
         });
     }
-};
+}
 exports.BetService = BetService;
-exports.BetService = BetService = __decorate([
-    (0, typedi_1.Service)(),
-    __metadata("design:paramtypes", [client_1.PrismaClient,
-        WebSocketService_1.WebSocketService])
-], BetService);

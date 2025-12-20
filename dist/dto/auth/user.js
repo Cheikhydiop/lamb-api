@@ -8,13 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserDto = exports.SignInDto = exports.SignUpDto = void 0;
 // src/dto/auth/user.ts
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
-const Organization_1 = require("../../entity/Organization");
 class SignUpDto {
 }
 exports.SignUpDto = SignUpDto;
@@ -52,16 +50,12 @@ let UserDto = class UserDto {
 exports.UserDto = UserDto;
 __decorate([
     (0, class_transformer_1.Expose)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], UserDto.prototype, "id", void 0);
 __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", String)
-], UserDto.prototype, "first_name", void 0);
-__decorate([
-    (0, class_transformer_1.Expose)(),
-    __metadata("design:type", String)
-], UserDto.prototype, "last_name", void 0);
+], UserDto.prototype, "name", void 0);
 __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", String)
@@ -69,15 +63,15 @@ __decorate([
 __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", String)
-], UserDto.prototype, "status", void 0);
+], UserDto.prototype, "role", void 0);
 __decorate([
     (0, class_transformer_1.Expose)(),
     __metadata("design:type", Boolean)
-], UserDto.prototype, "is_email_verified", void 0);
+], UserDto.prototype, "isActive", void 0);
 __decorate([
     (0, class_transformer_1.Expose)(),
-    __metadata("design:type", typeof (_a = typeof Organization_1.Organization !== "undefined" && Organization_1.Organization) === "function" ? _a : Object)
-], UserDto.prototype, "organization", void 0);
+    __metadata("design:type", Boolean)
+], UserDto.prototype, "isEmailVerified", void 0);
 exports.UserDto = UserDto = __decorate([
     (0, class_transformer_1.Exclude)()
 ], UserDto);

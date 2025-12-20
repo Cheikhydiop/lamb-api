@@ -1,5 +1,4 @@
 "use strict";
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const customErrors_1 = require("../../errors/customErrors");
 class UserValidator {
@@ -239,7 +238,6 @@ class UserValidator {
         }
     }
 }
-_a = UserValidator;
 // Constantes de validation
 UserValidator.VALIDATION_RULES = {
     NAME: {
@@ -248,8 +246,8 @@ UserValidator.VALIDATION_RULES = {
         PATTERN: /^[a-zA-ZÀ-ÿ\s'-]+$/,
         MESSAGES: {
             REQUIRED: 'Le nom est requis',
-            TOO_SHORT: `Le nom doit contenir au moins ${_a.MIN_LENGTH} caractères`,
-            TOO_LONG: `Le nom ne peut pas dépasser ${_a.MAX_LENGTH} caractères`,
+            TOO_SHORT: 'Le nom doit contenir au moins 2 caractères',
+            TOO_LONG: 'Le nom ne peut pas dépasser 50 caractères',
             INVALID_FORMAT: 'Le nom ne peut contenir que des lettres, espaces, apostrophes et tirets'
         }
     },
@@ -259,7 +257,7 @@ UserValidator.VALIDATION_RULES = {
         MESSAGES: {
             REQUIRED: "L'adresse email est requise",
             INVALID_FORMAT: "L'adresse email n'est pas valide",
-            TOO_LONG: `L'adresse email ne peut pas dépasser ${_a.MAX_LENGTH} caractères`
+            TOO_LONG: "L'adresse email ne peut pas dépasser 100 caractères"
         }
     },
     PHONE: {
@@ -281,8 +279,8 @@ UserValidator.VALIDATION_RULES = {
         },
         MESSAGES: {
             REQUIRED: 'Le mot de passe est requis',
-            TOO_SHORT: `Le mot de passe doit contenir au moins ${_a.MIN_LENGTH} caractères`,
-            TOO_LONG: `Le mot de passe ne peut pas dépasser ${_a.MAX_LENGTH} caractères`,
+            TOO_SHORT: 'Le mot de passe doit contenir au moins 8 caractères',
+            TOO_LONG: 'Le mot de passe ne peut pas dépasser 100 caractères',
             NO_UPPERCASE: 'Le mot de passe doit contenir au moins une lettre majuscule',
             NO_LOWERCASE: 'Le mot de passe doit contenir au moins une lettre minuscule',
             NO_NUMBER: 'Le mot de passe doit contenir au moins un chiffre',

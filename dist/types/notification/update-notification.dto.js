@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateNotificationDto = void 0;
 const class_validator_1 = require("class-validator");
-const notification_types_1 = require("../../types/notification-types");
+const notification_types_1 = require("../notification-types");
 // src/dto/notification/update-notification.dto.ts
 class UpdateNotificationDto {
 }

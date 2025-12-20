@@ -8,55 +8,189 @@ const typedi_1 = __importDefault(require("typedi"));
 const NotificationController_1 = require("../controllers/NotificationController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
-const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
 // All routes require authentication
 router.use(authMiddleware_1.requireAuth);
 /**
- * @route   GET /api/notifications
- * @desc    Get all notifications for current user
- * @access  Private
+ * @swagger
+ * tags:
+ *   name: Notifications
+ *   description: Notification management
  */
-router.get('/', (req, res, next) => notificationController.getNotifications(req, res, next));
 /**
- * @route   GET /api/notifications/unread
- * @desc    Get unread notifications
- * @access  Private
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     summary: Get all notifications for current user
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of notifications
  */
-router.get('/unread', (req, res, next) => notificationController.getUnreadNotifications(req, res, next));
+router.get('/', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.getNotifications(req, res, next);
+});
 /**
- * @route   GET /api/notifications/unread/count
- * @desc    Get unread notifications count
- * @access  Private
+ * @swagger
+ * /api/notifications/unread:
+ *   get:
+ *     summary: Get unread notifications
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of unread notifications
  */
-router.get('/unread/count', (req, res, next) => notificationController.getUnreadCount(req, res, next));
+router.get('/unread', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.getUnreadNotifications(req, res, next);
+});
 /**
- * @route   PATCH /api/notifications/:id/read
- * @desc    Mark notification as read
- * @access  Private
+ * @swagger
+ * /api/notifications/unread/count:
+ *   get:
+ *     summary: Get unread notifications count
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Unread notifications count
  */
-router.patch('/:id/read', (req, res, next) => notificationController.markAsRead(req, res, next));
+router.get('/unread/count', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.getUnreadCount(req, res, next);
+});
 /**
- * @route   PATCH /api/notifications/read-all
- * @desc    Mark all notifications as read
- * @access  Private
+ * @swagger
+ * /api/notifications/{id}/read:
+ *   patch:
+ *     summary: Mark notification as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
  */
-router.patch('/read-all', (req, res, next) => notificationController.markAllAsRead(req, res, next));
+router.patch('/:id/read', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.markAsRead(req, res, next);
+});
 /**
- * @route   DELETE /api/notifications/:id
- * @desc    Delete notification
- * @access  Private
+ * @swagger
+ * /api/notifications/read-all:
+ *   patch:
+ *     summary: Mark all notifications as read
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All notifications marked as read
  */
-router.delete('/:id', (req, res, next) => notificationController.deleteNotification(req, res, next));
+router.patch('/read-all', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.markAllAsRead(req, res, next);
+});
 /**
- * @route   POST /api/notifications/admin/send
- * @desc    Send notification to user (Admin)
- * @access  Private/Admin
+ * @swagger
+ * /api/notifications/{id}:
+ *   delete:
+ *     summary: Delete notification
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notification deleted
  */
-router.post('/admin/send', authMiddleware_1.requireAdmin, (req, res, next) => notificationController.sendAdminNotification(req, res, next));
+router.delete('/:id', (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.deleteNotification(req, res, next);
+});
 /**
- * @route   POST /api/notifications/admin/broadcast
- * @desc    Broadcast notification (Admin)
- * @access  Private/Admin
+ * @swagger
+ * /api/notifications/admin/send:
+ *   post:
+ *     summary: Send notification to a specific user (Admin)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - title
+ *               - message
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: INFO
+ *     responses:
+ *       200:
+ *         description: Notification sent
  */
-router.post('/admin/broadcast', authMiddleware_1.requireAdmin, (req, res, next) => notificationController.broadcastAdminNotification(req, res, next));
+router.post('/admin/send', authMiddleware_1.requireAdmin, (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.sendAdminNotification(req, res, next);
+});
+/**
+ * @swagger
+ * /api/notifications/admin/broadcast:
+ *   post:
+ *     summary: Broadcast notification to all users (Admin)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - message
+ *             properties:
+ *               title:
+ *                 type: string
+ *               message:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: INFO
+ *     responses:
+ *       200:
+ *         description: Notification broadcasted
+ */
+router.post('/admin/broadcast', authMiddleware_1.requireAdmin, (req, res, next) => {
+    const notificationController = typedi_1.default.get(NotificationController_1.NotificationController);
+    notificationController.broadcastAdminNotification(req, res, next);
+});
 exports.default = router;

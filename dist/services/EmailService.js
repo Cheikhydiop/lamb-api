@@ -58,7 +58,7 @@ exports.EmailService = void 0;
 // src/services/EmailService.ts
 const typedi_1 = require("typedi");
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 let EmailService = class EmailService {
     constructor() {
         this.isConfigured = false;
@@ -83,7 +83,7 @@ let EmailService = class EmailService {
             this.testConnection();
         }
         else {
-            Logger_1.default.warn('SMTP configuration not found. Running in development/log-only mode.');
+            logger_1.default.warn('SMTP configuration not found. Running in development/log-only mode.');
             this.isConfigured = false;
             // Créer un transporteur factice pour éviter les erreurs
             this.transporter = nodemailer_1.default.createTransport({
@@ -97,10 +97,10 @@ let EmailService = class EmailService {
                 return;
             try {
                 yield this.transporter.verify();
-                Logger_1.default.info('✅ SMTP connection verified successfully');
+                logger_1.default.info('✅ SMTP connection verified successfully');
             }
             catch (error) {
-                Logger_1.default.error(`❌ SMTP connection failed: ${error.message}`);
+                logger_1.default.error(`❌ SMTP connection failed: ${error.message}`);
                 // Ne pas bloquer l'application en cas d'erreur de connexion
                 this.isConfigured = false;
             }
@@ -118,13 +118,13 @@ let EmailService = class EmailService {
             // 1. Extraire et logger le code OTP pour le développement
             const extractedCode = this.extractVerificationCode(options.html);
             if (extractedCode) {
-                Logger_1.default.info(`📧 [EMAIL OTP] Pour ${emailToSend}: ${extractedCode}`);
+                logger_1.default.info(`📧 [EMAIL OTP] Pour ${emailToSend}: ${extractedCode}`);
             }
             // 2. Logger les détails en mode développement
             if (!isProduction) {
-                Logger_1.default.info(`📧 [DEV EMAIL] Destinataire: ${emailToSend}, Sujet: "${options.subject}"`);
+                logger_1.default.info(`📧 [DEV EMAIL] Destinataire: ${emailToSend}, Sujet: "${options.subject}"`);
                 if (!this.isConfigured) {
-                    Logger_1.default.info(`📧 [DEV EMAIL] Non envoyé (SMTP non configuré). OTP: ${extractedCode || 'N/A'}`);
+                    logger_1.default.info(`📧 [DEV EMAIL] Non envoyé (SMTP non configuré). OTP: ${extractedCode || 'N/A'}`);
                     return true; // Succès en mode dev sans envoyer
                 }
             }
@@ -140,24 +140,24 @@ let EmailService = class EmailService {
                     };
                     const info = yield this.transporter.sendMail(mailOptions);
                     if (isProduction) {
-                        Logger_1.default.info(`✅ Email envoyé à ${emailToSend} [ID: ${info.messageId}]`);
+                        logger_1.default.info(`✅ Email envoyé à ${emailToSend} [ID: ${info.messageId}]`);
                     }
                     else {
                         // En développement, afficher l'URL de prévisualisation si disponible
                         const previewText = ((_a = info.response) === null || _a === void 0 ? void 0 : _a.includes('mailtrap'))
                             ? ` | Preview: ${info.response}`
                             : '';
-                        Logger_1.default.info(`✅ Email envoyé à ${emailToSend}${previewText}`);
+                        logger_1.default.info(`✅ Email envoyé à ${emailToSend}${previewText}`);
                     }
                     return true;
                 }
                 catch (error) {
-                    Logger_1.default.error(`❌ Échec d'envoi d'email à ${emailToSend}: ${error.message}`);
+                    logger_1.default.error(`❌ Échec d'envoi d'email à ${emailToSend}: ${error.message}`);
                     // Fallback: logger l'email dans la console en mode développement
                     if (!isProduction) {
-                        Logger_1.default.info(`📧 [FALLBACK] Contenu pour ${emailToSend}:`);
-                        Logger_1.default.info(`   Sujet: ${options.subject}`);
-                        Logger_1.default.info(`   Code OTP: ${extractedCode || 'Non trouvé'}`);
+                        logger_1.default.info(`📧 [FALLBACK] Contenu pour ${emailToSend}:`);
+                        logger_1.default.info(`   Sujet: ${options.subject}`);
+                        logger_1.default.info(`   Code OTP: ${extractedCode || 'Non trouvé'}`);
                     }
                     // En production, on peut choisir de retourner false si l'envoi est critique
                     if (isProduction && process.env.EMAIL_STRICT_MODE === 'true') {
@@ -169,13 +169,13 @@ let EmailService = class EmailService {
             }
             // 4. Fallback pour le développementaaa
             if (!isProduction) {
-                Logger_1.default.info(`📧 [MOCK] Email simulé pour ${emailToSend}:`);
-                Logger_1.default.info(`   Sujet: ${options.subject}`);
-                Logger_1.default.info(`   OTP: ${extractedCode || 'N/A'}`);
+                logger_1.default.info(`📧 [MOCK] Email simulé pour ${emailToSend}:`);
+                logger_1.default.info(`   Sujet: ${options.subject}`);
+                logger_1.default.info(`   OTP: ${extractedCode || 'N/A'}`);
                 return true;
             }
             // 5. En production sans configuration, c'est une erreur
-            Logger_1.default.error('Tentative d\'envoi d\'email en production sans configuration SMTP.');
+            logger_1.default.error('Tentative d\'envoi d\'email en production sans configuration SMTP.');
             return false;
         });
     }
@@ -321,7 +321,7 @@ let EmailService = class EmailService {
       </div>
     `;
             if (!bet.creator.email) {
-                Logger_1.default.warn(`Cannot send bet accepted notification: creator ${bet.creator.id} has no email`);
+                logger_1.default.warn(`Cannot send bet accepted notification: creator ${bet.creator.id} has no email`);
                 return false;
             }
             return this.sendEmailSafe({
@@ -410,7 +410,7 @@ let EmailService = class EmailService {
       </div>
     `;
             if (!winning.user.email) {
-                Logger_1.default.warn(`Cannot send winning notification: user ${winning.user.id} has no email`);
+                logger_1.default.warn(`Cannot send winning notification: user ${winning.user.id} has no email`);
                 return false;
             }
             return this.sendEmailSafe({
@@ -424,7 +424,7 @@ let EmailService = class EmailService {
     sendPaymentConfirmedNotification(user, amount, type) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!user.email) {
-                Logger_1.default.warn(`Cannot send payment notification: user ${user.id} has no email`);
+                logger_1.default.warn(`Cannot send payment notification: user ${user.id} has no email`);
                 return false;
             }
             const amountFormatted = Number(amount) / 100;
@@ -579,7 +579,7 @@ let EmailService = class EmailService {
       </div>
     `;
             if (!taggedUser.email) {
-                Logger_1.default.warn(`Cannot send tagged notification: user ${taggedUser.id} has no email`);
+                logger_1.default.warn(`Cannot send tagged notification: user ${taggedUser.id} has no email`);
                 return false;
             }
             return this.sendEmailSafe({
@@ -686,7 +686,7 @@ let EmailService = class EmailService {
       </div>
     `;
             if (!user.email) {
-                Logger_1.default.warn(`Cannot send fight finished notification: user ${user.id} has no email`);
+                logger_1.default.warn(`Cannot send fight finished notification: user ${user.id} has no email`);
                 return false;
             }
             return this.sendEmailSafe({
@@ -775,11 +775,50 @@ let EmailService = class EmailService {
             });
         });
     }
+    // Notification de confirmation de connexion
+    sendDeviceConnectionConfirmation(email, name, deviceInfo, time) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4CAF50; font-size: 28px; margin: 0;">Xbeur</h1>
+          <p style="color: #666; font-size: 16px; margin-top: 10px;">Nouvelle connexion détectée</p>
+        </div>
+
+        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h2 style="color: #333; font-size: 24px; margin-top: 0; text-align: center;">Connexion Confirmée</h2>
+          <p>Bonjour ${name},</p>
+          <p>Une nouvelle connexion à votre compte a été effectuée avec succès.</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>📅 Date :</strong> ${time}</p>
+            <p style="margin: 5px 0;"><strong>📱 Appareil :</strong> ${deviceInfo.deviceName || 'Inconnu'}</p>
+            <p style="margin: 5px 0;"><strong>🌐 Navigateur :</strong> ${deviceInfo.browser || 'Inconnu'}</p>
+            <p style="margin: 5px 0;"><strong>💻 OS :</strong> ${deviceInfo.os || 'Inconnu'}</p>
+          </div>
+
+          <p>Si c'était vous, vous pouvez ignorer cet email.</p>
+          
+          <div style="background-color: #fff4e5; padding: 15px; border-radius: 6px; border-left: 4px solid #ff9800; margin-top: 30px;">
+            <p style="color: #666; font-size: 14px; margin: 0;">
+              <strong>⚠️ Sécurité :</strong> Si vous ne reconnaissez pas cette activité, veuillez changer votre mot de passe immédiatement.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+            return this.sendEmailSafe({
+                to: email,
+                subject: 'Connexion à votre compte Xbeur',
+                html,
+            });
+        });
+    }
     // Méthode pour envoyer des emails avec pièces jointes
     sendEmailWithAttachments(options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.isConfigured) {
-                Logger_1.default.warn('Cannot send attachments: SMTP not configured.');
+                logger_1.default.warn('Cannot send attachments: SMTP not configured.');
                 return false;
             }
             try {
@@ -801,11 +840,11 @@ let EmailService = class EmailService {
                     attachments,
                 };
                 const info = yield this.transporter.sendMail(mailOptions);
-                Logger_1.default.info(`Email with attachments sent successfully: ${info.messageId}`);
+                logger_1.default.info(`Email with attachments sent successfully: ${info.messageId}`);
                 return true;
             }
             catch (error) {
-                Logger_1.default.error(`Failed to send email with attachments: ${error.message}`);
+                logger_1.default.error(`Failed to send email with attachments: ${error.message}`);
                 return false;
             }
         });

@@ -8,13 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PreferencesByTypeDto = exports.BulkUpdatePreferencesDto = exports.BulkUpdatePreferenceItem = exports.NotificationPreferenceResponseDto = exports.UpdateNotificationPreferenceDto = exports.CreateNotificationPreferenceDto = void 0;
 // src/dto/notification/notification-preference.dto.ts
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
-const notification_types_1 = require("../../types/notification-types");
+const notification_types_1 = require("../notification-types");
 class CreateNotificationPreferenceDto {
     constructor() {
         this.enabled = true;
@@ -24,7 +23,7 @@ exports.CreateNotificationPreferenceDto = CreateNotificationPreferenceDto;
 __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationType),
-    __metadata("design:type", typeof (_a = typeof notification_types_1.NotificationType !== "undefined" && notification_types_1.NotificationType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], CreateNotificationPreferenceDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
@@ -39,7 +38,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationPriority),
-    __metadata("design:type", typeof (_b = typeof notification_types_1.NotificationPriority !== "undefined" && notification_types_1.NotificationPriority) === "function" ? _b : Object)
+    __metadata("design:type", String)
 ], CreateNotificationPreferenceDto.prototype, "minimumPriority", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
@@ -75,7 +74,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationPriority),
-    __metadata("design:type", typeof (_c = typeof notification_types_1.NotificationPriority !== "undefined" && notification_types_1.NotificationPriority) === "function" ? _c : Object)
+    __metadata("design:type", String)
 ], UpdateNotificationPreferenceDto.prototype, "minimumPriority", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
@@ -101,7 +100,7 @@ class BulkUpdatePreferenceItem {
 exports.BulkUpdatePreferenceItem = BulkUpdatePreferenceItem;
 __decorate([
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationType),
-    __metadata("design:type", typeof (_d = typeof notification_types_1.NotificationType !== "undefined" && notification_types_1.NotificationType) === "function" ? _d : Object)
+    __metadata("design:type", String)
 ], BulkUpdatePreferenceItem.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.ValidateNested)(),

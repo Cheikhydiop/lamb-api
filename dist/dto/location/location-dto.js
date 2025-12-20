@@ -8,12 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LocationResponseDto = exports.UpdateLocationDto = exports.CreateLocationDto = void 0;
+exports.LocationResponseDto = exports.UpdateLocationDto = exports.CreateLocationDto = exports.LocationType = void 0;
 // src/dto/location/location-dto.ts
 const class_validator_1 = require("class-validator");
-const Location_1 = require("../../entity/Location");
+// import { LocationType } from '../../entity/Location';
+var LocationType;
+(function (LocationType) {
+    LocationType["ARENA"] = "ARENA";
+    LocationType["STADIUM"] = "STADIUM";
+    LocationType["GYM"] = "GYM";
+    LocationType["OTHER"] = "OTHER";
+})(LocationType || (exports.LocationType = LocationType = {}));
 class CreateLocationDto {
 }
 exports.CreateLocationDto = CreateLocationDto;
@@ -29,8 +35,8 @@ __decorate([
     __metadata("design:type", String)
 ], CreateLocationDto.prototype, "description", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(Location_1.LocationType),
-    __metadata("design:type", typeof (_a = typeof Location_1.LocationType !== "undefined" && Location_1.LocationType) === "function" ? _a : Object)
+    (0, class_validator_1.IsEnum)(LocationType),
+    __metadata("design:type", String)
 ], CreateLocationDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
@@ -91,8 +97,8 @@ __decorate([
 ], UpdateLocationDto.prototype, "description", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(Location_1.LocationType),
-    __metadata("design:type", typeof (_b = typeof Location_1.LocationType !== "undefined" && Location_1.LocationType) === "function" ? _b : Object)
+    (0, class_validator_1.IsEnum)(LocationType),
+    __metadata("design:type", String)
 ], UpdateLocationDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),

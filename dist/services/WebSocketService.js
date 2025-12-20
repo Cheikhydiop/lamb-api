@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebSocketService = exports.WebSocketEvent = void 0;
 // import { Service } from 'typedi';
 const socket_io_1 = require("socket.io");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const env_1 = __importDefault(require("../config/env"));
 // Types de messages WebSocket (Events Socket.io)
@@ -48,7 +48,7 @@ class WebSocketService {
     }
     initialize(server) {
         if (this.initialized) {
-            Logger_1.default.info('Socket.io server already initialized');
+            logger_1.default.info('Socket.io server already initialized');
             return;
         }
         this.io = new socket_io_1.Server(server, {
@@ -79,7 +79,7 @@ class WebSocketService {
             this.handleConnection(socket);
         });
         this.initialized = true;
-        Logger_1.default.info('Socket.io server initialized on path /ws');
+        logger_1.default.info('Socket.io server initialized on path /ws');
     }
     static getInstance() {
         if (!WebSocketService.instance) {
@@ -97,28 +97,28 @@ class WebSocketService {
         }
         this.initialized = false;
         WebSocketService.instance = null;
-        Logger_1.default.info('WebSocket service destroyed');
+        logger_1.default.info('WebSocket service destroyed');
     }
     handleConnection(socket) {
         const userId = socket.data.userId;
-        Logger_1.default.info(`[Socket.io] User ${userId} connected (${socket.id})`);
+        logger_1.default.info(`[Socket.io] User ${userId} connected (${socket.id})`);
         // Join user-specific room for private notifications/updates
         socket.join(`user:${userId}`);
         socket.on(WebSocketEvent.SUBSCRIBE_FIGHT, (payload) => {
             if (payload.fightId) {
                 socket.join(`fight:${payload.fightId}`);
-                Logger_1.default.info(`[Socket.io] User ${userId} joined room fight:${payload.fightId}`);
+                logger_1.default.info(`[Socket.io] User ${userId} joined room fight:${payload.fightId}`);
                 socket.emit('subscription_confirmed', { type: 'fight', fightId: payload.fightId });
             }
         });
         socket.on(WebSocketEvent.UNSUBSCRIBE_FIGHT, (payload) => {
             if (payload.fightId) {
                 socket.leave(`fight:${payload.fightId}`);
-                Logger_1.default.info(`[Socket.io] User ${userId} left room fight:${payload.fightId}`);
+                logger_1.default.info(`[Socket.io] User ${userId} left room fight:${payload.fightId}`);
             }
         });
         socket.on('disconnect', (reason) => {
-            Logger_1.default.info(`[Socket.io] User ${userId} disconnected: ${reason}`);
+            logger_1.default.info(`[Socket.io] User ${userId} disconnected: ${reason}`);
         });
         // Welcome message
         socket.emit(WebSocketEvent.CONNECTION_STATUS, {
@@ -132,7 +132,7 @@ class WebSocketService {
         if (!this.io)
             return;
         this.io.to(`fight:${fightId}`).emit(WebSocketEvent.FIGHT_STATUS_UPDATE, update);
-        Logger_1.default.info(`[Socket.io] Broadcast fight update to room fight:${fightId}`);
+        logger_1.default.info(`[Socket.io] Broadcast fight update to room fight:${fightId}`);
     }
     broadcastBetUpdate(betUpdate) {
         if (!this.io)
@@ -171,6 +171,11 @@ class WebSocketService {
         if (!this.io)
             return;
         this.io.emit(WebSocketEvent.SYSTEM_ALERT, Object.assign(Object.assign({}, alert), { timestamp: new Date().toISOString() }));
+    }
+    sendToUser(userId, payload) {
+        if (!this.io)
+            return;
+        this.io.to(`user:${userId}`).emit(payload.type, payload.data);
     }
     getConnectionStats() {
         if (!this.io)

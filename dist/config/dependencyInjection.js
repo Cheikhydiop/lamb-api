@@ -49,11 +49,11 @@ exports.setupDependencyInjection = setupDependencyInjection;
 require("reflect-metadata");
 const typedi_1 = require("typedi");
 const client_1 = require("@prisma/client");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 function setupDependencyInjection() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            Logger_1.default.info('🔄 Setting up dependency injection...');
+            logger_1.default.info('🔄 Setting up dependency injection...');
             // Vérifier si Prisma est déjà enregistré
             if (!typedi_1.Container.has(client_1.PrismaClient)) {
                 const prisma = new client_1.PrismaClient({
@@ -62,14 +62,14 @@ function setupDependencyInjection() {
                         : ['error'],
                 });
                 typedi_1.Container.set(client_1.PrismaClient, prisma);
-                Logger_1.default.info('✅ PrismaClient registered');
+                logger_1.default.info('✅ PrismaClient registered');
             }
             // Enregistrer dynamiquement les services
             yield registerServices();
-            Logger_1.default.info('✅ Dependency injection setup complete');
+            logger_1.default.info('✅ Dependency injection setup complete');
         }
         catch (error) {
-            Logger_1.default.error('❌ Failed to setup dependency injection:', error);
+            logger_1.default.error('❌ Failed to setup dependency injection:', error);
             throw error;
         }
     });
@@ -90,11 +90,11 @@ function registerServices() {
                     const prisma = typedi_1.Container.get(client_1.PrismaClient);
                     const serviceInstance = new ServiceClass(prisma);
                     typedi_1.Container.set(ServiceClass, serviceInstance);
-                    Logger_1.default.debug(`✅ Registered: ${ServiceClass.name}`);
+                    logger_1.default.debug(`✅ Registered: ${ServiceClass.name}`);
                 }
             }
             catch (error) {
-                Logger_1.default.warn(`⚠️ Could not register service:`, error);
+                logger_1.default.warn(`⚠️ Could not register service:`, error);
             }
         }
     });

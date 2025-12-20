@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API_URL = exports.FRONTEND_URL = exports.JWT_SECRET = exports.DATABASE_URL = exports.NODE_ENV = exports.PORT = exports.config = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 // Charger les variables d'environnement
 dotenv_1.default.config();
 // Validation des variables d'environnement requises
@@ -16,7 +16,7 @@ const requiredEnvVars = [
 ];
 for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
-        Logger_1.default.error(`Missing required environment variable: ${envVar}`);
+        logger_1.default.error(`Missing required environment variable: ${envVar}`);
         process.exit(1);
     }
 }

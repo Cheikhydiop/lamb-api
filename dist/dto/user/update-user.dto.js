@@ -8,12 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateUserDto = void 0;
+exports.UpdateUserDto = exports.Language = void 0;
 // src/dto/auth/update-user.dto.ts
 const class_validator_1 = require("class-validator");
-const User_1 = require("../../entity/User");
+// import { Language } from '../../entity/User';
+var Language;
+(function (Language) {
+    Language["FR"] = "fr";
+    Language["EN"] = "en";
+    Language["WOLOF"] = "wo";
+})(Language || (exports.Language = Language = {}));
 class UpdateUserDto {
 }
 exports.UpdateUserDto = UpdateUserDto;
@@ -39,6 +44,6 @@ __decorate([
 ], UpdateUserDto.prototype, "phone_number", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(User_1.Language),
-    __metadata("design:type", typeof (_a = typeof User_1.Language !== "undefined" && User_1.Language) === "function" ? _a : Object)
+    (0, class_validator_1.IsEnum)(Language),
+    __metadata("design:type", String)
 ], UpdateUserDto.prototype, "preferred_language", void 0);

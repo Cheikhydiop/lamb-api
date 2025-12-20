@@ -102,6 +102,7 @@ class ForbiddenError extends AppError {
         this.details = details;
         this.statusCode = 403;
         this.code = 'FORBIDDEN';
+        // ...
         this.name = 'ForbiddenError';
     }
 }

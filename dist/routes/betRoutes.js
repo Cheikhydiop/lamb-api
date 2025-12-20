@@ -10,14 +10,59 @@ const authMiddleware_1 = require("../middlewares/authMiddleware");
 const validateRequest_1 = require("../middlewares/validateRequest");
 const express_validator_1 = require("express-validator");
 const client_1 = require("@prisma/client");
+const asyncHandler_1 = require("../middlewares/asyncHandler");
 const router = express_1.default.Router();
 // ==================== ROUTES PUBLIQUES ====================
+/**
+ * @swagger
+ * tags:
+ *   name: Bets
+ *   description: Betting management
+ */
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   get:
+ *     summary: Get bet details
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet details
+ *       404:
+ *         description: Bet not found
+ */
 // Obtenir les détails d'un pari
 router.get('/:betId', [
     (0, express_validator_1.param)('betId')
         .notEmpty().withMessage('ID du pari requis')
         .isString().withMessage('ID du pari doit être une chaîne')
-], validateRequest_1.validateRequest, BetController_1.default.getBet);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBet));
+/**
+ * @swagger
+ * /api/bets:
+ *   get:
+ *     summary: List bets with filters
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, ACCEPTED, COMPLETED, CANCELLED]
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of bets
+ */
 // Liste des paris avec filtres
 router.get('/', [
     (0, express_validator_1.query)('userId')
@@ -38,13 +83,29 @@ router.get('/', [
     (0, express_validator_1.query)('offset')
         .optional()
         .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
-], validateRequest_1.validateRequest, BetController_1.default.listBets);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.listBets));
+/**
+ * @swagger
+ * /api/bets/available/{fightId}:
+ *   get:
+ *     summary: Get available bets for a fight
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: fightId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Available bets
+ */
 // Obtenir les paris disponibles pour un combat
 router.get('/available/:fightId', [
     (0, express_validator_1.param)('fightId')
         .notEmpty().withMessage('ID du combat requis')
         .isString().withMessage('ID du combat doit être une chaîne')
-], validateRequest_1.validateRequest, BetController_1.default.getAvailableBets);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getAvailableBets));
 // Obtenir les paris en attente (PENDING)
 router.get('/status/pending', [
     (0, express_validator_1.query)('userId')
@@ -62,8 +123,38 @@ router.get('/status/pending', [
     (0, express_validator_1.query)('offset')
         .optional()
         .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
-], validateRequest_1.validateRequest, BetController_1.default.getPendingBets);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getPendingBets));
 // ==================== ROUTES UTILISATEUR AUTHENTIFIÉ ====================
+/**
+ * @swagger
+ * /api/bets:
+ *   post:
+ *     summary: Create a new bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fightId
+ *               - chosenFighter
+ *               - amount
+ *             properties:
+ *               fightId:
+ *                 type: string
+ *               chosenFighter:
+ *                 type: string
+ *                 enum: [A, B]
+ *               amount:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Bet created
+ */
 // Créer un nouveau pari
 router.post('/', authMiddleware_1.requireAuth, [
     (0, express_validator_1.body)('fightId')
@@ -75,25 +166,61 @@ router.post('/', authMiddleware_1.requireAuth, [
     (0, express_validator_1.body)('amount')
         .notEmpty().withMessage('Montant requis')
         .isFloat({ min: 1 }).withMessage('Montant doit être un nombre positif')
-], validateRequest_1.validateRequest, BetController_1.default.createBet);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.createBet));
+/**
+ * @swagger
+ * /api/bets/{betId}/accept:
+ *   post:
+ *     summary: Accept a bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet accepted
+ */
 // Accepter un pari
 router.post('/:betId/accept', authMiddleware_1.requireAuth, [
     (0, express_validator_1.param)('betId')
         .notEmpty().withMessage('ID du pari requis')
         .isString().withMessage('ID du pari doit être une chaîne')
-], validateRequest_1.validateRequest, BetController_1.default.acceptBet);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.acceptBet));
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   delete:
+ *     summary: Cancel a bet
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet cancelled
+ */
 // Annuler un pari
 router.delete('/:betId', authMiddleware_1.requireAuth, [
     (0, express_validator_1.param)('betId')
         .notEmpty().withMessage('ID du pari requis')
         .isString().withMessage('ID du pari doit être une chaîne')
-], validateRequest_1.validateRequest, BetController_1.default.cancelBet);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.cancelBet));
 // Obtenir mes paris (créés et acceptés)
-router.get('/my-bets', authMiddleware_1.requireAuth, BetController_1.default.getMyBets);
+router.get('/my-bets', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getMyBets));
 // Obtenir les paris actifs d'un utilisateur
-router.get('/active', authMiddleware_1.requireAuth, BetController_1.default.getActiveBets);
+router.get('/active', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getActiveBets));
 // Obtenir les statistiques de paris
-router.get('/stats', authMiddleware_1.requireAuth, BetController_1.default.getBetStats);
+router.get('/stats', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBetStats));
 // ==================== ROUTES ADMIN ====================
 // Régler un pari (admin seulement)
 router.post('/:betId/settle', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [
@@ -103,9 +230,9 @@ router.post('/:betId/settle', authMiddleware_1.requireAuth, authMiddleware_1.req
     (0, express_validator_1.body)('winner')
         .notEmpty().withMessage('Vainqueur requis')
         .isIn(['A', 'B', 'DRAW']).withMessage('Vainqueur invalide. Valeurs acceptées: A, B, DRAW')
-], validateRequest_1.validateRequest, BetController_1.default.settleBet);
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.settleBet));
 // Vérifier et expirer les paris (admin seulement)
-router.post('/expire-check', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, BetController_1.default.checkExpiredBets);
+router.post('/expire-check', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, (0, asyncHandler_1.asyncHandler)(BetController_1.default.checkExpiredBets));
 // ==================== ROUTES DE TEST ====================
 // Route de test (développement uniquement)
 if (process.env.NODE_ENV === 'development') {

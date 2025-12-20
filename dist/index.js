@@ -26,7 +26,7 @@ const env_1 = require("./config/env");
 Object.defineProperty(exports, "config", { enumerable: true, get: function () { return env_1.config; } });
 const errorHandler_1 = require("./middlewares/errorHandler");
 const index_1 = __importDefault(require("./routes/index"));
-const Logger_1 = __importDefault(require("./utils/Logger"));
+const logger_1 = __importDefault(require("./utils/logger"));
 const ipExtractor_1 = require("./middlewares/ipExtractor");
 const rateLimitMiddleware_1 = require("./middlewares/rateLimitMiddleware");
 const bigIntSerializer_1 = require("./middlewares/bigIntSerializer");
@@ -34,6 +34,8 @@ const CronService_1 = require("./services/CronService"); // Used manually
 const sanitizationMiddleware_1 = require("./middlewares/sanitizationMiddleware");
 const idempotencyMiddleware_1 = require("./middlewares/idempotencyMiddleware");
 const ServiceContainer_1 = require("./container/ServiceContainer");
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swagger_1 = require("./config/swagger");
 // ========== IMPORTS DES MIDDLEWARES DE SÉCURITÉ ==========
 const security_1 = require("./middlewares/security");
 const app = (0, express_1.default)();
@@ -60,6 +62,8 @@ app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 // Middleware de sérialisation BigInt (pour JSON)
 app.use(bigIntSerializer_1.bigIntSerializer);
+// Swagger Documentation
+app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
 // ==================== MIDDLEWARES DE SÉCURITÉ GLOBAUX ====================
 // 1. Rate Limiting Global
 app.use((0, rateLimitMiddleware_1.rateLimitMiddleware)({
@@ -125,10 +129,11 @@ if (env_1.config.nodeEnv !== 'production') {
         try {
             const { message } = req.body;
             if (!webSocketService) {
-                return res.status(503).json({
+                res.status(503).json({
                     success: false,
-                    message: 'WebSocket service not initialized'
+                    message: 'Service WebSocket non initialisé'
                 });
+                return;
             }
             // Diffuser un message de test
             const testMessage = {
@@ -146,7 +151,7 @@ if (env_1.config.nodeEnv !== 'production') {
             });
         }
         catch (error) {
-            Logger_1.default.error('WebSocket test error:', error);
+            logger_1.default.error('WebSocket test error:', error);
             res.status(500).json({
                 success: false,
                 message: 'Failed to send test message',
@@ -158,7 +163,7 @@ if (env_1.config.nodeEnv !== 'production') {
 // ========== INITIALISATION DES ROUTES ==========
 // NOTE: Les routes nécessitent désormais l'utilisation de ServiceContainer au lieu de Container.get()
 // Les fichiers de routes doivent être mis à jour.
-(0, index_1.default)(app);
+// Routes(app); // MOVED to startServer to ensure ServiceContainer is initialized
 // ========== HANDLERS D'ERREURS ==========
 // Handler 404 (DOIT ÊTRE AVANT errorHandler)
 app.use(errorHandler_1.notFoundHandler);
@@ -167,22 +172,22 @@ app.use(errorHandler_1.errorHandler);
 // ========== FONCTION D'ARRÊT PROPRE ==========
 const gracefulShutdown = (signal) => __awaiter(void 0, void 0, void 0, function* () {
     if (signal) {
-        Logger_1.default.info(`Received ${signal}, shutting down gracefully...`);
+        logger_1.default.info(`Received ${signal}, shutting down gracefully...`);
     }
     else {
-        Logger_1.default.info('Shutting down gracefully...');
+        logger_1.default.info('Shutting down gracefully...');
     }
     try {
         // Arrêter le WebSocket service
         if (webSocketService) {
             webSocketService.destroy();
-            Logger_1.default.info('WebSocket service stopped');
+            logger_1.default.info('WebSocket service stopped');
         }
         yield prismaClient_1.default.$disconnect();
-        Logger_1.default.info('Database connection closed');
+        logger_1.default.info('Database connection closed');
     }
     catch (error) {
-        Logger_1.default.error('Error during shutdown:', error);
+        logger_1.default.error('Error during shutdown:', error);
     }
     setTimeout(() => {
         process.exit(0);
@@ -190,19 +195,19 @@ const gracefulShutdown = (signal) => __awaiter(void 0, void 0, void 0, function*
 });
 // ========== GESTION DES ERREURS GLOBALES ==========
 process.on('uncaughtException', (error) => {
-    Logger_1.default.error('❌ Uncaught Exception:', error);
-    Logger_1.default.error('Stack:', error.stack);
+    logger_1.default.error('❌ Uncaught Exception:', error);
+    logger_1.default.error('Stack:', error.stack);
     if (env_1.config.nodeEnv !== 'production') {
-        Logger_1.default.warn('⚠️ Continuing in development mode despite uncaught exception');
+        logger_1.default.warn('⚠️ Continuing in development mode despite uncaught exception');
     }
     else {
         gracefulShutdown();
     }
 });
 process.on('unhandledRejection', (reason, promise) => {
-    Logger_1.default.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    logger_1.default.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
     if (env_1.config.nodeEnv !== 'production') {
-        Logger_1.default.warn('⚠️ Continuing in development mode despite unhandled rejection');
+        logger_1.default.warn('⚠️ Continuing in development mode despite unhandled rejection');
     }
     else {
         gracefulShutdown();
@@ -216,71 +221,73 @@ shutdownSignals.forEach(signal => {
 // ========== FONCTION DE DÉMARRAGE ==========
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        Logger_1.default.info('🚀 Starting Better API Server...');
-        Logger_1.default.info(`📁 Environment: ${env_1.config.nodeEnv}`);
-        Logger_1.default.info(`🔧 Configuration loaded: PORT=${env_1.config.port}, CORS=${env_1.config.corsOrigin}`);
+        logger_1.default.info('🚀 Starting Better API Server...');
+        logger_1.default.info(`📁 Environment: ${env_1.config.nodeEnv}`);
+        logger_1.default.info(`🔧 Configuration loaded: PORT=${env_1.config.port}, CORS=${env_1.config.corsOrigin}`);
         // Initialiser les services (y compris Prisma)
         const container = yield (0, ServiceContainer_1.initializeServices)();
+        // Configurer les routes APRÈS l'initialisation des services
+        (0, index_1.default)(app);
         // Récupérer le service WebSocket du conteneur
         exports.webSocketService = webSocketService = container.webSocketService;
         webSocketService.initialize(server);
-        Logger_1.default.info('✅ WebSocket service initialized');
+        logger_1.default.info('✅ WebSocket service initialized');
         // Initialiser CronService (si nécessaire)
         // Nous supposons que CronService peut être instancié manuellement pour l'instant
         // TODO: Ajouter CronService au container
         try {
             const cronService = new CronService_1.CronService();
             // cronService.initialize(); // Uncomment if CronService has initialize method
-            Logger_1.default.info('✅ Cron Service initialized');
+            logger_1.default.info('✅ Cron Service initialized');
         }
         catch (e) {
-            Logger_1.default.warn('⚠️ Cron Service initialization specific logic should be checked', e);
+            logger_1.default.warn('⚠️ Cron Service initialization specific logic should be checked', e);
         }
-        Logger_1.default.info('🔌 Attempting to connect to the database...');
+        logger_1.default.info('🔌 Attempting to connect to the database...');
         yield prismaClient_1.default.$connect();
-        Logger_1.default.info('✅ Successfully connected to the database');
+        logger_1.default.info('✅ Successfully connected to the database');
         // Test de connexion
         try {
             const userCount = yield prismaClient_1.default.user.count();
-            Logger_1.default.info(`📊 Database connection test successful. User count: ${userCount}`);
+            logger_1.default.info(`📊 Database connection test successful. User count: ${userCount}`);
         }
         catch (dbError) {
-            Logger_1.default.warn('⚠️ Database count failed, but connection is established:', dbError.message);
+            logger_1.default.warn('⚠️ Database count failed, but connection is established:', dbError.message);
         }
         // Démarrer le serveur HTTP
         server.listen(env_1.config.port, () => {
-            Logger_1.default.info(`🎉 Server is running on port ${env_1.config.port}`);
-            Logger_1.default.info(`🔒 Trust proxy: ${app.get('trust proxy')}`);
-            Logger_1.default.info(`🌐 CORS Origin: ${env_1.config.corsOrigin}`);
-            Logger_1.default.info(`🛡️  Security: ENABLED (Helmet + Custom Headers)`);
+            logger_1.default.info(`🎉 Server is running on port ${env_1.config.port}`);
+            logger_1.default.info(`🔒 Trust proxy: ${app.get('trust proxy')}`);
+            logger_1.default.info(`🌐 CORS Origin: ${env_1.config.corsOrigin}`);
+            logger_1.default.info(`🛡️  Security: ENABLED (Helmet + Custom Headers)`);
             if (webSocketService && webSocketService.isInitialized()) {
-                Logger_1.default.info(`📡 WebSocket available at: ws://localhost:${env_1.config.port}/ws`);
+                logger_1.default.info(`📡 WebSocket available at: ws://localhost:${env_1.config.port}/ws`);
             }
             else {
-                Logger_1.default.warn('⚠️ WebSocket not available');
+                logger_1.default.warn('⚠️ WebSocket not available');
             }
-            Logger_1.default.info('📡 Ready to accept connections!');
-            Logger_1.default.info('='.repeat(60));
+            logger_1.default.info('📡 Ready to accept connections!');
+            logger_1.default.info('='.repeat(60));
         });
         // Gestion des erreurs du serveur
         server.on('error', (error) => {
             if (error.code === 'EADDRINUSE') {
-                Logger_1.default.error(`❌ Port ${env_1.config.port} is already in use`);
+                logger_1.default.error(`❌ Port ${env_1.config.port} is already in use`);
             }
             else {
-                Logger_1.default.error('❌ Server error:', error);
+                logger_1.default.error('❌ Server error:', error);
             }
             gracefulShutdown();
         });
     }
     catch (error) {
-        Logger_1.default.error('💥 Failed to start server:', error);
-        Logger_1.default.error('Stack:', error.stack);
+        logger_1.default.error('💥 Failed to start server:', error);
+        logger_1.default.error('Stack:', error.stack);
         try {
             yield prismaClient_1.default.$disconnect();
         }
         catch (disconnectError) {
-            Logger_1.default.error('Failed to disconnect from database:', disconnectError);
+            logger_1.default.error('Failed to disconnect from database:', disconnectError);
         }
         process.exit(1);
     }

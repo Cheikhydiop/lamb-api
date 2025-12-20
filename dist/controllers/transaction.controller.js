@@ -20,11 +20,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionController = void 0;
 const typedi_1 = require("typedi");
-const transaction_service_1 = require("../services/transaction.service");
+const TransactionService_1 = require("../services/TransactionService");
 const logger_1 = __importDefault(require("../utils/logger"));
 let TransactionController = class TransactionController {
     constructor(transactionService) {
@@ -143,5 +142,5 @@ let TransactionController = class TransactionController {
 exports.TransactionController = TransactionController;
 exports.TransactionController = TransactionController = __decorate([
     (0, typedi_1.Service)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof transaction_service_1.TransactionService !== "undefined" && transaction_service_1.TransactionService) === "function" ? _a : Object])
+    __metadata("design:paramtypes", [TransactionService_1.TransactionService])
 ], TransactionController);

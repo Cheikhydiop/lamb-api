@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const customErrors_1 = require("../errors/customErrors");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 class UserService {
     constructor(userRepository, walletRepository, emailVerificationService, sessionRepository, prisma // Injected for complex queries/aggregations not yet in repositories
     ) {
@@ -24,7 +24,7 @@ class UserService {
         this.emailVerificationService = emailVerificationService;
         this.sessionRepository = sessionRepository;
         this.prisma = prisma;
-        Logger_1.default.info('UserService initialized');
+        logger_1.default.info('UserService initialized');
     }
     /**
      * Récupère un utilisateur par son ID
@@ -41,7 +41,7 @@ class UserService {
             catch (error) {
                 if (error instanceof customErrors_1.NotFoundError)
                     throw error;
-                Logger_1.default.error('Error fetching user', error);
+                logger_1.default.error('Error fetching user', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la récupération de l\'utilisateur');
             }
         });
@@ -61,11 +61,11 @@ class UserService {
                 if (data.email)
                     updateData.email = data.email;
                 const user = yield this.userRepository.update(userId, updateData);
-                Logger_1.default.info(`User updated: ${userId}`);
+                logger_1.default.info(`User updated: ${userId}`);
                 return user;
             }
             catch (error) {
-                Logger_1.default.error('Error updating user', error);
+                logger_1.default.error('Error updating user', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la mise à jour de l\'utilisateur');
             }
         });
@@ -86,12 +86,12 @@ class UserService {
                 }
                 const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
                 yield this.userRepository.updatePassword(userId, hashedPassword);
-                Logger_1.default.info(`Password changed for user: ${userId}`);
+                logger_1.default.info(`Password changed for user: ${userId}`);
             }
             catch (error) {
                 if (error instanceof customErrors_1.NotFoundError || error instanceof customErrors_1.AuthenticationError)
                     throw error;
-                Logger_1.default.error('Error changing password', error);
+                logger_1.default.error('Error changing password', error);
                 throw new customErrors_1.DatabaseError('Erreur lors du changement de mot de passe');
             }
         });
@@ -103,10 +103,10 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.userRepository.update(userId, { isActive: false });
-                Logger_1.default.info(`Account deactivated: ${userId}`);
+                logger_1.default.info(`Account deactivated: ${userId}`);
             }
             catch (error) {
-                Logger_1.default.error('Error deactivating account', error);
+                logger_1.default.error('Error deactivating account', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la désactivation du compte');
             }
         });
@@ -118,10 +118,10 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.userRepository.update(userId, { isActive: true });
-                Logger_1.default.info(`Account reactivated: ${userId}`);
+                logger_1.default.info(`Account reactivated: ${userId}`);
             }
             catch (error) {
-                Logger_1.default.error('Error reactivating account', error);
+                logger_1.default.error('Error reactivating account', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la réactivation du compte');
             }
         });
@@ -160,7 +160,7 @@ class UserService {
                 };
             }
             catch (error) {
-                Logger_1.default.error('Error fetching user stats', error);
+                logger_1.default.error('Error fetching user stats', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la récupération des statistiques');
             }
         });
@@ -175,7 +175,7 @@ class UserService {
                 return result.users;
             }
             catch (error) {
-                Logger_1.default.error('Error listing users', error);
+                logger_1.default.error('Error listing users', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la récupération de la liste des utilisateurs');
             }
         });
@@ -195,12 +195,12 @@ class UserService {
                     throw new customErrors_1.ConflictError('Impossible de supprimer un utilisateur avec des paris actifs');
                 }
                 yield this.userRepository.delete(userId);
-                Logger_1.default.info(`User deleted: ${userId}`);
+                logger_1.default.info(`User deleted: ${userId}`);
             }
             catch (error) {
                 if (error instanceof customErrors_1.ConflictError)
                     throw error;
-                Logger_1.default.error('Error deleting user', error);
+                logger_1.default.error('Error deleting user', error);
                 throw new customErrors_1.DatabaseError('Erreur lors de la suppression de l\'utilisateur');
             }
         });

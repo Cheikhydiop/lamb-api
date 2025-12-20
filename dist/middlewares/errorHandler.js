@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorHandler = exports.notFoundHandler = void 0;
 const customErrors_1 = require("../errors/customErrors");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 class ErrorHandler {
     /**
      * Gestion des erreurs AppError
@@ -15,7 +15,7 @@ class ErrorHandler {
         const errorType = error.constructor.name;
         // Log selon le type d'erreur
         if (error.statusCode >= 500) {
-            Logger_1.default.error(`❌ ${errorType}`, {
+            logger_1.default.error(`❌ ${errorType}`, {
                 message: error.message,
                 code: error.code,
                 details: error.details,
@@ -26,7 +26,7 @@ class ErrorHandler {
             });
         }
         else if (error.statusCode >= 400) {
-            Logger_1.default.warn(`⚠️ ${errorType}`, {
+            logger_1.default.warn(`⚠️ ${errorType}`, {
                 message: error.message,
                 code: error.code,
                 details: error.details,
@@ -101,7 +101,7 @@ class ErrorHandler {
      * Gestion des erreurs inconnues
      */
     static handleUnknownError(err, req, res) {
-        Logger_1.default.error('❌ Unhandled error', {
+        logger_1.default.error('❌ Unhandled error', {
             name: err.name,
             message: err.message,
             stack: err.stack,
@@ -132,17 +132,18 @@ class ErrorHandler {
 ErrorHandler.handle = (err, req, res, next) => {
     // Gestion des erreurs AppError
     if (err instanceof customErrors_1.AppError) {
-        return ErrorHandler.handleAppError(err, req, res);
+        ErrorHandler.handleAppError(err, req, res);
+        return;
     }
     // Erreurs standards non gérées
-    return ErrorHandler.handleUnknownError(err, req, res);
+    ErrorHandler.handleUnknownError(err, req, res);
 };
 /**
  * Initialisation des gestionnaires d'exceptions non gérées
  */
 ErrorHandler.initializeUnhandledException = () => {
     process.on('unhandledRejection', (reason) => {
-        Logger_1.default.error('🔥 Unhandled Rejection', {
+        logger_1.default.error('🔥 Unhandled Rejection', {
             name: reason.name,
             message: reason.message,
             stack: reason.stack
@@ -150,7 +151,7 @@ ErrorHandler.initializeUnhandledException = () => {
         throw reason;
     });
     process.on('uncaughtException', (err) => {
-        Logger_1.default.error('💥 Uncaught Exception', {
+        logger_1.default.error('💥 Uncaught Exception', {
             name: err.name,
             message: err.message,
             stack: err.stack
@@ -163,7 +164,7 @@ exports.default = ErrorHandler;
  * Middleware pour les routes non trouvées (404)
  */
 const notFoundHandler = (req, res) => {
-    Logger_1.default.warn('⚠️ Route non trouvée', {
+    logger_1.default.warn('⚠️ Route non trouvée', {
         path: req.path,
         method: req.method,
         ip: req.ip

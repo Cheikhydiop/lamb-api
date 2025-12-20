@@ -31,7 +31,7 @@ const tokenUtils_1 = require("../utils/tokenUtils");
 const customErrors_1 = require("../errors/customErrors");
 const userValidator_1 = __importDefault(require("../utils/validators/userValidator"));
 const SessionRepository_1 = require("../repositories/SessionRepository");
-const Logger_1 = __importDefault(require("../utils/Logger"));
+const logger_1 = __importDefault(require("../utils/logger"));
 const client_1 = require("@prisma/client");
 // import { Service, Container } from 'typedi';
 const DeviceDetectionService_1 = require("./DeviceDetectionService");
@@ -120,9 +120,12 @@ class AuthService {
                     const { hasActiveSessions, sessions } = yield multiDeviceAuthService.checkActiveSessions(user.id);
                     // Pour les admins, on exige TOUJOURS la vérification, même si c'est la seule session
                     if (hasActiveSessions || isAdmin) {
-                        Logger_1.default.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
+                        logger_1.default.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
                         // 4. Créer session en attente + OTP
                         const { session, otpCode } = yield multiDeviceAuthService.createPendingSession(user.id, detectedDevice, req);
+                        if (!user.email) {
+                            throw new Error('Email requis pour la vérification de l\'appareil');
+                        }
                         // 5. Envoyer email
                         yield this.emailService.sendDeviceVerificationOTP(user.email, user.name || 'Utilisateur', otpCode, detectedDevice);
                         return {
@@ -173,7 +176,7 @@ class AuthService {
                 });
                 // Nettoyage de la réponse
                 const { password } = user, userWithoutPassword = __rest(user, ["password"]);
-                Logger_1.default.info(`✅ Connexion réussie: ${user.email} (${user.id})`, {
+                logger_1.default.info(`✅ Connexion réussie: ${user.email} (${user.id})`, {
                     userId: user.id,
                     ip: deviceInfo.ipAddress,
                     deviceType: deviceInfo.deviceType
@@ -190,7 +193,7 @@ class AuthService {
             catch (error) {
                 // CORRECTION CRITIQUE : Vérifier d'abord si c'est une AuthenticationError
                 if (error instanceof customErrors_1.AuthenticationError) {
-                    Logger_1.default.warn(`⚠️ Tentative de connexion échouée: ${loginData.email}`, {
+                    logger_1.default.warn(`⚠️ Tentative de connexion échouée: ${loginData.email}`, {
                         reason: (_b = error.details) === null || _b === void 0 ? void 0 : _b.reason,
                         ip: req === null || req === void 0 ? void 0 : req.ip
                     });
@@ -203,7 +206,7 @@ class AuthService {
                     throw error;
                 }
                 // Seulement pour les erreurs techniques inattendues
-                Logger_1.default.error('❌ Échec de la connexion (erreur technique)', {
+                logger_1.default.error('❌ Échec de la connexion (erreur technique)', {
                     email: loginData.email,
                     errorMessage: error.message,
                     errorStack: error.stack,
@@ -306,7 +309,7 @@ class AuthService {
                 });
                 // Nettoyage de la réponse
                 const { password } = newUser, userWithoutPassword = __rest(newUser, ["password"]);
-                Logger_1.default.info(`✅ Inscription réussie: ${newUser.email} (${newUser.id})`, {
+                logger_1.default.info(`✅ Inscription réussie: ${newUser.email} (${newUser.id})`, {
                     userId: newUser.id,
                     ip: deviceInfo.ipAddress
                 });
@@ -326,7 +329,7 @@ class AuthService {
                     error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de l\'inscription (erreur technique)', {
+                logger_1.default.error('❌ Échec de l\'inscription (erreur technique)', {
                     email: userData.email,
                     errorMessage: error.message,
                     errorStack: error.stack,
@@ -376,7 +379,7 @@ class AuthService {
                     recordId: userId,
                     userId: userId
                 });
-                Logger_1.default.info(`✅ Email vérifié: ${user.email} (${user.id})`);
+                logger_1.default.info(`✅ Email vérifié: ${user.email} (${user.id})`);
                 return {
                     user: userWithoutPassword,
                     message: 'Email vérifié avec succès. Votre compte est maintenant actif.'
@@ -390,7 +393,7 @@ class AuthService {
                     error instanceof customErrors_1.ConflictError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la vérification email (erreur technique)', {
+                logger_1.default.error('❌ Échec de la vérification email (erreur technique)', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -418,10 +421,10 @@ class AuthService {
                     recordId: sessionId,
                     userId: userId
                 });
-                Logger_1.default.info(`✅ Déconnexion réussie pour l'utilisateur ${userId}`);
+                logger_1.default.info(`✅ Déconnexion réussie pour l'utilisateur ${userId}`);
             }
             catch (error) {
-                Logger_1.default.error('❌ Échec de la déconnexion', {
+                logger_1.default.error('❌ Échec de la déconnexion', {
                     userId,
                     sessionId,
                     errorMessage: error.message,
@@ -494,7 +497,7 @@ class AuthService {
                     recordId: session.id,
                     userId: user.id
                 });
-                Logger_1.default.info(`✅ Token rafraîchi pour l'utilisateur ${user.id}`);
+                logger_1.default.info(`✅ Token rafraîchi pour l'utilisateur ${user.id}`);
                 return {
                     token: newToken,
                     refreshToken: newRefreshToken
@@ -508,7 +511,7 @@ class AuthService {
                     error instanceof customErrors_1.ConflictError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec du rafraîchissement du token', {
+                logger_1.default.error('❌ Échec du rafraîchissement du token', {
                     errorMessage: error.message,
                     errorStack: error.stack
                 });
@@ -526,18 +529,18 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email } = data;
-                Logger_1.default.info(`📧 Demande de réinitialisation pour: ${email}`);
+                logger_1.default.info(`📧 Demande de réinitialisation pour: ${email}`);
                 // Rechercher l'utilisateur
                 const user = yield this.userRepository.findByEmail(email);
                 if (!user) {
                     // Pour des raisons de sécurité, ne pas révéler si l'email existe
-                    Logger_1.default.warn(`⚠️ Email non trouvé: ${email}`);
+                    logger_1.default.warn(`⚠️ Email non trouvé: ${email}`);
                     return { message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' };
                 }
-                Logger_1.default.info(`👤 Utilisateur trouvé: ${user.id} - ${user.email}`);
+                logger_1.default.info(`👤 Utilisateur trouvé: ${user.id} - ${user.email}`);
                 // Vérifier si le compte est actif
                 if (!user.isActive) {
-                    Logger_1.default.warn(`❌ Compte désactivé pour: ${user.email}`);
+                    logger_1.default.warn(`❌ Compte désactivé pour: ${user.email}`);
                     throw new customErrors_1.AuthenticationError('Compte désactivé', {
                         userId: user.id,
                         email: user.email,
@@ -547,7 +550,7 @@ class AuthService {
                 }
                 // Vérifier que l'email est vérifié
                 if (!user.isEmailVerified) {
-                    Logger_1.default.warn(`❌ Email non vérifié pour: ${user.email}`);
+                    logger_1.default.warn(`❌ Email non vérifié pour: ${user.email}`);
                     throw new customErrors_1.AuthenticationError('Email non vérifié', {
                         userId: user.id,
                         email: user.email,
@@ -557,14 +560,14 @@ class AuthService {
                 }
                 // Vérifier que JWT_SECRET est défini
                 if (!env_1.config.jwt.secret) {
-                    Logger_1.default.error('❌ JWT_SECRET non défini dans la configuration');
+                    logger_1.default.error('❌ JWT_SECRET non défini dans la configuration');
                     throw new customErrors_1.DatabaseError('Configuration serveur incomplète', {
                         operation: 'FORGOT_PASSWORD_OPERATION',
                         entity: 'CONFIG',
                         originalError: 'JWT_SECRET manquant'
                     });
                 }
-                Logger_1.default.info(`🔐 Génération du token JWT avec secret: ${env_1.config.jwt.secret.substring(0, 10)}...`);
+                logger_1.default.info(`🔐 Génération du token JWT avec secret: ${env_1.config.jwt.secret.substring(0, 10)}...`);
                 // Générer un token de réinitialisation
                 const resetToken = jsonwebtoken_1.default.sign({
                     userId: user.id,
@@ -572,7 +575,7 @@ class AuthService {
                     type: 'password_reset',
                     timestamp: Date.now()
                 }, env_1.config.jwt.secret, { expiresIn: '15m' });
-                Logger_1.default.info(`✅ Token JWT généré: ${resetToken.substring(0, 20)}...`);
+                logger_1.default.info(`✅ Token JWT généré: ${resetToken.substring(0, 20)}...`);
                 // Stocker le token OTP
                 try {
                     yield this.otpCodeRepository.create({
@@ -581,23 +584,26 @@ class AuthService {
                         purpose: 'PASSWORD_RESET',
                         expiresAt: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
                     });
-                    Logger_1.default.info(`💾 Token OTP sauvegardé pour l'utilisateur: ${user.id}`);
+                    logger_1.default.info(`💾 Token OTP sauvegardé pour l'utilisateur: ${user.id}`);
                 }
                 catch (dbError) {
-                    Logger_1.default.error(`❌ Erreur base de données OTP: ${dbError.message}`);
+                    logger_1.default.error(`❌ Erreur base de données OTP: ${dbError.message}`);
                     throw new customErrors_1.DatabaseError('Erreur lors de la sauvegarde du token', {
                         operation: 'FORGOT_PASSWORD_OPERATION',
                         entity: 'OTP_CODE',
                         originalError: dbError.message
                     });
                 }
+                if (!user.email) {
+                    throw new Error('Utilisateur sans email');
+                }
                 // Envoyer l'email de réinitialisation
                 try {
                     yield this.sendPasswordResetEmail(user.email, user.name || 'Utilisateur', resetToken);
-                    Logger_1.default.info(`📤 Email envoyé à: ${user.email}`);
+                    logger_1.default.info(`📤 Email envoyé à: ${user.email}`);
                 }
                 catch (emailError) {
-                    Logger_1.default.error(`❌ Erreur envoi email: ${emailError.message}`);
+                    logger_1.default.error(`❌ Erreur envoi email: ${emailError.message}`);
                     // Ne pas échouer si l'email échoue, mais logger l'erreur
                 }
                 // Log d'audit
@@ -610,10 +616,10 @@ class AuthService {
                         ipAddress: req === null || req === void 0 ? void 0 : req.ip,
                         userAgent: req === null || req === void 0 ? void 0 : req.headers['user-agent']
                     });
-                    Logger_1.default.info(`📝 Log d'audit créé pour: ${user.id}`);
+                    logger_1.default.info(`📝 Log d'audit créé pour: ${user.id}`);
                 }
                 catch (auditError) {
-                    Logger_1.default.warn(`⚠️ Erreur création log audit: ${auditError.message}`);
+                    logger_1.default.warn(`⚠️ Erreur création log audit: ${auditError.message}`);
                     // Continuer même si l'audit échoue
                 }
                 return { message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' };
@@ -621,16 +627,16 @@ class AuthService {
             catch (error) {
                 // Propagation des erreurs AuthenticationError
                 if (error instanceof customErrors_1.AuthenticationError) {
-                    Logger_1.default.warn(`🔐 Erreur d'authentification: ${error.message}`);
+                    logger_1.default.warn(`🔐 Erreur d'authentification: ${error.message}`);
                     throw error;
                 }
                 // Propagation des erreurs DatabaseError
                 if (error instanceof customErrors_1.DatabaseError) {
-                    Logger_1.default.error(`🗄️ Erreur base de données: ${error.message}`);
+                    logger_1.default.error(`🗄️ Erreur base de données: ${error.message}`);
                     throw error;
                 }
                 // Pour toutes les autres erreurs
-                Logger_1.default.error('❌ Échec de la demande de réinitialisation', {
+                logger_1.default.error('❌ Échec de la demande de réinitialisation', {
                     email: data.email,
                     errorName: error.name,
                     errorMessage: error.message,
@@ -653,21 +659,21 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { token, newPassword } = data;
-                Logger_1.default.info(`🔑 Tentative de réinitialisation avec token: ${token.substring(0, 20)}...`);
+                logger_1.default.info(`🔑 Tentative de réinitialisation avec token: ${token.substring(0, 20)}...`);
                 // Vérifier et décoder le token
                 let decoded;
                 try {
                     decoded = jsonwebtoken_1.default.verify(token, env_1.config.jwt.secret);
                 }
                 catch (error) {
-                    Logger_1.default.warn(`❌ Token JWT invalide: ${error.message}`);
+                    logger_1.default.warn(`❌ Token JWT invalide: ${error.message}`);
                     throw new customErrors_1.AuthenticationError('Token invalide ou expiré', {
                         reason: 'INVALID_RESET_TOKEN'
                     });
                 }
                 // Vérifier que c'est un token de réinitialisation
                 if (!decoded.type || decoded.type !== 'password_reset') {
-                    Logger_1.default.warn(`❌ Type de token invalide: ${decoded.type}`);
+                    logger_1.default.warn(`❌ Type de token invalide: ${decoded.type}`);
                     throw new customErrors_1.AuthenticationError('Type de token invalide', {
                         reason: 'INVALID_TOKEN_TYPE'
                     });
@@ -675,38 +681,38 @@ class AuthService {
                 // Vérifier l'OTP
                 const otpRecord = yield this.otpCodeRepository.findValidToken(decoded.userId, token, 'PASSWORD_RESET');
                 if (!otpRecord) {
-                    Logger_1.default.warn(`❌ Token OTP invalide ou déjà utilisé pour l'utilisateur: ${decoded.userId}`);
+                    logger_1.default.warn(`❌ Token OTP invalide ou déjà utilisé pour l'utilisateur: ${decoded.userId}`);
                     throw new customErrors_1.AuthenticationError('Token invalide ou déjà utilisé', {
                         reason: 'INVALID_OTP'
                     });
                 }
-                Logger_1.default.info(`✅ Token OTP valide trouvé pour l'utilisateur: ${decoded.userId}`);
+                logger_1.default.info(`✅ Token OTP valide trouvé pour l'utilisateur: ${decoded.userId}`);
                 // Récupérer l'utilisateur
                 const user = yield this.userRepository.findById(decoded.userId);
                 if (!user) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé: ${decoded.userId}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé: ${decoded.userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId: decoded.userId });
                 }
                 // Vérifier si le compte est actif
                 if (!user.isActive) {
-                    Logger_1.default.warn(`❌ Compte désactivé: ${user.email}`);
+                    logger_1.default.warn(`❌ Compte désactivé: ${user.email}`);
                     throw new customErrors_1.AuthenticationError('Compte désactivé', {
                         userId: user.id,
                         reason: 'ACCOUNT_INACTIVE'
                     });
                 }
-                Logger_1.default.info(`👤 Utilisateur trouvé pour réinitialisation: ${user.email}`);
+                logger_1.default.info(`👤 Utilisateur trouvé pour réinitialisation: ${user.email}`);
                 // Hash du nouveau mot de passe
                 const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
                 // Mettre à jour le mot de passe
                 yield this.userRepository.updatePassword(user.id, hashedPassword);
-                Logger_1.default.info(`🔐 Mot de passe mis à jour pour: ${user.email}`);
+                logger_1.default.info(`🔐 Mot de passe mis à jour pour: ${user.email}`);
                 // Marquer l'OTP comme utilisé
                 yield this.otpCodeRepository.markAsUsed(otpRecord.id);
-                Logger_1.default.info(`✅ Token OTP marqué comme utilisé: ${otpRecord.id}`);
+                logger_1.default.info(`✅ Token OTP marqué comme utilisé: ${otpRecord.id}`);
                 // Révoquer toutes les sessions existantes (sécurité)
                 yield this.sessionRepository.revokeAllUserSessions(user.id);
-                Logger_1.default.info(`🔒 Toutes les sessions révoquées pour: ${user.email}`);
+                logger_1.default.info(`🔒 Toutes les sessions révoquées pour: ${user.email}`);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'PASSWORD_RESET_COMPLETED',
@@ -715,14 +721,14 @@ class AuthService {
                     userId: user.id,
                     ipAddress: req === null || req === void 0 ? void 0 : req.ip
                 });
-                Logger_1.default.info(`✅ Mot de passe réinitialisé pour: ${user.email}`);
+                logger_1.default.info(`✅ Mot de passe réinitialisé pour: ${user.email}`);
                 return { message: 'Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.' };
             }
             catch (error) {
                 if (error instanceof customErrors_1.AuthenticationError || error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la réinitialisation du mot de passe', {
+                logger_1.default.error('❌ Échec de la réinitialisation du mot de passe', {
                     errorMessage: error.message,
                     errorStack: error.stack
                 });
@@ -741,28 +747,28 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { currentPassword, newPassword } = data;
-                Logger_1.default.info(`🔐 Demande de changement de mot de passe pour l'utilisateur: ${userId}`);
+                logger_1.default.info(`🔐 Demande de changement de mot de passe pour l'utilisateur: ${userId}`);
                 // Récupérer l'utilisateur
                 const user = yield this.userRepository.findById(userId);
                 if (!user) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
                 }
                 // Vérifier l'ancien mot de passe
                 const isPasswordValid = yield bcrypt_1.default.compare(currentPassword, user.password);
                 if (!isPasswordValid) {
-                    Logger_1.default.warn(`❌ Mot de passe actuel incorrect pour: ${user.email}`);
+                    logger_1.default.warn(`❌ Mot de passe actuel incorrect pour: ${user.email}`);
                     throw new customErrors_1.AuthenticationError('Mot de passe actuel incorrect', {
                         userId: user.id,
                         reason: 'INVALID_CURRENT_PASSWORD'
                     });
                 }
-                Logger_1.default.info(`✅ Mot de passe actuel vérifié pour: ${user.email}`);
+                logger_1.default.info(`✅ Mot de passe actuel vérifié pour: ${user.email}`);
                 // Hash du nouveau mot de passe
                 const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
                 // Mettre à jour le mot de passe
                 yield this.userRepository.updatePassword(user.id, hashedPassword);
-                Logger_1.default.info(`🔐 Nouveau mot de passe enregistré pour: ${user.email}`);
+                logger_1.default.info(`🔐 Nouveau mot de passe enregistré pour: ${user.email}`);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'PASSWORD_CHANGED',
@@ -771,14 +777,14 @@ class AuthService {
                     userId: user.id,
                     ipAddress: req === null || req === void 0 ? void 0 : req.ip
                 });
-                Logger_1.default.info(`✅ Mot de passe changé pour: ${user.email}`);
+                logger_1.default.info(`✅ Mot de passe changé pour: ${user.email}`);
                 return { message: 'Mot de passe changé avec succès.' };
             }
             catch (error) {
                 if (error instanceof customErrors_1.AuthenticationError || error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec du changement de mot de passe', {
+                logger_1.default.error('❌ Échec du changement de mot de passe', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -798,12 +804,12 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { name, phone } = data;
-                Logger_1.default.info(`📝 Mise à jour profil demandée pour: ${userId}`, { name, phone });
+                logger_1.default.info(`📝 Mise à jour profil demandée pour: ${userId}`, { name, phone });
                 // Vérifier si le nouveau téléphone est déjà utilisé par un autre utilisateur
                 if (phone) {
                     const existingUser = yield this.userRepository.findByPhone(phone);
                     if (existingUser && existingUser.id !== userId) {
-                        Logger_1.default.warn(`❌ Numéro de téléphone déjà utilisé: ${phone}`);
+                        logger_1.default.warn(`❌ Numéro de téléphone déjà utilisé: ${phone}`);
                         throw new customErrors_1.ConflictError('Ce numéro de téléphone est déjà utilisé', {
                             resource: 'USER',
                             conflictingField: 'phone',
@@ -814,7 +820,7 @@ class AuthService {
                 // Mettre à jour le profil
                 const updatedUser = yield this.userRepository.update(userId, Object.assign(Object.assign({}, (name && { name })), (phone && { phone })));
                 if (!updatedUser) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé lors de la mise à jour: ${userId}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé lors de la mise à jour: ${userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
                 }
                 const { password } = updatedUser, userWithoutPassword = __rest(updatedUser, ["password"]);
@@ -828,7 +834,7 @@ class AuthService {
                     newData: data,
                     ipAddress: req === null || req === void 0 ? void 0 : req.ip
                 });
-                Logger_1.default.info(`✅ Profil mis à jour pour: ${updatedUser.email}`);
+                logger_1.default.info(`✅ Profil mis à jour pour: ${updatedUser.email}`);
                 return {
                     user: userWithoutPassword,
                     message: 'Profil mis à jour avec succès'
@@ -838,7 +844,7 @@ class AuthService {
                 if (error instanceof customErrors_1.ConflictError || error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la mise à jour du profil', {
+                logger_1.default.error('❌ Échec de la mise à jour du profil', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -858,11 +864,11 @@ class AuthService {
         return __awaiter(this, arguments, void 0, function* (userId, data = {}, req) {
             try {
                 const { reason } = data;
-                Logger_1.default.info(`🚫 Demande de désactivation pour l'utilisateur: ${userId}`, { reason });
+                logger_1.default.info(`🚫 Demande de désactivation pour l'utilisateur: ${userId}`, { reason });
                 // Récupérer l'utilisateur
                 const user = yield this.userRepository.findById(userId);
                 if (!user) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
                 }
                 // Désactiver le compte
@@ -871,7 +877,7 @@ class AuthService {
                 });
                 // Révoquer toutes les sessions
                 yield this.sessionRepository.revokeAllUserSessions(userId);
-                Logger_1.default.info(`🔒 Toutes les sessions révoquées pour: ${user.email}`);
+                logger_1.default.info(`🔒 Toutes les sessions révoquées pour: ${user.email}`);
                 // Log d'audit
                 yield this.auditLogRepository.create({
                     action: 'ACCOUNT_DEACTIVATED',
@@ -881,14 +887,14 @@ class AuthService {
                     newData: { isActive: false, deactivationReason: reason },
                     ipAddress: req === null || req === void 0 ? void 0 : req.ip
                 });
-                Logger_1.default.info(`✅ Compte désactivé pour: ${user.email}`, { reason });
+                logger_1.default.info(`✅ Compte désactivé pour: ${user.email}`, { reason });
                 return { message: 'Compte désactivé avec succès.' };
             }
             catch (error) {
                 if (error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la désactivation du compte', {
+                logger_1.default.error('❌ Échec de la désactivation du compte', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -908,11 +914,11 @@ class AuthService {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                Logger_1.default.info(`🔄 Tentative de réactivation pour: ${email}`);
+                logger_1.default.info(`🔄 Tentative de réactivation pour: ${email}`);
                 // Rechercher l'utilisateur
                 const user = yield this.userRepository.findByEmailWithWallet(email);
                 if (!user) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé: ${email}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé: ${email}`);
                     throw new customErrors_1.AuthenticationError('Identifiants invalides', {
                         email,
                         reason: 'USER_NOT_FOUND'
@@ -921,28 +927,28 @@ class AuthService {
                 // Vérifier le mot de passe
                 const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
                 if (!isPasswordValid) {
-                    Logger_1.default.warn(`❌ Mot de passe incorrect pour: ${email}`);
+                    logger_1.default.warn(`❌ Mot de passe incorrect pour: ${email}`);
                     throw new customErrors_1.AuthenticationError('Mot de passe incorrect', {
                         email,
                         reason: 'INVALID_PASSWORD'
                     });
                 }
-                Logger_1.default.info(`✅ Mot de passe vérifié pour: ${email}`);
+                logger_1.default.info(`✅ Mot de passe vérifié pour: ${email}`);
                 // Vérifier que le compte est bien désactivé
                 if (user.isActive) {
-                    Logger_1.default.warn(`❌ Compte déjà actif: ${email}`);
+                    logger_1.default.warn(`❌ Compte déjà actif: ${email}`);
                     throw new customErrors_1.ConflictError('Le compte est déjà actif', {
                         resource: 'USER',
                         value: email
                     });
                 }
-                Logger_1.default.info(`👤 Compte trouvé et désactivé: ${user.id}`);
+                logger_1.default.info(`👤 Compte trouvé et désactivé: ${user.id}`);
                 // Réactiver le compte
                 const updatedUser = yield this.userRepository.update(user.id, {
                     isActive: true
                 });
                 if (!updatedUser) {
-                    Logger_1.default.warn(`❌ Échec de la réactivation pour: ${user.id}`);
+                    logger_1.default.warn(`❌ Échec de la réactivation pour: ${user.id}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId: user.id });
                 }
                 // Générer un nouveau token
@@ -961,7 +967,7 @@ class AuthService {
                     userId: user.id,
                     ipAddress: req === null || req === void 0 ? void 0 : req.ip
                 });
-                Logger_1.default.info(`✅ Compte réactivé pour: ${user.email}`);
+                logger_1.default.info(`✅ Compte réactivé pour: ${user.email}`);
                 return {
                     user: userWithoutPassword,
                     token,
@@ -974,7 +980,7 @@ class AuthService {
                     error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la réactivation du compte', {
+                logger_1.default.error('❌ Échec de la réactivation du compte', {
                     email,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -993,21 +999,21 @@ class AuthService {
     getProfile(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                Logger_1.default.info(`👤 Récupération profil demandée pour: ${userId}`);
+                logger_1.default.info(`👤 Récupération profil demandée pour: ${userId}`);
                 const user = yield this.userRepository.findByIdWithWallet(userId);
                 if (!user) {
-                    Logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
+                    logger_1.default.warn(`❌ Utilisateur non trouvé: ${userId}`);
                     throw new customErrors_1.NotFoundError('Utilisateur non trouvé', { userId });
                 }
                 const { password } = user, userWithoutPassword = __rest(user, ["password"]);
-                Logger_1.default.info(`✅ Profil récupéré pour: ${user.email}`);
+                logger_1.default.info(`✅ Profil récupéré pour: ${user.email}`);
                 return userWithoutPassword;
             }
             catch (error) {
                 if (error instanceof customErrors_1.NotFoundError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la récupération du profil', {
+                logger_1.default.error('❌ Échec de la récupération du profil', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -1026,9 +1032,9 @@ class AuthService {
     getUserSessions(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                Logger_1.default.info(`💻 Récupération sessions demandée pour: ${userId}`);
+                logger_1.default.info(`💻 Récupération sessions demandée pour: ${userId}`);
                 const sessions = yield this.sessionRepository.findSessionsByUser(userId);
-                Logger_1.default.info(`✅ ${sessions.length} sessions trouvées pour: ${userId}`);
+                logger_1.default.info(`✅ ${sessions.length} sessions trouvées pour: ${userId}`);
                 return sessions.map(session => ({
                     id: session.id,
                     deviceType: session.deviceType,
@@ -1040,7 +1046,7 @@ class AuthService {
                 }));
             }
             catch (error) {
-                Logger_1.default.error('❌ Échec de la récupération des sessions', {
+                logger_1.default.error('❌ Échec de la récupération des sessions', {
                     userId,
                     errorMessage: error.message,
                     errorStack: error.stack
@@ -1059,15 +1065,15 @@ class AuthService {
     revokeSession(userId, sessionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                Logger_1.default.info(`🔒 Tentative de révocation session: ${sessionId} pour utilisateur: ${userId}`);
+                logger_1.default.info(`🔒 Tentative de révocation session: ${sessionId} pour utilisateur: ${userId}`);
                 const session = yield this.sessionRepository.findSessionById(sessionId);
                 if (!session) {
-                    Logger_1.default.warn(`❌ Session non trouvée: ${sessionId}`);
+                    logger_1.default.warn(`❌ Session non trouvée: ${sessionId}`);
                     throw new customErrors_1.NotFoundError('Session non trouvée', { sessionId });
                 }
                 // Vérifier que la session appartient bien à l'utilisateur
                 if (session.userId !== userId) {
-                    Logger_1.default.warn(`❌ Session n'appartient pas à l'utilisateur: ${session.userId} != ${userId}`);
+                    logger_1.default.warn(`❌ Session n'appartient pas à l'utilisateur: ${session.userId} != ${userId}`);
                     throw new customErrors_1.ForbiddenError('Vous n\'êtes pas autorisé à révoquer cette session', {
                         reason: 'SESSION_OWNERSHIP_MISMATCH'
                     });
@@ -1080,13 +1086,13 @@ class AuthService {
                     recordId: sessionId,
                     userId: userId
                 });
-                Logger_1.default.info(`✅ Session révoquée: ${sessionId} pour l'utilisateur ${userId}`);
+                logger_1.default.info(`✅ Session révoquée: ${sessionId} pour l'utilisateur ${userId}`);
             }
             catch (error) {
                 if (error instanceof customErrors_1.NotFoundError || error instanceof customErrors_1.ForbiddenError) {
                     throw error;
                 }
-                Logger_1.default.error('❌ Échec de la révocation de session', {
+                logger_1.default.error('❌ Échec de la révocation de session', {
                     userId,
                     sessionId,
                     errorMessage: error.message,
@@ -1109,8 +1115,8 @@ class AuthService {
             var _a;
             const frontendUrl = ((_a = env_1.config.app) === null || _a === void 0 ? void 0 : _a.frontendUrl) || process.env.FRONTEND_URL || 'http://localhost:3000';
             const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
-            Logger_1.default.info(`📤 Email de réinitialisation pour ${name} <${email}>`);
-            Logger_1.default.info(`🔗 Lien: ${resetLink}`);
+            logger_1.default.info(`📤 Email de réinitialisation pour ${name} <${email}>`);
+            logger_1.default.info(`🔗 Lien: ${resetLink}`);
             const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #f9f9f9;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -1171,10 +1177,10 @@ class AuthService {
                 html
             });
             if (!emailSent) {
-                Logger_1.default.warn('⚠️ L\'email n\'a pas pu être envoyé');
+                logger_1.default.warn('⚠️ L\'email n\'a pas pu être envoyé');
                 throw new Error('Échec de l\'envoi de l\'email de réinitialisation');
             }
-            Logger_1.default.info(`✅ Email de réinitialisation envoyé avec succès à ${email}`);
+            logger_1.default.info(`✅ Email de réinitialisation envoyé avec succès à ${email}`);
         });
     }
     /**
@@ -1183,7 +1189,7 @@ class AuthService {
     recordFailedLoginAttempt(userId, req) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                Logger_1.default.warn(`⚠️ Tentative de connexion échouée pour l'utilisateur ${userId}`, {
+                logger_1.default.warn(`⚠️ Tentative de connexion échouée pour l'utilisateur ${userId}`, {
                     ip: req === null || req === void 0 ? void 0 : req.ip,
                     userAgent: req === null || req === void 0 ? void 0 : req.headers['user-agent']
                 });
@@ -1191,7 +1197,7 @@ class AuthService {
                 // Exemple: await this.userRepository.incrementFailedAttempts(userId);
             }
             catch (error) {
-                Logger_1.default.error('❌ Erreur lors de l\'enregistrement de la tentative échouée', {
+                logger_1.default.error('❌ Erreur lors de l\'enregistrement de la tentative échouée', {
                     userId,
                     errorMessage: error.message
                 });
@@ -1208,7 +1214,7 @@ class AuthService {
                 // Exemple: await this.userRepository.resetFailedAttempts(userId);
             }
             catch (error) {
-                Logger_1.default.error('❌ Erreur lors de la réinitialisation des tentatives échouées', {
+                logger_1.default.error('❌ Erreur lors de la réinitialisation des tentatives échouées', {
                     userId,
                     errorMessage: error.message
                 });

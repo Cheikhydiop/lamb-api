@@ -8,12 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationFiltersDto = void 0;
 // src/dto/notification/notification-filters.dto.ts
 const class_validator_1 = require("class-validator");
-const notification_types_1 = require("../../types/notification-types");
+const notification_types_1 = require("../notification-types");
 class NotificationFiltersDto {
 }
 exports.NotificationFiltersDto = NotificationFiltersDto;
@@ -55,7 +54,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationGroupType),
-    __metadata("design:type", typeof (_a = typeof notification_types_1.NotificationGroupType !== "undefined" && notification_types_1.NotificationGroupType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], NotificationFiltersDto.prototype, "groupType", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),

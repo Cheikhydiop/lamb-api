@@ -8,33 +8,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var _a, _b, _c, _d, _e;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateNotificationDto = void 0;
 const class_validator_1 = require("class-validator");
-const notification_types_1 = require("../../types/notification-types");
-const User_1 = require("../../entity/User");
-const Organization_1 = require("../../entity/Organization");
+const notification_types_1 = require("../notification-types");
 class CreateNotificationDto {
 }
 exports.CreateNotificationDto = CreateNotificationDto;
 __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationType),
-    __metadata("design:type", typeof (_a = typeof notification_types_1.NotificationType !== "undefined" && notification_types_1.NotificationType) === "function" ? _a : Object)
+    __metadata("design:type", String)
 ], CreateNotificationDto.prototype, "type", void 0);
 __decorate([
     (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", typeof (_b = typeof User_1.User !== "undefined" && User_1.User) === "function" ? _b : Object)
-], CreateNotificationDto.prototype, "recipient", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", typeof (_c = typeof Organization_1.Organization !== "undefined" && Organization_1.Organization) === "function" ? _c : Object)
-], CreateNotificationDto.prototype, "organization", void 0);
+    __metadata("design:type", String)
+], CreateNotificationDto.prototype, "userId", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsObject)(),
-    __metadata("design:type", typeof (_d = typeof notification_types_1.NotificationMetadata !== "undefined" && notification_types_1.NotificationMetadata) === "function" ? _d : Object)
+    __metadata("design:type", Object)
 ], CreateNotificationDto.prototype, "metadata", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
@@ -45,7 +38,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_types_1.NotificationPriority),
-    __metadata("design:type", typeof (_e = typeof notification_types_1.NotificationPriority !== "undefined" && notification_types_1.NotificationPriority) === "function" ? _e : Object)
+    __metadata("design:type", String)
 ], CreateNotificationDto.prototype, "priority", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
