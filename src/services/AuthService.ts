@@ -417,13 +417,13 @@ export class AuthService {
       }
 
       logger.error('❌ Échec de l\'inscription (erreur technique)', {
-        email: userData.email,
+        email: userData?.email,
         errorMessage: error.message,
         errorStack: error.stack,
         ip: req?.ip
       });
 
-      throw new DatabaseError('Une erreur technique est survenue lors de l\'inscription. Veuillez réessayer.', {
+      throw new DatabaseError(`Une erreur technique est survenue lors de l'inscription: ${error.message}`, {
         operation: 'REGISTER_OPERATION',
         entity: 'USER',
         requestId: req?.headers['x-request-id'] as string,
