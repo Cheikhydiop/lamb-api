@@ -65,7 +65,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bigIntSerializer);
 
 // Swagger Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Swagger Documentation - MOVED TO START SERVER
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ==================== MIDDLEWARES DE SÉCURITÉ GLOBAUX ====================
 // 1. Rate Limiting Global
@@ -96,6 +97,16 @@ app.use(cors({
 
     // Allow any localhost origin for development
     if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      return callback(null, true);
+    }
+
+    // Allow specific Koyeb URL
+    if (origin === 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app') {
+      return callback(null, true);
+    }
+
+    // Allow specific Koyeb URL
+    if (origin === 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app') {
       return callback(null, true);
     }
 
@@ -192,11 +203,9 @@ if (config.nodeEnv !== 'production') {
 // Routes(app); // MOVED to startServer to ensure ServiceContainer is initialized
 
 // ========== HANDLERS D'ERREURS ==========
-// Handler 404 (DOIT ÊTRE AVANT errorHandler)
-app.use(notFoundHandler);
+// ========== HANDLERS D'ERREURS (MOVED TO START SERVER) ==========
+// Handlers moved inside startServer to ensure they are registered after routes
 
-// Middleware de gestion des erreurs (DOIT ÊTRE LE DERNIER)
-app.use(errorHandler);
 
 // ========== FONCTION D'ARRÊT PROPRE ==========
 const gracefulShutdown = async (signal?: string) => {
@@ -263,7 +272,16 @@ const startServer = async () => {
     const container = await initializeServices();
 
     // Configurer les routes APRÈS l'initialisation des services
+
+    // 1. Swagger (Avant les routes API pour éviter les conflits)
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+    // 2. Routes API
     Routes(app);
+
+    // 3. Handlers d'erreurs (DOIT ÊTRE APRÈS les routes)
+    app.use(notFoundHandler);
+    app.use(errorHandler);
 
     // Récupérer le service WebSocket du conteneur
     webSocketService = container.webSocketService;
@@ -298,6 +316,7 @@ const startServer = async () => {
       logger.info(`🎉 Server is running on port ${config.port}`);
       logger.info(`🔒 Trust proxy: ${app.get('trust proxy')}`);
       logger.info(`🌐 CORS Origin: ${config.corsOrigin}`);
+      logger.info(`🌍 Public API URL: ${config.app.apiUrl}`);
       logger.info(`🛡️  Security: ENABLED (Helmet + Custom Headers)`);
 
       if (webSocketService && webSocketService.isInitialized()) {

@@ -18,6 +18,10 @@ const options: swaggerJsdoc.Options = {
                 url: '/',
                 description: 'Current Server',
             },
+            {
+                url: 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app',
+                description: 'Production Server (Koyeb)',
+            },
         ],
         components: {
             securitySchemes: {
