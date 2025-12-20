@@ -18,35 +18,7 @@ const router = express.Router();
  *   description: Betting management
  */
 
-/**
- * @swagger
- * /api/bets/{betId}:
- *   get:
- *     summary: Get bet details
- *     tags: [Bets]
- *     parameters:
- *       - in: path
- *         name: betId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Bet details
- *       404:
- *         description: Bet not found
- */
-// Obtenir les détails d'un pari
-router.get(
-  '/:betId',
-  [
-    param('betId')
-      .notEmpty().withMessage('ID du pari requis')
-      .isString().withMessage('ID du pari doit être une chaîne')
-  ],
-  validateRequest,
-  asyncHandler(BetController.getBet)
-);
+
 
 /**
  * @swagger
@@ -181,6 +153,36 @@ router.get(
   '/stats',
   requireAuth,
   asyncHandler(BetController.getBetStats)
+);
+
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   get:
+ *     summary: Get bet details
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet details
+ *       404:
+ *         description: Bet not found
+ */
+// Obtenir les détails d'un pari - Doit être APRÉS les autres routes GET spécifiques
+router.get(
+  '/:betId',
+  [
+    param('betId')
+      .notEmpty().withMessage('ID du pari requis')
+      .isString().withMessage('ID du pari doit être une chaîne')
+  ],
+  validateRequest,
+  asyncHandler(BetController.getBet)
 );
 
 /**

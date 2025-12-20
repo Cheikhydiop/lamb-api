@@ -77,6 +77,26 @@ router.get(
 
 /**
  * @swagger
+ * /api/notifications/unread-count:
+ *   get:
+ *     summary: Get unread notifications count (Alias for legacy clients)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Unread notifications count
+ */
+router.get(
+    '/unread-count',
+    (req, res, next) => {
+        const notificationController = Container.get(NotificationController);
+        notificationController.getUnreadCount(req, res, next);
+    }
+);
+
+/**
+ * @swagger
  * /api/notifications/{id}/read:
  *   patch:
  *     summary: Mark notification as read

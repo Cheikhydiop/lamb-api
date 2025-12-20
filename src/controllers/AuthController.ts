@@ -79,7 +79,12 @@ class AuthController {
         message: authResult.message,
         data: {
           user: authResult.user,
-          token: authResult.token,
+          token: authResult.token || generateToken({
+            userId: authResult.user.id,
+            role: authResult.user.role || 'BETTOR',
+            email: authResult.user.email || '',
+            walletId: '' // Avoid undefined error
+          }),
           refreshToken: authResult.refreshToken,
           sessionId: authResult.sessionId,
           deviceInfo: authResult.deviceInfo,
