@@ -1062,6 +1062,13 @@ export class BetService {
         this.prisma.bet.findMany({
           where: { creatorId: userId },
           include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            },
             acceptor: {
               select: {
                 id: true,
@@ -1084,6 +1091,13 @@ export class BetService {
           where: { acceptorId: userId },
           include: {
             creator: {
+              select: {
+                id: true,
+                name: true,
+                phone: true
+              }
+            },
+            acceptor: {
               select: {
                 id: true,
                 name: true,
