@@ -152,6 +152,39 @@ router.get(
 
 /**
  * @swagger
+ * /api/bets/my-bets:
+ *   get:
+ *     summary: Get my bets
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of my bets
+ */
+// Obtenir mes paris (créés et acceptés) - Doit être AVANT /:betId
+router.get(
+  '/my-bets',
+  requireAuth,
+  asyncHandler(BetController.getMyBets)
+);
+
+// Obtenir les paris actifs d'un utilisateur - Doit être AVANT /:betId
+router.get(
+  '/active',
+  requireAuth,
+  asyncHandler(BetController.getActiveBets)
+);
+
+// Obtenir les statistiques de paris - Doit être AVANT /:betId
+router.get(
+  '/stats',
+  requireAuth,
+  asyncHandler(BetController.getBetStats)
+);
+
+/**
+ * @swagger
  * /api/bets:
  *   post:
  *     summary: Create a new bet
@@ -261,26 +294,6 @@ router.delete(
   asyncHandler(BetController.cancelBet)
 );
 
-// Obtenir mes paris (créés et acceptés)
-router.get(
-  '/my-bets',
-  requireAuth,
-  asyncHandler(BetController.getMyBets)
-);
-
-// Obtenir les paris actifs d'un utilisateur
-router.get(
-  '/active',
-  requireAuth,
-  asyncHandler(BetController.getActiveBets)
-);
-
-// Obtenir les statistiques de paris
-router.get(
-  '/stats',
-  requireAuth,
-  asyncHandler(BetController.getBetStats)
-);
 
 // ==================== ROUTES ADMIN ====================
 
