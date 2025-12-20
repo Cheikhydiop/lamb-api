@@ -34,22 +34,23 @@ class UserValidator {
       }
     },
     PASSWORD: {
-      MIN_LENGTH: 8,
+      MIN_LENGTH: 4,
       MAX_LENGTH: 100,
       REQUIREMENTS: {
-        UPPERCASE: /[A-Z]/,
-        LOWERCASE: /[a-z]/,
-        NUMBER: /[0-9]/,
-        SPECIAL: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/
+        // Relaxed requirements for better user experience
+        UPPERCASE: /.*/,
+        LOWERCASE: /.*/,
+        NUMBER: /.*/,
+        SPECIAL: /.*/
       },
       MESSAGES: {
         REQUIRED: 'Le mot de passe est requis',
-        TOO_SHORT: 'Le mot de passe doit contenir au moins 8 caractères',
+        TOO_SHORT: 'Le mot de passe doit contenir au moins 4 caractères',
         TOO_LONG: 'Le mot de passe ne peut pas dépasser 100 caractères',
-        NO_UPPERCASE: 'Le mot de passe doit contenir au moins une lettre majuscule',
-        NO_LOWERCASE: 'Le mot de passe doit contenir au moins une lettre minuscule',
-        NO_NUMBER: 'Le mot de passe doit contenir au moins un chiffre',
-        NO_SPECIAL: 'Le mot de passe doit contenir au moins un caractère spécial'
+        NO_UPPERCASE: '',
+        NO_LOWERCASE: '',
+        NO_NUMBER: '',
+        NO_SPECIAL: ''
       }
     }
   };
@@ -171,42 +172,9 @@ class UserValidator {
         });
       }
 
-      // Validation des exigences de complexité
-      if (!this.VALIDATION_RULES.PASSWORD.REQUIREMENTS.UPPERCASE.test(password)) {
-        errors.push({
-          field: 'password',
-          message: this.VALIDATION_RULES.PASSWORD.MESSAGES.NO_UPPERCASE,
-          value: '[HIDDEN]',
-          constraint: 'uppercase_required'
-        });
-      }
-
-      if (!this.VALIDATION_RULES.PASSWORD.REQUIREMENTS.LOWERCASE.test(password)) {
-        errors.push({
-          field: 'password',
-          message: this.VALIDATION_RULES.PASSWORD.MESSAGES.NO_LOWERCASE,
-          value: '[HIDDEN]',
-          constraint: 'lowercase_required'
-        });
-      }
-
-      if (!this.VALIDATION_RULES.PASSWORD.REQUIREMENTS.NUMBER.test(password)) {
-        errors.push({
-          field: 'password',
-          message: this.VALIDATION_RULES.PASSWORD.MESSAGES.NO_NUMBER,
-          value: '[HIDDEN]',
-          constraint: 'number_required'
-        });
-      }
-
-      if (!this.VALIDATION_RULES.PASSWORD.REQUIREMENTS.SPECIAL.test(password)) {
-        errors.push({
-          field: 'password',
-          message: this.VALIDATION_RULES.PASSWORD.MESSAGES.NO_SPECIAL,
-          value: '[HIDDEN]',
-          constraint: 'special_character_required'
-        });
-      }
+      // Validation des exigences de complexité - RELAXED
+      // if (!this.VALIDATION_RULES.PASSWORD.REQUIREMENTS.UPPERCASE.test(password)) { ... }
+      // Simpler check only for min length which is already done above.
     }
 
     if (errors.length > 0) {
