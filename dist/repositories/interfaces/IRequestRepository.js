@@ -1,0 +1,38 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+// createRequest(requestData: {
+//   title: string;
+//   description?: string;
+//   type: RequestType;
+//   priority: Priority;
+//   channel: RequestChannel;
+//   status?: RequestStatus;
+//   createdById: string;
+//   assignedToId?: string;
+//   projectId?: string;
+//   locationId?: string;
+//   dueDate?: Date;
+//   estimatedHours?: number;
+//   actualHours?: number;
+//   tags?: string[];
+//   metadata?: any;
+// }): Promise<Request>;
+// updateRequest(id: string, updateData: Partial<{
+//   title: string;
+//   description: string;
+//   type: RequestType;
+//   priority: Priority;
+//   channel: RequestChannel;
+//   status: RequestStatus;
+//   assignedToId: string;
+//   projectId: string;
+//   locationId: string;
+//   dueDate: Date;
+//   estimatedHours: number;
+//   actualHours: number;
+//   tags: string[];
+//   metadata: any;
+// }>): Promise<Request>;
+// deleteRequest(id: string): Promise<boolean>;
+// assignRequest(requestId: string, assignedToId: string): Promise<Request>;
+// updateRequestStatus(requestId: string, status: RequestStatus): Promise<Request>;

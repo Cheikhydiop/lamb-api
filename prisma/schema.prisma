@@ -1,0 +1,752 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ====================== ENUMS ======================
+
+enum UserRole {
+  BETTOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum BetStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+  POSTPONED
+  WON
+  LOST
+  REFUNDED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET_PLACED
+  BET_WIN
+  BET_REFUND
+  COMMISSION
+  BONUS
+  PENALTY
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+  PROCESSING
+}
+
+enum MobileMoneyProvider {
+  WAVE
+  ORANGE_MONEY
+  FREE_MONEY
+}
+
+enum NotificationType {
+  BET_ACCEPTED
+  BET_PLACED
+  NEW_TAGGED_BET
+  WIN_CREDITED
+  FIGHT_FINISHED
+  FIGHT_STARTING
+  FIGHT_RESULT
+  PAYMENT_CONFIRMED
+  WITHDRAWAL_CONFIRMED
+  WITHDRAWAL_PENDING
+  DEPOSIT_SUCCESS
+  DEPOSIT_FAILED
+  BET_WON
+  BET_LOST
+  BET_REFUNDED
+  ADMIN_ALERT
+  SYSTEM_MAINTENANCE
+}
+
+enum FightStatus {
+  SCHEDULED
+  ONGOING
+  FINISHED
+  CANCELLED
+  POSTPONED
+}
+
+enum Winner {
+  A
+  B
+  DRAW
+  CANCELLED
+}
+
+enum FighterChoice {
+  A
+  B
+}
+
+enum CommissionType {
+  BET
+  WITHDRAWAL
+  PLATFORM
+}
+
+enum SessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+  PENDING_VERIFICATION
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
+  TABLET
+  UNKNOWN
+}
+
+enum FighterStatus {
+  ACTIVE
+  INJURED
+  RETIRED
+  SUSPENDED
+  INACTIVE
+}
+
+enum EventStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum KYCStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+// ====================== MODELS ======================
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  phone            String    @unique
+  email            String?   @unique
+  password         String
+  role             UserRole  @default(BETTOR)
+  isEmailVerified  Boolean   @default(false)
+  isActive         Boolean   @default(true)
+  isBanned         Boolean   @default(false)
+  banReason        String?
+  bannedAt         DateTime?
+  createdAt        DateTime  @default(now())
+  lastLogin        DateTime?
+  updatedAt        DateTime  @updatedAt
+  avatar             String? 
+  // KYC
+  kycStatus        KYCStatus @default(NOT_SUBMITTED)
+  kycDocuments     Json?
+  kycVerifiedAt    DateTime?
+
+  // Limites
+  dailyBetLimit    BigInt?
+  maxBetPerFight   BigInt?
+
+  // Relations
+  wallet           Wallet?
+  profile          UserProfile?
+  createdBets      Bet[]     @relation("BetCreator")
+  acceptedBets     Bet[]     @relation("BetAcceptor")
+  transactions     Transaction[]
+  winnings         Winning[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  otpCodes         OtpCode[]
+  sessions         Session[]
+  withdrawalRequests WithdrawalRequest[]
+  referrals        Referral[] @relation("Referrer")
+  referredBy       Referral?  @relation("Referred")
+
+  // Admin only
+  validatedResults FightResult[] @relation("ResultAdmin")
+  taggedBets       Bet[]         @relation("BetTaggedUser")
+  createdEvents    DayEvent[]
+  approvedWithdrawals WithdrawalRequest[] @relation("WithdrawalApprover")
+
+  @@index([phone])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model UserProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  avatar           String?
+  bio              String?
+  city             String?
+  country          String   @default("Senegal")
+  dateOfBirth      DateTime?
+  favoriteStable   String?
+  
+  // Préférences
+  notificationsEnabled Boolean @default(true)
+  emailNotifications   Boolean @default(true)
+  smsNotifications     Boolean @default(false)
+  language             String  @default("fr")
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Session {
+  id               String       @id @default(cuid())
+  userId           String
+  refreshToken     String       @unique
+  deviceType       DeviceType   @default(UNKNOWN)
+  deviceName       String?
+  deviceId         String?      // Identifiant unique de l'appareil
+  ipAddress        String?
+  userAgent        String?
+  lastActivity     DateTime     @default(now())
+  expiresAt        DateTime
+  status           SessionStatus @default(ACTIVE)
+  isVerified       Boolean      @default(false) // Pour la vérification multi-appareils
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpCodes         OtpCode[]    // Relation inverse pour les OTP
+
+  @@index([userId, status])
+  @@index([refreshToken])
+  @@index([expiresAt])
+  @@index([lastActivity])
+  @@index([deviceId])
+  @@map("sessions")
+}
+
+model Wallet {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  balance          BigInt   @default(0)
+  lockedBalance    BigInt   @default(0)
+  bonusBalance     BigInt   @default(0)
+  totalDeposited   BigInt   @default(0)
+  totalWithdrawn   BigInt   @default(0)
+  totalWon         BigInt   @default(0)
+  totalLost        BigInt   @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([balance])
+  @@map("wallets")
+}
+
+model Fighter {
+  id               String        @id @default(cuid())
+  name             String
+  nickname         String?
+  stable           String?
+  birthDate        DateTime?
+  birthPlace       String?
+  nationality      String        @default("Senegal")
+  weight           Float?
+  height           Float?
+  reach            Float?
+  fightingStyle    String?
+  status           FighterStatus @default(ACTIVE)
+  
+  // Statistiques
+  totalFights      Int           @default(0)
+  wins             Int           @default(0)
+  losses           Int           @default(0)
+  draws            Int           @default(0)
+  knockouts        Int           @default(0)
+  
+  // Médias
+  profileImage     String?
+  coverImage       String?
+  videoUrl         String?
+  
+  // Popularité
+  popularity       Int           @default(0)
+  ranking          Int?
+  
+  isActive         Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  fightsAsA        Fight[]       @relation("FighterA")
+  fightsAsB        Fight[]       @relation("FighterB")
+  statistics       FighterStatistics[]
+
+  @@unique([name, birthDate])
+  @@index([status])
+  @@index([stable])
+  @@index([popularity])
+  @@map("fighters")
+}
+
+model FighterStatistics {
+  id               String   @id @default(cuid())
+  fighterId        String
+  year             Int
+  totalFights      Int      @default(0)
+  wins             Int      @default(0)
+  losses           Int      @default(0)
+  knockouts        Int      @default(0)
+  avgFightDuration Float?
+  
+  fighter          Fighter  @relation(fields: [fighterId], references: [id], onDelete: Cascade)
+  
+  @@unique([fighterId, year])
+  @@map("fighter_statistics")
+}
+
+model DayEvent {
+  id               String       @id @default(cuid())
+  title            String
+  slug             String       @unique
+  description      String?
+  date             DateTime
+  location         String
+  venue            String?
+  capacity         Int?
+  ticketPrice      BigInt?
+  status           EventStatus  @default(SCHEDULED)
+  isFeatured       Boolean      @default(false)
+  
+  // Médias
+  bannerImage      String?
+  posterImage      String?
+  streamUrl        String?
+  
+  // Paramètres des paris
+  bettingOpensAt   DateTime?
+  bettingClosesAt  DateTime?
+  minBetAmount     BigInt       @default(100)
+  maxBetAmount     BigInt       @default(1000000)
+  
+  // Statistiques
+  totalBets        Int          @default(0)
+  totalAmount      BigInt       @default(0)
+  viewCount        Int          @default(0)
+  
+  createdById      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  fights           Fight[]
+  createdBy        User?        @relation(fields: [createdById], references: [id])
+
+  @@index([date])
+  @@index([status])
+  @@index([slug])
+  @@index([isFeatured])
+  @@map("day_events")
+}
+
+model Fight {
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  location         String
+  scheduledAt      DateTime
+  startedAt        DateTime?
+  endedAt          DateTime?
+  status           FightStatus  @default(SCHEDULED)
+  order            Int          @default(0)
+  
+  // Cotes
+  oddsA            Float        @default(1.0)
+  oddsB            Float        @default(1.0)
+  
+  // Statistiques
+  popularity       Int          @default(0)
+  totalBets        Int          @default(0)
+  totalAmount      BigInt       @default(0)
+  betsOnA          Int          @default(0)
+  betsOnB          Int          @default(0)
+  amountOnA        BigInt       @default(0)
+  amountOnB        BigInt       @default(0)
+  
+  // Distribution des gains
+  winner           Winner?
+  distributionStatus String     @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  distributedAt    DateTime?
+  
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  fighterAId       String
+  fighterBId       String
+  dayEventId       String?
+
+  fighterA         Fighter      @relation("FighterA", fields: [fighterAId], references: [id])
+  fighterB         Fighter      @relation("FighterB", fields: [fighterBId], references: [id])
+  dayEvent         DayEvent?    @relation(fields: [dayEventId], references: [id], onDelete: SetNull)
+  bets             Bet[]
+  result           FightResult?
+  oddsHistory      OddsHistory[]
+  commissions      Commission[]
+
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([dayEventId])
+  @@index([popularity])
+  @@index([distributionStatus])
+  @@map("fights")
+}
+
+model OddsHistory {
+  id               String   @id @default(cuid())
+  fightId          String
+  oddsA            Float
+  oddsB            Float
+  timestamp        DateTime @default(now())
+  
+  fight            Fight    @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  
+  @@index([fightId, timestamp])
+  @@map("odds_history")
+}
+
+model FightResult {
+  id               String    @id @default(cuid())
+  fightId          String    @unique
+  winner           Winner?
+  victoryMethod    String?
+  round            Int?
+  duration         Int?
+  knockoutTime     String?
+  notes            String?
+  videoUrl         String?
+  validatedAt      DateTime  @default(now())
+  adminId          String
+
+  fight            Fight     @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  admin            User      @relation("ResultAdmin", fields: [adminId], references: [id])
+
+  @@index([winner])
+  @@map("fight_results")
+}
+
+model Bet {
+  id               String       @id @default(cuid())
+  amount           Decimal
+  chosenFighter    FighterChoice
+  status           BetStatus    @default(PENDING)
+  potentialWin     BigInt?
+  actualWin        BigInt?
+  odds             Float?
+  
+  // Métadonnées
+  ipAddress        String?
+  userAgent        String?
+  
+  createdAt        DateTime     @default(now())
+  acceptedAt       DateTime?
+  settledAt        DateTime?
+  cancelledAt      DateTime?
+  cancelReason     String?
+
+  creatorId        String
+  acceptorId       String?
+  fightId          String
+  taggedUserId     String?
+  canCancelUntil   DateTime?    // Fenêtre d'annulation de 20 minutes
+
+
+  creator          User         @relation("BetCreator", fields: [creatorId], references: [id])
+  acceptor         User?        @relation("BetAcceptor", fields: [acceptorId], references: [id])
+  fight            Fight        @relation(fields: [fightId], references: [id])
+  taggedUser       User?        @relation("BetTaggedUser", fields: [taggedUserId], references: [id])
+  winnings         Winning[]
+  commissions      Commission[]
+
+  @@index([creatorId])
+  @@index([acceptorId])
+  @@index([fightId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bets")
+}
+
+model Winning {
+  id               String       @id @default(cuid())
+  amount           BigInt
+  netAmount        BigInt
+  commission       BigInt       @default(0)
+  distributedAt    DateTime     @default(now())
+
+  userId           String
+  betId            String
+  transactionId    String
+
+  user             User         @relation(fields: [userId], references: [id])
+  bet              Bet          @relation(fields: [betId], references: [id])
+  transaction      Transaction  @relation(fields: [transactionId], references: [id])
+
+  @@index([userId])
+  @@index([betId])
+  @@map("winnings")
+}
+
+model Commission {
+  id               String         @id @default(cuid())
+  amount           BigInt
+  type             CommissionType
+  percentage       Float?
+  deductedAt       DateTime       @default(now())
+
+  betId            String?
+  transactionId    String
+  fightId          String?
+
+  bet              Bet?           @relation(fields: [betId], references: [id])
+  transaction      Transaction    @relation(fields: [transactionId], references: [id])
+  fight            Fight?         @relation(fields: [fightId], references: [id], onDelete: Cascade)
+
+  @@index([betId])
+  @@index([transactionId])
+  @@index([fightId])
+  @@index([type])
+  @@map("commissions")
+}
+
+model Transaction {
+  id               String            @id @default(cuid())
+  type             TransactionType
+  amount           BigInt
+  status           TransactionStatus @default(PENDING)
+  provider         MobileMoneyProvider?
+  externalRef      String?
+  internalRef      String            @unique @default(cuid())
+  fees             BigInt            @default(0)
+  netAmount        BigInt?
+  notes            String?
+  metadata         Json?
+  
+  // Tracking
+  ipAddress        String?
+  userAgent        String?
+  
+  createdAt        DateTime          @default(now())
+  processedAt      DateTime?
+  failedAt         DateTime?
+  errorMessage     String?
+
+  userId           String
+
+  user             User              @relation(fields: [userId], references: [id])
+  winnings         Winning[]
+  commissions      Commission[]
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@index([internalRef])
+  @@map("transactions")
+}
+
+model WithdrawalRequest {
+  id               String           @id @default(cuid())
+  amount           BigInt
+  phoneNumber      String
+  provider         MobileMoneyProvider
+  status           WithdrawalStatus @default(PENDING)
+  
+  // Traçabilité
+  requestedAt      DateTime         @default(now())
+  approvedAt       DateTime?
+  processedAt      DateTime?
+  rejectedAt       DateTime?
+  rejectionReason  String?
+  
+  transactionRef   String?
+  adminNotes       String?
+
+  userId           String
+  approvedById     String?
+  transactionId    String?
+
+  user             User             @relation(fields: [userId], references: [id])
+  approvedBy       User?            @relation("WithdrawalApprover", fields: [approvedById], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("withdrawal_requests")
+}
+
+model Referral {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  bonusAmount      BigInt   @default(0)
+  isActive         Boolean  @default(true)
+  usageCount       Int      @default(0)
+  maxUsage         Int?
+  expiresAt        DateTime?
+  
+  referrerId       String
+  referredId       String   @unique
+  
+  createdAt        DateTime @default(now())
+
+  referrer         User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred         User     @relation("Referred", fields: [referredId], references: [id])
+
+  @@index([code])
+  @@index([referrerId])
+  @@map("referrals")
+}
+
+model Promotion {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  title            String
+  description      String?
+  type             String
+  value            BigInt
+  minDeposit       BigInt?
+  maxBonus         BigInt?
+  validFrom        DateTime
+  validUntil       DateTime
+  isActive         Boolean  @default(true)
+  usageLimit       Int?
+  usedCount        Int      @default(0)
+  termsConditions  String?
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validFrom, validUntil])
+  @@map("promotions")
+}
+
+model Notification {
+  id               String          @id @default(cuid())
+  type             NotificationType
+  title            String
+  message          String
+  data             Json?
+  isRead           Boolean         @default(false)
+  priority         Int             @default(0)
+  expiresAt        DateTime?
+  actionUrl        String?
+  
+  createdAt        DateTime        @default(now())
+  readAt           DateTime?
+
+  userId           String
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@index([priority])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id               String    @id @default(cuid())
+  action           String
+  table            String
+  recordId         String?
+  oldData          Json?
+  newData          Json?
+  ipAddress        String?
+  userAgent        String?
+  createdAt        DateTime  @default(now())
+
+  userId           String?
+
+  user             User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([table])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model OtpCode {
+  id          String    @id @default(cuid())
+  code        String
+  purpose     String    // EMAIL_VERIFICATION, PASSWORD_RESET, DEVICE_VERIFICATION
+  expiresAt   DateTime
+  consumed    Boolean   @default(false)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  consumedAt  DateTime?
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  sessionId   String?   // Pour lier l'OTP à une session spécifique
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@index([consumed])
+  @@index([sessionId])
+  @@map("otp_codes")
+}
+
+model SystemSettings {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  value            String
+  description      String?
+  isPublic         Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model AppVersion {
+  id               String   @id @default(cuid())
+  version          String   @unique
+  platform         String
+  minVersion       String?
+  isForceUpdate    Boolean  @default(false)
+  releaseNotes     String?
+  downloadUrl      String?
+  isActive         Boolean  @default(true)
+  releasedAt       DateTime @default(now())
+
+  @@index([platform])
+  @@index([isActive])
+  @@map("app_versions")
+}
