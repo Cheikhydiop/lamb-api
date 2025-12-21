@@ -211,6 +211,24 @@ export class BetService {
         logger.error('Erreur notification (non-bloquant):', notifError);
       }
 
+      // Diffuser à TOUS les utilisateurs connectés qu'un nouveau pari est disponible
+      try {
+        const fighterName = (bet as any).chosenFighter === 'A' ? (bet as any).fight.fighterA.name : (bet as any).fight.fighterB.name;
+        this.webSocketService.broadcastNewBetAvailable({
+          type: 'NEW_BET_AVAILABLE',
+          title: 'Nouveau pari disponible !',
+          message: `${user.name} a misé ${data.amount} FCFA sur ${fighterName}. Relevez le défi !`,
+          timestamp: new Date().toISOString(),
+          data: {
+            betId: bet.id,
+            fightId: bet.fightId,
+            amount: data.amount
+          }
+        }, userId);
+      } catch (broadcastError) {
+        logger.error('Erreur broadcast nouveau pari:', broadcastError);
+      }
+
       logger.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
       return bet;
 

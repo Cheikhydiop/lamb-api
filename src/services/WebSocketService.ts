@@ -228,6 +228,13 @@ export class WebSocketService {
     this.io.emit(WebSocketEvent.SYSTEM_ALERT, { ...alert, timestamp: new Date().toISOString() });
   }
 
+  public broadcastNewBetAvailable(notification: NotificationPayload, creatorId: string): void {
+    if (!this.io) return;
+    // Envoyer à tout le monde (sauf le créateur idéalement, mais broadcast simple ici)
+    // On notifie tout le système qu'un nouveau pari est dispo
+    this.io.emit(WebSocketEvent.NOTIFICATION, notification);
+  }
+
   public sendToUser(userId: string, payload: any): void {
     if (!this.io) return;
     this.io.to(`user:${userId}`).emit(payload.type, payload.data);
