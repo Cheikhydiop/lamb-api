@@ -512,9 +512,34 @@ export class FightService {
       // 5. Mettre à jour les statistiques des lutteurs
       await this.updateFighterStatsAfterSettlement(fight, data.winner);
 
-      logger.info(`Validation terminée: ${settledCount}/${bets.length} paris traités`);
+      // 6. Annuler et rembourser les paris en attente (non acceptés)
+      const pendingBets = await this.prisma.bet.findMany({
+        where: {
+          fightId: data.fightId,
+          status: 'PENDING'
+        },
+        include: {
+          creator: true
+        }
+      });
 
-      // 6. Notification WebSocket pour le résultat
+      logger.info(`${pendingBets.length} paris en attente à annuler pour le combat ${data.fightId}`);
+
+      let cancelledCount = 0;
+      for (const bet of pendingBets) {
+        try {
+          await this.cancelPendingBet(bet);
+          cancelledCount++;
+          logger.info(`Pari en attente ${bet.id} annulé et remboursé`);
+        } catch (error: any) {
+          logger.error(`Erreur annulation pari en attente ${bet.id}:`, error);
+          // On continue pour traiter les autres
+        }
+      }
+
+      logger.info(`Annulation terminée: ${cancelledCount}/${pendingBets.length} paris en attente traités`);
+
+      // 7. Notification WebSocket pour le résultat
       if (this.webSocketService && this.webSocketService.isInitialized()) {
         this.webSocketService.broadcastSystemAlert({
           type: 'FIGHT_RESULT',
@@ -552,6 +577,71 @@ export class FightService {
       }
     } catch (error: any) {
       logger.error(`Erreur traitement pari ${bet.id}:`, error);
+      throw error;
+    }
+  }
+
+  private async cancelPendingBet(bet: any): Promise<void> {
+    try {
+      const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
+
+      await this.prisma.$transaction(async (tx) => {
+        // Rembourser le créateur
+        await tx.wallet.update({
+          where: { userId: bet.creatorId },
+          data: {
+            balance: { increment: betAmountBigInt },
+            lockedBalance: { decrement: betAmountBigInt }
+          }
+        });
+
+        // Mettre à jour le statut du pari
+        await tx.bet.update({
+          where: { id: bet.id },
+          data: {
+            status: 'CANCELLED',
+            cancelledAt: new Date()
+          }
+        });
+
+        // Historique transaction
+        await tx.transaction.create({
+          data: {
+            type: TransactionType.BET_REFUND,
+            amount: betAmountBigInt,
+            userId: bet.creatorId,
+            status: TransactionStatus.CONFIRMED,
+            notes: `Remboursement fin de combat - Pari ${bet.id}`
+          }
+        });
+
+        // Notification DB
+        await tx.notification.create({
+          data: {
+            userId: bet.creatorId,
+            type: 'BET_CANCELLED' as any,
+            title: 'Pari annulé et remboursé',
+            message: `Votre pari de ${bet.amount} F a été annulé car le combat est terminé sans avoir été accepté.`,
+          }
+        });
+      });
+
+      // Notification WebSocket
+      if (this.webSocketService && this.webSocketService.isInitialized()) {
+        try {
+          this.webSocketService.broadcastNotification({
+            type: 'BET_CANCELLED',
+            title: 'Pari remboursé',
+            message: `Votre pari de ${bet.amount} F a été annulé (combat terminé).`,
+            timestamp: new Date().toISOString()
+          }, bet.creatorId);
+        } catch (wsError) {
+          logger.warn(`Erreur envoi notif WS pour pari ${bet.id}:`, wsError);
+        }
+      }
+
+    } catch (error: any) {
+      logger.error(`Erreur cancelPendingBet pour pari ${bet.id}:`, error);
       throw error;
     }
   }
