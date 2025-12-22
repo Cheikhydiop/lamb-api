@@ -361,6 +361,27 @@ export class FightService {
         case FightStatus.ONGOING:
           notificationTitle = 'Combat en cours !';
           notificationMessage = `Le combat "${fight.title}" entre ${fight.fighterA.name} et ${fight.fighterB.name} a commencé !`;
+
+          // Annuler et rembourser les paris en attente (car le combat a commencé)
+          const pendingBets = await this.prisma.bet.findMany({
+            where: {
+              fightId: fightId,
+              status: 'PENDING'
+            },
+            include: { creator: true }
+          });
+
+          if (pendingBets.length > 0) {
+            logger.info(`Combat commencé : ${pendingBets.length} paris en attente à annuler.`);
+            for (const bet of pendingBets) {
+              try {
+                await this.cancelPendingBet(bet);
+                logger.info(`Pari en attente ${bet.id} annulé (début du combat)`);
+              } catch (e) {
+                logger.error(`Erreur annulation auto pari ${bet.id}:`, e);
+              }
+            }
+          }
           break;
         case FightStatus.FINISHED:
           notificationTitle = 'Combat terminé';
