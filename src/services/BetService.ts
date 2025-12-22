@@ -107,19 +107,8 @@ export class BetService {
       // Calculer la date limite d'annulation
       const canCancelUntil = addMinutes(new Date(), this.CANCELLATION_WINDOW_MINUTES);
 
-      // Vérifier s'il existe déjà un pari similaire non accepté
-      const existingSimilarBet = await this.prisma.bet.findFirst({
-        where: {
-          fightId: data.fightId,
-          creatorId: userId,
-          chosenFighter: data.chosenFighter,
-          status: 'PENDING'
-        }
-      });
-
-      if (existingSimilarBet) {
-        throw new Error('Vous avez déjà un pari en attente sur ce combat avec ce lutteur');
-      }
+      // Autoriser plusieurs paris par utilisateur (pas de restriction)
+      // Suppression de la vérification existingSimilarBet
 
       // ========== TRANSACTION (opérations critiques uniquement) ==========
 
