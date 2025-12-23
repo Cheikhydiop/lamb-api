@@ -187,7 +187,9 @@ export class BetService {
             action: 'CREATE_BET',
             table: 'bets',
             recordId: bet.id,
-            newData: JSON.stringify(bet),
+            newData: JSON.stringify(bet, (key, value) =>
+              typeof value === 'bigint' ? value.toString() : value
+            ),
             userId
           }
         });

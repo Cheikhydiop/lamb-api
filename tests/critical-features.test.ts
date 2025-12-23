@@ -17,7 +17,8 @@ const walletRepository = new WalletRepository(prisma);
 // Mock WebSocketService
 const mockWebSocketService = {
     broadcast: () => { },
-    sendToUser: () => { }
+    sendToUser: () => { },
+    broadcastNewBetAvailable: () => { }
 } as unknown as WebSocketService;
 
 const betService = new BetService(prisma, mockWebSocketService);
@@ -361,6 +362,15 @@ async function test4_RemboursementAnnulation() {
             fightId: testFight.id
         });
         logSuccess(`Pari créé: ${bet.id}`);
+
+        // MANIPULATION DU TEMPS: Vieillir le pari de 35 minutes pour permettre l'annulation
+        logStep('⌛ Avance rapide (backdate du pari de 35 minutes)...');
+        await prisma.bet.update({
+            where: { id: bet.id },
+            data: {
+                createdAt: new Date(Date.now() - 35 * 60 * 1000) // -35 minutes
+            }
+        });
 
         // Annuler le pari
         logStep('Annulation du pari...');
@@ -756,6 +766,12 @@ async function test9_TestTransactionsGlobal() {
 
         // 3. Gain (simulé en annulant puis en créant un nouveau pari qui sera gagné)
         logStep('3. Test de gain...');
+
+        // MANIPULATION DU TEMPS: Vieillir le pari pour permettre l'annulation
+        await prisma.bet.update({
+            where: { id: testBet.id },
+            data: { createdAt: new Date(Date.now() - 35 * 60 * 1000) }
+        });
 
         // Annuler le premier pari pour récupérer les fonds
         await betService.cancelBet(testBet.id, userId);
