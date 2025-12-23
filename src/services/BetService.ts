@@ -530,10 +530,14 @@ export class BetService {
           throw new Error('Impossible d\'annuler un pari déjà accepté ou terminé');
         }
 
-        // Vérifier la fenêtre d'annulation (seulement pour le créateur)
+        // ⭐ RÈGLE: Délai minimum de 30 minutes après création pour annuler
         const now = new Date();
-        if (bet.creatorId === userId && bet.canCancelUntil && isAfter(now, bet.canCancelUntil)) {
-          throw new Error('La fenêtre d\'annulation de 20 minutes est expirée');
+        const betCreatedAt = bet.createdAt;
+        const thirtyMinutesAfterCreation = addMinutes(betCreatedAt, 30);
+
+        if (!isAdmin && isAfter(thirtyMinutesAfterCreation, now)) {
+          const minutesRemaining = Math.ceil((thirtyMinutesAfterCreation.getTime() - now.getTime()) / 60000);
+          throw new Error(`Vous devez attendre ${minutesRemaining} minute(s) avant de pouvoir annuler ce pari`);
         }
 
         // Vérifier si le combat a commencé
