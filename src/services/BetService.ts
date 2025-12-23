@@ -387,7 +387,29 @@ export class BetService {
           throw new Error('Solde insuffisant pour accepter ce pari');
         }
 
-        // SOUSTRAIRE DU SOLDE et bloquer les fonds de l'accepteur
+        // ⭐ CORRECTIF RACE CONDITION: Mise à jour atomique avec condition WHERE
+        // Utiliser updateMany pour vérifier le statut de manière atomique
+        const updateResult = await tx.bet.updateMany({
+          where: {
+            id: betId,
+            status: 'PENDING',      // ← Condition atomique: doit être PENDING
+            acceptorId: null        // ← ET ne pas avoir déjà un accepteur
+          },
+          data: {
+            acceptorId: acceptorId,
+            status: 'ACCEPTED',
+            acceptedAt: new Date(),
+            canCancelUntil: null
+          }
+        });
+
+        // Vérifier si la mise à jour a réussi
+        if (updateResult.count === 0) {
+          throw new Error('Ce pari a déjà été accepté par un autre utilisateur');
+        }
+
+        // IMPORTANT: Bloquer les fonds APRÈS avoir confirmé l'acceptation
+        // Si on arrive ici, c'est que nous sommes le seul accepteur
         const amountToLock = BigInt(Math.floor(bet.amount));
         await tx.wallet.update({
           where: { userId: acceptorId },
@@ -397,15 +419,9 @@ export class BetService {
           }
         });
 
-        // Mettre à jour le pari
-        const updatedBet = await tx.bet.update({
+        // Récupérer le pari mis à jour avec toutes les relations
+        const updatedBet = await tx.bet.findUnique({
           where: { id: betId },
-          data: {
-            acceptorId: acceptorId,
-            status: 'ACCEPTED',
-            acceptedAt: new Date(),
-            canCancelUntil: null // Désactiver l'annulation après acceptation
-          },
           include: {
             creator: {
               select: {
@@ -431,6 +447,10 @@ export class BetService {
           }
         });
 
+        if (!updatedBet) {
+          throw new Error('Erreur lors de la récupération du pari mis à jour');
+        }
+
         // Notifier le créateur (simplifié pour être plus rapide)
         await tx.notification.create({
           data: {
@@ -445,7 +465,8 @@ export class BetService {
         return updatedBet;
       }, {
         maxWait: 10000,
-        timeout: 15000
+        timeout: 15000,
+        isolationLevel: 'Serializable' // ← Niveau d'isolation le plus strict
       });
 
       // Notifier l'accepteur (en dehors de la transaction pour la performance)
