@@ -107,8 +107,17 @@ export class BetService {
       // Calculer la date limite d'annulation
       const canCancelUntil = addMinutes(new Date(), this.CANCELLATION_WINDOW_MINUTES);
 
-      // Autoriser plusieurs paris par utilisateur (pas de restriction)
-      // Suppression de la vérification existingSimilarBet
+      // ⭐ LIMITE: Maximum 10 paris PENDING simultanés par utilisateur
+      const pendingBetsCount = await this.prisma.bet.count({
+        where: {
+          creatorId: userId,
+          status: 'PENDING'
+        }
+      });
+
+      if (pendingBetsCount >= 10) {
+        throw new Error('Vous avez trop de paris en attente. Maximum : 10. Attendez qu\'ils soient acceptés ou annulez-en certains.');
+      }
 
       // ========== TRANSACTION (opérations critiques uniquement) ==========
 
@@ -511,14 +520,14 @@ export class BetService {
           throw new Error('Pari non trouvé');
         }
 
-        // Vérifier les permissions
-        if (!isAdmin && bet.creatorId !== userId && bet.acceptorId !== userId) {
-          throw new Error('Non autorisé à annuler ce pari');
+        // ⭐ RÈGLE: Seul le créateur peut annuler (sauf si admin)
+        if (!isAdmin && bet.creatorId !== userId) {
+          throw new Error('Seul le créateur du pari peut l\'annuler');
         }
 
-        // Vérifier le statut
-        if (bet.status !== 'PENDING' && bet.status !== 'ACCEPTED') {
-          throw new Error('Impossible d\'annuler ce pari');
+        // ⭐ RÈGLE: On ne peut annuler que les paris PENDING (non acceptés)
+        if (bet.status !== 'PENDING') {
+          throw new Error('Impossible d\'annuler un pari déjà accepté ou terminé');
         }
 
         // Vérifier la fenêtre d'annulation (seulement pour le créateur)
@@ -693,12 +702,24 @@ export class BetService {
           throw new Error('Pari non trouvé');
         }
 
-        if (bet.status !== 'ACCEPTED') {
-          throw new Error('Pari non accepté, impossible de le régler');
-        }
-
         if (!bet.acceptorId) {
           throw new Error('Pari sans accepteur, impossible de le régler');
+        }
+
+        // ⭐ PROTECTION: Mise à jour atomique pour éviter double règlement
+        const updateResult = await tx.bet.updateMany({
+          where: {
+            id: betId,
+            status: 'ACCEPTED' // ← Condition atomique
+          },
+          data: {
+            status: 'WON' // Temporaire, sera mis à jour après
+          }
+        });
+
+        // Vérifier si la mise à jour a réussi
+        if (updateResult.count === 0) {
+          throw new Error('Ce pari a déjà été réglé ou n\'est pas dans l\'état ACCEPTED');
         }
 
         const now = new Date();
