@@ -219,7 +219,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   [
     body('title')
       .notEmpty().withMessage('Titre requis')
@@ -251,7 +251,7 @@ router.post(
 router.patch(
   '/:fightId/status',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   [
     param('fightId')
       .notEmpty().withMessage('ID du combat requis')
@@ -268,7 +268,7 @@ router.patch(
 router.post(
   '/:fightId/validate-result',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   [
     param('fightId')
       .notEmpty().withMessage('ID du combat requis')
@@ -298,7 +298,7 @@ router.post(
 router.post(
   '/:fightId/request-validation-otp',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   [
     param('fightId')
       .notEmpty().withMessage('ID du combat requis')
@@ -312,7 +312,7 @@ router.post(
 router.post(
   '/expire-past',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   asyncHandler(FightController.expirePastFights)
 );
 
@@ -322,7 +322,7 @@ router.post(
 router.post(
   '/day-events',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   asyncHandler(FightController.createDayEvent)
 );
 
@@ -330,7 +330,7 @@ router.post(
 router.put(
   '/day-events/:eventId',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   asyncHandler(FightController.updateDayEvent)
 );
 
@@ -338,7 +338,7 @@ router.put(
 router.delete(
   '/day-events/:eventId',
   requireAuth,
-  requireRole('ADMIN'),
+  requireAdmin,
   asyncHandler(FightController.deleteDayEvent)
 );
 
