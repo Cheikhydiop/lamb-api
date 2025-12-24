@@ -140,6 +140,8 @@ export class FightService {
           scheduledAt: new Date(data.scheduledAt),
           fighterAId: data.fighterAId,
           fighterBId: data.fighterBId,
+          oddsA: data.oddsA ?? 1.0,
+          oddsB: data.oddsB ?? 1.0,
           status: FightStatus.SCHEDULED
         },
         include: {
@@ -1050,16 +1052,24 @@ export class FightService {
 
   async createDayEvent(data: CreateDayEventDTO) {
     try {
-      // Validation pour 5 combats
-      if (!data.fights || data.fights.length !== 5) {
-        throw new Error('Une journée de lutte doit avoir exactement 5 combats');
-      }
+      // Validation pour 5 combats (si fournis)
+      if (data.fights) {
+        if (data.fights.length !== 5) {
+          throw new Error('Une journée de lutte doit avoir exactement 5 combats si spécifiés');
+        }
 
-      const fighterIds = data.fights.flatMap(f => [f.fighterAId, f.fighterBId]);
-      const uniqueFighters = new Set(fighterIds);
+        const fighterIds = data.fights.flatMap(f => [f.fighterAId, f.fighterBId]);
+        const uniqueFighters = new Set(fighterIds);
 
-      if (uniqueFighters.size !== 10) {
-        throw new Error('Chaque lutteur ne doit combattre qu\'une seule fois dans la journée (10 lutteurs attendus)');
+        if (uniqueFighters.size !== 10) {
+          throw new Error('Chaque lutteur ne doit combattre qu\'une seule fois dans la journée (10 lutteurs attendus)');
+        }
+
+        const orders = data.fights.map(f => f.order);
+        const uniqueOrders = new Set(orders);
+        if (uniqueOrders.size !== 5 || Math.min(...orders) !== 1 || Math.max(...orders) !== 5) {
+          throw new Error('Les combats doivent être numérotés de 1 à 5 sans répétition');
+        }
       }
 
       const eventDate = new Date(data.date);
@@ -1067,12 +1077,6 @@ export class FightService {
 
       if (eventDate <= now) {
         throw new Error('La date de la journée doit être dans le futur');
-      }
-
-      const orders = data.fights.map(f => f.order);
-      const uniqueOrders = new Set(orders);
-      if (uniqueOrders.size !== 5 || Math.min(...orders) !== 1 || Math.max(...orders) !== 5) {
-        throw new Error('Les combats doivent être numérotés de 1 à 5 sans répétition');
       }
 
       // 1. Créez la journée
@@ -1089,32 +1093,34 @@ export class FightService {
         }
       });
 
-      // 2. Créez les combats un par un
+      // 2. Créez les combats un par un (si fournis)
       const fights = [];
-      for (const fightData of data.fights) {
-        // Heure simple basée sur l'ordre
-        const fightDateTime = new Date(eventDate);
-        const baseHour = 20;
-        const hourIncrement = fightData.order - 1; // 20:00, 21:00, 22:00...
-        fightDateTime.setHours(baseHour + hourIncrement, 0, 0, 0);
+      if (data.fights) {
+        for (const fightData of data.fights) {
+          // Heure simple basée sur l'ordre
+          const fightDateTime = new Date(eventDate);
+          const baseHour = 20;
+          const hourIncrement = fightData.order - 1; // 20:00, 21:00, 22:00...
+          fightDateTime.setHours(baseHour + hourIncrement, 0, 0, 0);
 
-        const fight = await this.prisma.fight.create({
-          data: {
-            dayEventId: dayEvent.id,
-            fighterAId: fightData.fighterAId,
-            fighterBId: fightData.fighterBId,
-            title: `Combat ${fightData.order}`,
-            location: data.location,
-            order: fightData.order,
-            scheduledAt: fightDateTime,
-            status: FightStatus.SCHEDULED
-          },
-          include: {
-            fighterA: true,
-            fighterB: true
-          }
-        });
-        fights.push(fight);
+          const fight = await this.prisma.fight.create({
+            data: {
+              dayEventId: dayEvent.id,
+              fighterAId: fightData.fighterAId,
+              fighterBId: fightData.fighterBId,
+              title: `Combat ${fightData.order}`,
+              location: data.location,
+              order: fightData.order,
+              scheduledAt: fightDateTime,
+              status: FightStatus.SCHEDULED
+            },
+            include: {
+              fighterA: true,
+              fighterB: true
+            }
+          });
+          fights.push(fight);
+        }
       }
 
       logger.info(`Journée créée: ${dayEvent.id} - ${dayEvent.title}`);

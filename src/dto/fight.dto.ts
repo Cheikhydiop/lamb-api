@@ -22,6 +22,16 @@ export class CreateFightDTO {
 
   @IsUUID()
   fighterBId: string;
+
+  @IsNumber()
+  @Min(1.0)
+  @IsOptional()
+  oddsA?: number;
+
+  @IsNumber()
+  @Min(1.0)
+  @IsOptional()
+  oddsB?: number;
 }
 
 export class UpdateFightStatusDTO {
@@ -136,7 +146,8 @@ export class CreateDayEventDTO {
 
   @IsArray()
   @Type(() => FightInDayEventDTO)
-  fights: FightInDayEventDTO[];
+  @IsOptional()
+  fights?: FightInDayEventDTO[];
 }
 
 export class UpdateDayEventDTO {

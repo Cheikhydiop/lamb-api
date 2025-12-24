@@ -56,7 +56,9 @@ class FightController {
         location: req.body.location,
         scheduledAt: req.body.scheduledAt,
         fighterAId: req.body.fighterAId,
-        fighterBId: req.body.fighterBId
+        fighterBId: req.body.fighterBId,
+        oddsA: req.body.oddsA,
+        oddsB: req.body.oddsB
       };
 
       // Validation basique
@@ -365,18 +367,18 @@ class FightController {
       };
 
       // Validation basique
-      if (!dayEventData.title || !dayEventData.date || !dayEventData.location || !dayEventData.fights) {
+      if (!dayEventData.title || !dayEventData.date || !dayEventData.location) {
         res.status(400).json({
           success: false,
-          message: 'Champs requis manquants: title, date, location, fights'
+          message: 'Champs requis manquants: title, date, location'
         });
         return;
       }
 
-      if (dayEventData.fights.length !== 5) {
+      if (dayEventData.fights && dayEventData.fights.length !== 5) {
         res.status(400).json({
           success: false,
-          message: 'Une journée doit avoir exactement 5 combats'
+          message: 'Une journée doit avoir exactement 5 combats si spécifiés'
         });
         return;
       }
