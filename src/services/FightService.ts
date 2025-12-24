@@ -12,6 +12,7 @@ import {
 } from '../dto/fight.dto';
 import { BetService } from './BetService';
 import { WebSocketService } from './WebSocketService';
+import { NotificationService } from './NotificationService';
 import logger from '../utils/logger';
 import { addHours } from 'date-fns';
 
@@ -20,6 +21,7 @@ export class FightService {
   private prisma: PrismaClient;
   private betService: BetService;
   private webSocketService?: WebSocketService;
+  private notificationService?: NotificationService;
   private emailService: EmailService;
 
   constructor(
@@ -40,6 +42,10 @@ export class FightService {
     }
     this.webSocketService = webSocketService;
     this.emailService = emailService || new EmailService();
+    // Initialize NotificationService for DB persistence + WebSocket
+    if (webSocketService) {
+      this.notificationService = new NotificationService(this.prisma, webSocketService);
+    }
   }
 
   async requestFightValidationOTP(adminId: string, fightId: string) {
@@ -656,17 +662,18 @@ export class FightService {
         });
       });
 
-      // Notification WebSocket
-      if (this.webSocketService && this.webSocketService.isInitialized()) {
+      // Notification (sauvegarde DB + WebSocket)
+      if (this.notificationService) {
         try {
-          this.webSocketService.broadcastNotification({
-            type: 'BET_CANCELLED',
+          await this.notificationService.sendNotification({
+            userId: bet.creatorId,
+            type: 'BET_CANCELLED' as any,
             title: 'Pari remboursé',
             message: `Votre pari de ${bet.amount} F a été annulé (combat terminé).`,
-            timestamp: new Date().toISOString()
-          }, bet.creatorId);
+            data: { betId: bet.id, reason: 'FIGHT_FINISHED' }
+          });
         } catch (wsError) {
-          logger.warn(`Erreur envoi notif WS pour pari ${bet.id}:`, wsError);
+          logger.warn(`Erreur envoi notif pour pari ${bet.id}:`, wsError);
         }
       }
 
@@ -726,25 +733,27 @@ export class FightService {
           }
         });
 
-        // Notification WebSocket pour l'accepteur
-        if (this.webSocketService && this.webSocketService.isInitialized()) {
-          this.webSocketService.broadcastNotification({
-            type: 'BET_REFUNDED',
+        // Notification pour l'accepteur (sauvegarde DB + WebSocket)
+        if (this.notificationService) {
+          await this.notificationService.sendNotification({
+            userId: bet.acceptorId,
+            type: 'BET_REFUNDED' as any,
             title: 'Pari remboursé',
             message: `Votre pari de ${betAmount} F sur le combat a été remboursé (match nul).`,
-            timestamp: new Date().toISOString()
-          }, bet.acceptorId);
+            data: { betId: bet.id, reason: 'DRAW' }
+          });
         }
       }
 
-      // Notification WebSocket pour le créateur
-      if (this.webSocketService && this.webSocketService.isInitialized()) {
-        this.webSocketService.broadcastNotification({
-          type: 'BET_REFUNDED',
+      // Notification pour le créateur (sauvegarde DB + WebSocket)
+      if (this.notificationService) {
+        await this.notificationService.sendNotification({
+          userId: bet.creatorId,
+          type: 'BET_REFUNDED' as any,
           title: 'Pari remboursé',
           message: `Votre pari de ${betAmount} F sur le combat a été remboursé (match nul).`,
-          timestamp: new Date().toISOString()
-        }, bet.creatorId);
+          data: { betId: bet.id, reason: 'DRAW' }
+        });
       }
 
       // Mettre à jour le pari
@@ -809,17 +818,19 @@ export class FightService {
 
       logger.info(`Wallet gagnant ${winnerId} mis à jour`);
 
-      // Notification WebSocket pour le gagnant
-      if (this.webSocketService && this.webSocketService.isInitialized()) {
-        this.webSocketService.broadcastNotification({
-          type: 'BET_WON',
+      // Notification pour le gagnant (sauvegarde DB + WebSocket)
+      if (this.notificationService) {
+        await this.notificationService.sendNotification({
+          userId: winnerId,
+          type: 'BET_WON' as any,  // NotificationType.BET_WON si l'enum l'a
           title: 'Vous avez gagné !',
           message: `Félicitations ! Vous avez remporté ${winAmount} F sur votre pari.`,
-          data: { betId: bet.id, amount: winAmount },
-          timestamp: new Date().toISOString()
-        }, winnerId);
+          data: { betId: bet.id, amount: winAmount }
+        });
+      }
 
-        // Envoi explicite de l'événement BET_WON
+      // Envoi explicite de l'événement BET_WON pour mise à jour structurée
+      if (this.webSocketService && this.webSocketService.isInitialized()) {
         this.webSocketService.broadcastBetUpdate({
           betId: bet.id,
           fightId: bet.fightId,
@@ -831,17 +842,19 @@ export class FightService {
         });
       }
 
-      // Notification WebSocket pour le perdant
-      if (loserId && this.webSocketService && this.webSocketService.isInitialized()) {
-        this.webSocketService.broadcastNotification({
-          type: 'BET_LOST',
+      // Notification pour le perdant (sauvegarde DB + WebSocket)
+      if (loserId && this.notificationService) {
+        await this.notificationService.sendNotification({
+          userId: loserId,
+          type: 'BET_LOST' as any,
           title: 'Pari perdu',
           message: `Désolé, votre pari de ${betAmount} F est perdant.`,
-          data: { betId: bet.id },
-          timestamp: new Date().toISOString()
-        }, loserId);
+          data: { betId: bet.id }
+        });
+      }
 
-        // Envoi explicite de l'événement BET_LOST
+      // Envoi explicite de l'événement BET_LOST
+      if (loserId && this.webSocketService && this.webSocketService.isInitialized()) {
         this.webSocketService.broadcastBetUpdate({
           betId: bet.id,
           fightId: bet.fightId,
