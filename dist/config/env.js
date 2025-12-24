@@ -100,7 +100,7 @@ exports.config = {
     // Application URLs - AJOUTÉ
     app: {
         frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-        apiUrl: process.env.API_URL || 'http://localhost:5000',
+        apiUrl: process.env.API_URL || (process.env.NODE_ENV === 'production' ? 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app' : 'http://localhost:5000'),
         webUrl: process.env.WEB_URL || 'http://localhost:3000'
     }
 };

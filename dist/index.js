@@ -63,7 +63,8 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 // Middleware de sérialisation BigInt (pour JSON)
 app.use(bigIntSerializer_1.bigIntSerializer);
 // Swagger Documentation
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
+// Swagger Documentation - MOVED TO START SERVER
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ==================== MIDDLEWARES DE SÉCURITÉ GLOBAUX ====================
 // 1. Rate Limiting Global
 app.use((0, rateLimitMiddleware_1.rateLimitMiddleware)({
@@ -84,14 +85,27 @@ app.use((0, cors_1.default)({
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin)
             return callback(null, true);
+        // Allow wildcard
+        if (env_1.config.corsOrigin === '*')
+            return callback(null, true);
         // Allow any localhost origin for development
-        if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || origin === env_1.config.corsOrigin) {
+        if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+            return callback(null, true);
+        }
+        // Allow specific Koyeb URL
+        if (origin === 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app') {
+            return callback(null, true);
+        }
+        // Allow usage on Koyeb (add your domain here)
+        if (origin.includes('.koyeb.app')) {
             return callback(null, true);
         }
         // Check specific allowed origins from config
         if (env_1.config.corsOrigin.split(',').includes(origin)) {
             return callback(null, true);
         }
+        // Log the blocked origin for debugging
+        console.log('Blocked by CORS:', origin);
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
@@ -165,10 +179,8 @@ if (env_1.config.nodeEnv !== 'production') {
 // Les fichiers de routes doivent être mis à jour.
 // Routes(app); // MOVED to startServer to ensure ServiceContainer is initialized
 // ========== HANDLERS D'ERREURS ==========
-// Handler 404 (DOIT ÊTRE AVANT errorHandler)
-app.use(errorHandler_1.notFoundHandler);
-// Middleware de gestion des erreurs (DOIT ÊTRE LE DERNIER)
-app.use(errorHandler_1.errorHandler);
+// ========== HANDLERS D'ERREURS (MOVED TO START SERVER) ==========
+// Handlers moved inside startServer to ensure they are registered after routes
 // ========== FONCTION D'ARRÊT PROPRE ==========
 const gracefulShutdown = (signal) => __awaiter(void 0, void 0, void 0, function* () {
     if (signal) {
@@ -227,7 +239,13 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         // Initialiser les services (y compris Prisma)
         const container = yield (0, ServiceContainer_1.initializeServices)();
         // Configurer les routes APRÈS l'initialisation des services
+        // 1. Swagger (Avant les routes API pour éviter les conflits)
+        app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.swaggerSpec));
+        // 2. Routes API
         (0, index_1.default)(app);
+        // 3. Handlers d'erreurs (DOIT ÊTRE APRÈS les routes)
+        app.use(errorHandler_1.notFoundHandler);
+        app.use(errorHandler_1.errorHandler);
         // Récupérer le service WebSocket du conteneur
         exports.webSocketService = webSocketService = container.webSocketService;
         webSocketService.initialize(server);
@@ -259,6 +277,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
             logger_1.default.info(`🎉 Server is running on port ${env_1.config.port}`);
             logger_1.default.info(`🔒 Trust proxy: ${app.get('trust proxy')}`);
             logger_1.default.info(`🌐 CORS Origin: ${env_1.config.corsOrigin}`);
+            logger_1.default.info(`🌍 Public API URL: ${env_1.config.app.apiUrl}`);
             logger_1.default.info(`🛡️  Security: ENABLED (Helmet + Custom Headers)`);
             if (webSocketService && webSocketService.isInitialized()) {
                 logger_1.default.info(`📡 WebSocket available at: ws://localhost:${env_1.config.port}/ws`);

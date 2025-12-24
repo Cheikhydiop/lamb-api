@@ -21,30 +21,6 @@ const router = express_1.default.Router();
  */
 /**
  * @swagger
- * /api/bets/{betId}:
- *   get:
- *     summary: Get bet details
- *     tags: [Bets]
- *     parameters:
- *       - in: path
- *         name: betId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Bet details
- *       404:
- *         description: Bet not found
- */
-// Obtenir les détails d'un pari
-router.get('/:betId', [
-    (0, express_validator_1.param)('betId')
-        .notEmpty().withMessage('ID du pari requis')
-        .isString().withMessage('ID du pari doit être une chaîne')
-], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBet));
-/**
- * @swagger
  * /api/bets:
  *   get:
  *     summary: List bets with filters
@@ -125,6 +101,48 @@ router.get('/status/pending', [
         .isInt({ min: 0 }).withMessage('Offset doit être un entier positif')
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getPendingBets));
 // ==================== ROUTES UTILISATEUR AUTHENTIFIÉ ====================
+/**
+ * @swagger
+ * /api/bets/my-bets:
+ *   get:
+ *     summary: Get my bets
+ *     tags: [Bets]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of my bets
+ */
+// Obtenir mes paris (créés et acceptés) - Doit être AVANT /:betId
+router.get('/my-bets', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getMyBets));
+// Obtenir les paris actifs d'un utilisateur - Doit être AVANT /:betId
+router.get('/active', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getActiveBets));
+// Obtenir les statistiques de paris - Doit être AVANT /:betId
+router.get('/stats', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBetStats));
+/**
+ * @swagger
+ * /api/bets/{betId}:
+ *   get:
+ *     summary: Get bet details
+ *     tags: [Bets]
+ *     parameters:
+ *       - in: path
+ *         name: betId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bet details
+ *       404:
+ *         description: Bet not found
+ */
+// Obtenir les détails d'un pari - Doit être APRÉS les autres routes GET spécifiques
+router.get('/:betId', [
+    (0, express_validator_1.param)('betId')
+        .notEmpty().withMessage('ID du pari requis')
+        .isString().withMessage('ID du pari doit être une chaîne')
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBet));
 /**
  * @swagger
  * /api/bets:
@@ -215,12 +233,6 @@ router.delete('/:betId', authMiddleware_1.requireAuth, [
         .notEmpty().withMessage('ID du pari requis')
         .isString().withMessage('ID du pari doit être une chaîne')
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(BetController_1.default.cancelBet));
-// Obtenir mes paris (créés et acceptés)
-router.get('/my-bets', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getMyBets));
-// Obtenir les paris actifs d'un utilisateur
-router.get('/active', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getActiveBets));
-// Obtenir les statistiques de paris
-router.get('/stats', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)(BetController_1.default.getBetStats));
 // ==================== ROUTES ADMIN ====================
 // Régler un pari (admin seulement)
 router.post('/:betId/settle', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [

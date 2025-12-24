@@ -20,8 +20,12 @@ const options = {
         },
         servers: [
             {
-                url: '/api',
+                url: '/',
                 description: 'Current Server',
+            },
+            {
+                url: 'https://jealous-giraffe-ndigueul-efe7a113.koyeb.app',
+                description: 'Production Server (Koyeb)',
             },
         ],
         components: {

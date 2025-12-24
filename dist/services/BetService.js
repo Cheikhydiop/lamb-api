@@ -871,7 +871,13 @@ class BetService {
                     };
                 }
                 if (status) {
-                    where.status = status;
+                    // Handle single status or array of statuses
+                    if (Array.isArray(status)) {
+                        where.status = { in: status };
+                    }
+                    else {
+                        where.status = status;
+                    }
                 }
                 const [bets, total] = yield Promise.all([
                     this.prisma.bet.findMany({
@@ -963,6 +969,13 @@ class BetService {
                     this.prisma.bet.findMany({
                         where: { creatorId: userId },
                         include: {
+                            creator: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
+                            },
                             acceptor: {
                                 select: {
                                     id: true,
@@ -985,6 +998,13 @@ class BetService {
                         where: { acceptorId: userId },
                         include: {
                             creator: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    phone: true
+                                }
+                            },
+                            acceptor: {
                                 select: {
                                     id: true,
                                     name: true,

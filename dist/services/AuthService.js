@@ -330,12 +330,12 @@ class AuthService {
                     throw error;
                 }
                 logger_1.default.error('❌ Échec de l\'inscription (erreur technique)', {
-                    email: userData.email,
+                    email: userData === null || userData === void 0 ? void 0 : userData.email,
                     errorMessage: error.message,
                     errorStack: error.stack,
                     ip: req === null || req === void 0 ? void 0 : req.ip
                 });
-                throw new customErrors_1.DatabaseError('Une erreur technique est survenue lors de l\'inscription. Veuillez réessayer.', {
+                throw new customErrors_1.DatabaseError(`Une erreur technique est survenue lors de l'inscription: ${error.message}`, {
                     operation: 'REGISTER_OPERATION',
                     entity: 'USER',
                     requestId: req === null || req === void 0 ? void 0 : req.headers['x-request-id'],

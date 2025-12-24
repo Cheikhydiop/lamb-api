@@ -166,4 +166,45 @@ test.describe('🛡️ Audit de Sécurité Automatisé - Fight Ace App', () => {
             }
         }
     });
+
+    test('SA-06: Test de Rate Limiting (Anti-Bruteforce)', async ({ request }) => {
+        console.log('🛡️ Test de Rate Limiting...');
+        // On bombarde l'API de login avec 20 requêtes en parallèle
+        const requests = Array(20).fill(0).map(() =>
+            request.post(`${API_URL}/auth/login`, {
+                data: { email: 'hacker@test.com', password: 'wrongpassword' }
+            })
+        );
+
+        const responses = await Promise.all(requests);
+        const tooManyRequests = responses.filter(r => r.status() === 429);
+
+        // Si aucune requête n'est bloquée (429), c'est une faille moyenne
+        if (tooManyRequests.length === 0) {
+            scanResults.medium.push('Rate limiting absent ou trop permissif sur /auth/login (20 requêtes simultanées acceptées)');
+        } else {
+            console.log(`✅ Rate limiting actif : ${tooManyRequests.length} requêtes bloquées sur 20.`);
+        }
+    });
+
+    test('SA-07: Test de Manipulation de Données (Montants Négatifs)', async ({ request }) => {
+        console.log('💸 Test de logique métier (Montants négatifs)...');
+
+        // Tentative de créer un pari avec une mise négative (pour se créditer frauduleusement)
+        // Note: Nécessiterait un token valide pour être exhaustif, ici on teste le rejet précoce ou la validation
+        const response = await request.post(`${API_URL}/bets`, {
+            data: {
+                fightId: 'fake-id',
+                amount: -5000,
+                fighterId: 'fake-fighter'
+            }
+        });
+
+        // Si l'API accepte (200/201) ou traite (500) au lieu de rejeter (400), c'est un problème
+        if (response.status() === 200 || response.status() === 201) {
+            scanResults.critical.push('FAILLE CRITIQUE : L\'API accepte des montants négatifs pour les paris !');
+        } else if (response.status() === 400) {
+            console.log('✅ L\'API rejette correctement les montants négatifs (400 Bad Request).');
+        }
+    });
 });

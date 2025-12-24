@@ -175,31 +175,31 @@ exports.rateLimitMiddleware = rateLimitMiddleware;
 exports.rateLimitConfigs = {
     login: {
         windowMs: 15 * 60 * 1000, // 15 minutes
-        maxAttempts: 5, // 5 tentatives
+        maxAttempts: 10, // 10 tentatives
         scope: 'email', // Par email
         message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.'
     },
     register: {
         windowMs: 60 * 60 * 1000, // 1 heure
-        maxAttempts: 3, // 3 tentatives
+        maxAttempts: 10, // 10 tentatives
         scope: 'ip', // Par IP
         message: 'Trop de tentatives d\'inscription. Veuillez réessayer dans 1 heure.'
     },
     verifyEmail: {
         windowMs: 5 * 60 * 1000, // 5 minutes
-        maxAttempts: 5, // 5 tentatives
+        maxAttempts: 10, // 10 tentatives
         scope: 'email', // Par email
         message: 'Trop de tentatives de vérification. Veuillez réessayer dans 5 minutes.'
     },
     forgotPassword: {
         windowMs: 60 * 60 * 1000, // 1 heure
-        maxAttempts: 3, // 3 tentatives
+        maxAttempts: 10, // 10 tentatives
         scope: 'email', // Par email
         message: 'Trop de demandes de réinitialisation. Veuillez réessayer dans 1 heure.'
     },
     resetPassword: {
         windowMs: 5 * 60 * 1000, // 5 minutes
-        maxAttempts: 3, // 3 tentatives
+        maxAttempts: 10, // 10 tentatives
         scope: 'email', // Par email
         message: 'Trop de tentatives de réinitialisation. Veuillez réessayer dans 5 minutes.'
     },
@@ -388,6 +388,6 @@ class LoginAttemptManager {
     }
 }
 exports.LoginAttemptManager = LoginAttemptManager;
-LoginAttemptManager.MAX_ATTEMPTS = 5;
+LoginAttemptManager.MAX_ATTEMPTS = 10;
 LoginAttemptManager.WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 LoginAttemptManager.attempts = new Map();

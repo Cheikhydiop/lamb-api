@@ -23,7 +23,7 @@ const createAuthRoutes = () => {
      */
     /**
      * @swagger
-     * /api/auth/register:
+     * /auth/register:
      *   post:
      *     summary: Register a new user
      *     tags: [Auth]
@@ -59,7 +59,7 @@ const createAuthRoutes = () => {
     router.post('/register', (0, rateLimitMiddleware_1.rateLimitMiddleware)(rateLimitMiddleware_1.rateLimitConfigs.register), auditMiddleware.auditUserRegister(), (0, asyncHandler_1.asyncHandler)(AuthController_1.default.register));
     /**
      * @swagger
-     * /api/auth/login:
+     * /auth/login:
      *   post:
      *     summary: Login user
      *     tags: [Auth]

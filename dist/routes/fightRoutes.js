@@ -21,30 +21,89 @@ const router = express_1.default.Router();
  *   - name: DayEvents
  *     description: Day Event management
  */
+// ==================== ROUTES JOURNÉES DE LUTTE (PUBLIQUES) ====================
+// DOIT ÊTRE AVANT /:fightId pour ne pas être interprété comme un ID
 /**
  * @swagger
- * /api/fights/{fightId}:
+ * /api/fights/day-events:
  *   get:
- *     summary: Get fight details
- *     tags: [Fights]
+ *     summary: List day events
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: List of day events
+ */
+// Liste des journées avec filtres
+router.get('/day-events', (0, asyncHandler_1.asyncHandler)(FightController_1.default.listDayEvents));
+/**
+ * @swagger
+ * /api/fights/day-events/upcoming:
+ *   get:
+ *     summary: Get upcoming day events
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: List of upcoming day events
+ */
+// Obtenir les journées à venir
+router.get('/day-events/upcoming', (0, asyncHandler_1.asyncHandler)(FightController_1.default.getUpcomingDayEvents));
+/**
+ * @swagger
+ * /api/fights/day-events/current:
+ *   get:
+ *     summary: Get current day event
+ *     tags: [DayEvents]
+ *     responses:
+ *       200:
+ *         description: Current day event details
+ */
+// Obtenir la journée actuelle
+router.get('/day-events/current', (0, asyncHandler_1.asyncHandler)(FightController_1.default.getCurrentDayEvent));
+/**
+ * @swagger
+ * /api/fights/day-events/{eventId}:
+ *   get:
+ *     summary: Get day event details
+ *     tags: [DayEvents]
  *     parameters:
  *       - in: path
- *         name: fightId
+ *         name: eventId
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Fight details
- *       404:
- *         description: Fight not found
+ *         description: Day event details
  */
-// Obtenir les détails d'un combat
-router.get('/:fightId', [
-    (0, express_validator_1.param)('fightId')
-        .notEmpty().withMessage('ID du combat requis')
-        .isString().withMessage('ID du combat doit être une chaîne')
-], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getFight));
+// Obtenir les détails d'une journée
+router.get('/day-events/:eventId', [
+    (0, express_validator_1.param)('eventId')
+        .notEmpty().withMessage('ID de la journée requis')
+        .isString().withMessage('ID de la journée doit être une chaîne')
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getDayEvent));
+// ==================== ROUTES COMBATS ====================
+/**
+ * @swagger
+ * /api/fights/upcoming:
+ *   get:
+ *     summary: Get upcoming fights
+ *     tags: [Fights]
+ *     responses:
+ *       200:
+ *         description: List of upcoming fights
+ */
+// Obtenir les prochains combats
+router.get('/upcoming', [
+    (0, express_validator_1.query)('limit')
+        .optional()
+        .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getUpcomingFights));
+// Obtenir les combats populaires
+router.get('/popular', [
+    (0, express_validator_1.query)('limit')
+        .optional()
+        .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getPopularFights));
 /**
  * @swagger
  * /api/fights:
@@ -88,26 +147,28 @@ router.get('/', [
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.listFights));
 /**
  * @swagger
- * /api/fights/upcoming:
+ * /api/fights/{fightId}:
  *   get:
- *     summary: Get upcoming fights
+ *     summary: Get fight details
  *     tags: [Fights]
+ *     parameters:
+ *       - in: path
+ *         name: fightId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: List of upcoming fights
+ *         description: Fight details
+ *       404:
+ *         description: Fight not found
  */
-// Obtenir les prochains combats
-router.get('/upcoming', [
-    (0, express_validator_1.query)('limit')
-        .optional()
-        .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
-], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getUpcomingFights));
-// Obtenir les combats populaires
-router.get('/popular', [
-    (0, express_validator_1.query)('limit')
-        .optional()
-        .isInt({ min: 1, max: 50 }).withMessage('Limite doit être entre 1 et 50')
-], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getPopularFights));
+// Obtenir les détails d'un combat
+router.get('/:fightId', [
+    (0, express_validator_1.param)('fightId')
+        .notEmpty().withMessage('ID du combat requis')
+        .isString().withMessage('ID du combat doit être une chaîne')
+], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getFight));
 // ==================== ROUTES ADMIN (COMBATS) ====================
 // Créer un nouveau combat (Admin seulement)
 router.post('/', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), [
@@ -172,65 +233,6 @@ router.post('/:fightId/request-validation-otp', authMiddleware_1.requireAuth, (0
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.requestFightValidationOTP));
 // Expirer automatiquement les combats passés (Admin seulement)
 router.post('/expire-past', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.expirePastFights));
-// ==================== ROUTES JOURNÉES DE LUTTE (PUBLIQUES) ====================
-/**
- * @swagger
- * /api/fights/day-events/{eventId}:
- *   get:
- *     summary: Get day event details
- *     tags: [DayEvents]
- *     parameters:
- *       - in: path
- *         name: eventId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Day event details
- */
-// Obtenir les détails d'une journée
-router.get('/day-events/:eventId', [
-    (0, express_validator_1.param)('eventId')
-        .notEmpty().withMessage('ID de la journée requis')
-        .isString().withMessage('ID de la journée doit être une chaîne')
-], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getDayEvent));
-/**
- * @swagger
- * /api/fights/day-events:
- *   get:
- *     summary: List day events
- *     tags: [DayEvents]
- *     responses:
- *       200:
- *         description: List of day events
- */
-// Liste des journées avec filtres
-router.get('/day-events', (0, asyncHandler_1.asyncHandler)(FightController_1.default.listDayEvents));
-/**
- * @swagger
- * /api/fights/day-events/upcoming:
- *   get:
- *     summary: Get upcoming day events
- *     tags: [DayEvents]
- *     responses:
- *       200:
- *         description: List of upcoming day events
- */
-// Obtenir les journées à venir
-router.get('/day-events/upcoming', (0, asyncHandler_1.asyncHandler)(FightController_1.default.getUpcomingDayEvents));
-/**
- * @swagger
- * /api/fights/day-events/current:
- *   get:
- *     summary: Get current day event
- *     tags: [DayEvents]
- *     responses:
- *       200:
- *         description: Current day event details
- */
-// Obtenir la journée actuelle
-router.get('/day-events/current', (0, asyncHandler_1.asyncHandler)(FightController_1.default.getCurrentDayEvent));
 // ==================== ROUTES JOURNÉES DE LUTTE (ADMIN) ====================
 // Créer une nouvelle journée (Admin seulement)
 router.post('/day-events', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.createDayEvent));
