@@ -84,8 +84,17 @@ export class FightService {
         }
       });
 
+      // En DEV, logger le code pour faciliter les tests
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔓 [DEV] OTP Code pour validation:', code);
+      }
+
       // Envoyer l'email
-      await this.emailService.sendFightValidationOTP(admin.email, code, fight.title);
+      try {
+        await this.emailService.sendFightValidationOTP(admin.email, code, fight.title);
+      } catch (e) {
+        logger.warn('Erreur envoi email OTP (ignoré en dev):', e);
+      }
 
       return { success: true, message: 'OTP envoyé avec succès' };
     } catch (error: any) {

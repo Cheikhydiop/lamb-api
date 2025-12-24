@@ -329,6 +329,26 @@ class FightService {
                     case client_1.FightStatus.ONGOING:
                         notificationTitle = 'Combat en cours !';
                         notificationMessage = `Le combat "${fight.title}" entre ${fight.fighterA.name} et ${fight.fighterB.name} a commencé !`;
+                        // Annuler et rembourser les paris en attente (car le combat a commencé)
+                        const pendingBets = yield this.prisma.bet.findMany({
+                            where: {
+                                fightId: fightId,
+                                status: 'PENDING'
+                            },
+                            include: { creator: true }
+                        });
+                        if (pendingBets.length > 0) {
+                            logger_1.default.info(`Combat commencé : ${pendingBets.length} paris en attente à annuler.`);
+                            for (const bet of pendingBets) {
+                                try {
+                                    yield this.cancelPendingBet(bet);
+                                    logger_1.default.info(`Pari en attente ${bet.id} annulé (début du combat)`);
+                                }
+                                catch (e) {
+                                    logger_1.default.error(`Erreur annulation auto pari ${bet.id}:`, e);
+                                }
+                            }
+                        }
                         break;
                     case client_1.FightStatus.FINISHED:
                         notificationTitle = 'Combat terminé';
@@ -461,8 +481,31 @@ class FightService {
                 }
                 // 5. Mettre à jour les statistiques des lutteurs
                 yield this.updateFighterStatsAfterSettlement(fight, data.winner);
-                logger_1.default.info(`Validation terminée: ${settledCount}/${bets.length} paris traités`);
-                // 6. Notification WebSocket pour le résultat
+                // 6. Annuler et rembourser les paris en attente (non acceptés)
+                const pendingBets = yield this.prisma.bet.findMany({
+                    where: {
+                        fightId: data.fightId,
+                        status: 'PENDING'
+                    },
+                    include: {
+                        creator: true
+                    }
+                });
+                logger_1.default.info(`${pendingBets.length} paris en attente à annuler pour le combat ${data.fightId}`);
+                let cancelledCount = 0;
+                for (const bet of pendingBets) {
+                    try {
+                        yield this.cancelPendingBet(bet);
+                        cancelledCount++;
+                        logger_1.default.info(`Pari en attente ${bet.id} annulé et remboursé`);
+                    }
+                    catch (error) {
+                        logger_1.default.error(`Erreur annulation pari en attente ${bet.id}:`, error);
+                        // On continue pour traiter les autres
+                    }
+                }
+                logger_1.default.info(`Annulation terminée: ${cancelledCount}/${pendingBets.length} paris en attente traités`);
+                // 7. Notification WebSocket pour le résultat
                 if (this.webSocketService && this.webSocketService.isInitialized()) {
                     this.webSocketService.broadcastSystemAlert({
                         type: 'FIGHT_RESULT',
@@ -502,6 +545,68 @@ class FightService {
             }
             catch (error) {
                 logger_1.default.error(`Erreur traitement pari ${bet.id}:`, error);
+                throw error;
+            }
+        });
+    }
+    cancelPendingBet(bet) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const betAmountBigInt = BigInt(Math.floor(Number(bet.amount)));
+                yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    // Rembourser le créateur
+                    yield tx.wallet.update({
+                        where: { userId: bet.creatorId },
+                        data: {
+                            balance: { increment: betAmountBigInt },
+                            lockedBalance: { decrement: betAmountBigInt }
+                        }
+                    });
+                    // Mettre à jour le statut du pari
+                    yield tx.bet.update({
+                        where: { id: bet.id },
+                        data: {
+                            status: 'CANCELLED',
+                            cancelledAt: new Date()
+                        }
+                    });
+                    // Historique transaction
+                    yield tx.transaction.create({
+                        data: {
+                            type: client_1.TransactionType.BET_REFUND,
+                            amount: betAmountBigInt,
+                            userId: bet.creatorId,
+                            status: client_1.TransactionStatus.CONFIRMED,
+                            notes: `Remboursement fin de combat - Pari ${bet.id}`
+                        }
+                    });
+                    // Notification DB
+                    yield tx.notification.create({
+                        data: {
+                            userId: bet.creatorId,
+                            type: 'BET_CANCELLED',
+                            title: 'Pari annulé et remboursé',
+                            message: `Votre pari de ${bet.amount} F a été annulé car le combat est terminé sans avoir été accepté.`,
+                        }
+                    });
+                }));
+                // Notification WebSocket
+                if (this.webSocketService && this.webSocketService.isInitialized()) {
+                    try {
+                        this.webSocketService.broadcastNotification({
+                            type: 'BET_CANCELLED',
+                            title: 'Pari remboursé',
+                            message: `Votre pari de ${bet.amount} F a été annulé (combat terminé).`,
+                            timestamp: new Date().toISOString()
+                        }, bet.creatorId);
+                    }
+                    catch (wsError) {
+                        logger_1.default.warn(`Erreur envoi notif WS pour pari ${bet.id}:`, wsError);
+                    }
+                }
+            }
+            catch (error) {
+                logger_1.default.error(`Erreur cancelPendingBet pour pari ${bet.id}:`, error);
                 throw error;
             }
         });

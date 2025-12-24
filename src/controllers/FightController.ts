@@ -42,7 +42,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -163,7 +163,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -217,7 +217,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({ success: false, message: 'Accès réservé aux administrateurs' });
         return;
       }
@@ -243,7 +243,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -346,7 +346,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -520,7 +520,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -575,7 +575,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'
@@ -619,7 +619,7 @@ class FightController {
         return;
       }
 
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'ADMIN' && req.user?.role !== 'SUPER_ADMIN') {
         res.status(403).json({
           success: false,
           message: 'Accès réservé aux administrateurs'

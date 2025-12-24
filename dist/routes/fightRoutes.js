@@ -171,7 +171,7 @@ router.get('/:fightId', [
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.getFight));
 // ==================== ROUTES ADMIN (COMBATS) ====================
 // Créer un nouveau combat (Admin seulement)
-router.post('/', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), [
+router.post('/', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [
     (0, express_validator_1.body)('title')
         .notEmpty().withMessage('Titre requis')
         .isString().withMessage('Titre doit être une chaîne')
@@ -195,7 +195,7 @@ router.post('/', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)
         .isString().withMessage('ID du combattant B doit être une chaîne')
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.createFight));
 // Mettre à jour le statut d'un combat (Admin seulement)
-router.patch('/:fightId/status', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), [
+router.patch('/:fightId/status', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [
     (0, express_validator_1.param)('fightId')
         .notEmpty().withMessage('ID du combat requis')
         .isString().withMessage('ID du combat doit être une chaîne'),
@@ -204,7 +204,7 @@ router.patch('/:fightId/status', authMiddleware_1.requireAuth, (0, authMiddlewar
         .isIn(Object.values(client_1.FightStatus)).withMessage(`Statut invalide. Valeurs acceptées: ${Object.values(client_1.FightStatus).join(', ')}`)
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.updateFightStatus));
 // Valider le résultat d'un combat (Admin seulement)
-router.post('/:fightId/validate-result', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), [
+router.post('/:fightId/validate-result', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [
     (0, express_validator_1.param)('fightId')
         .notEmpty().withMessage('ID du combat requis')
         .isString().withMessage('ID du combat doit être une chaîne'),
@@ -226,20 +226,20 @@ router.post('/:fightId/validate-result', authMiddleware_1.requireAuth, (0, authM
         .isLength({ min: 6, max: 6 }).withMessage('Le code OTP doit comporter 6 chiffres')
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.validateFightResult));
 // Demander un OTP pour la validation d'un résultat
-router.post('/:fightId/request-validation-otp', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), [
+router.post('/:fightId/request-validation-otp', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, [
     (0, express_validator_1.param)('fightId')
         .notEmpty().withMessage('ID du combat requis')
         .isString().withMessage('ID du combat doit être une chaîne')
 ], validateRequest_1.validateRequest, (0, asyncHandler_1.asyncHandler)(FightController_1.default.requestFightValidationOTP));
 // Expirer automatiquement les combats passés (Admin seulement)
-router.post('/expire-past', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.expirePastFights));
+router.post('/expire-past', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, (0, asyncHandler_1.asyncHandler)(FightController_1.default.expirePastFights));
 // ==================== ROUTES JOURNÉES DE LUTTE (ADMIN) ====================
 // Créer une nouvelle journée (Admin seulement)
-router.post('/day-events', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.createDayEvent));
+router.post('/day-events', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, (0, asyncHandler_1.asyncHandler)(FightController_1.default.createDayEvent));
 // Mettre à jour une journée (Admin seulement)
-router.put('/day-events/:eventId', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.updateDayEvent));
+router.put('/day-events/:eventId', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, (0, asyncHandler_1.asyncHandler)(FightController_1.default.updateDayEvent));
 // Supprimer une journée (Admin seulement)
-router.delete('/day-events/:eventId', authMiddleware_1.requireAuth, (0, authMiddleware_1.requireRole)('ADMIN'), (0, asyncHandler_1.asyncHandler)(FightController_1.default.deleteDayEvent));
+router.delete('/day-events/:eventId', authMiddleware_1.requireAuth, authMiddleware_1.requireAdmin, (0, asyncHandler_1.asyncHandler)(FightController_1.default.deleteDayEvent));
 // ==================== ROUTES DE TEST ====================
 // Route de test (développement uniquement)
 if (process.env.NODE_ENV === 'development') {

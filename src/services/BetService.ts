@@ -140,7 +140,8 @@ export class BetService {
             fightId: data.fightId,
             creatorId: userId,
             canCancelUntil,
-            status: 'PENDING'
+            status: 'PENDING',
+            potentialWin: BigInt(Math.floor(potentialWin))
           },
           include: {
             creator: {

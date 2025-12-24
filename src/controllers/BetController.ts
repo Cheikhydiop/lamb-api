@@ -95,7 +95,7 @@ class BetController {
   static cancelBet = asyncHandler(async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
     const { betId } = req.params;
-    const isAdmin = (req as any).user?.role === 'ADMIN';
+    const isAdmin = (req as any).user?.role === 'ADMIN' || (req as any).user?.role === 'SUPER_ADMIN';
 
     if (!userId) {
       res.status(401).json({
@@ -300,7 +300,7 @@ class BetController {
    * Régler un pari (admin seulement)
    */
   static settleBet = asyncHandler(async (req: Request, res: Response) => {
-    const isAdmin = (req as any).user?.role === 'ADMIN';
+    const isAdmin = (req as any).user?.role === 'ADMIN' || (req as any).user?.role === 'SUPER_ADMIN';
     const { betId } = req.params;
     const { winner } = req.body;
 
@@ -342,7 +342,7 @@ class BetController {
    * Vérifier et expirer les paris (tâche cron/admin)
    */
   static checkExpiredBets = asyncHandler(async (req: Request, res: Response) => {
-    const isAdmin = (req as any).user?.role === 'ADMIN';
+    const isAdmin = (req as any).user?.role === 'ADMIN' || (req as any).user?.role === 'SUPER_ADMIN';
 
     if (!isAdmin) {
       res.status(403).json({

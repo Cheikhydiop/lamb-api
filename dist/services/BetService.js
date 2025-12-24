@@ -87,17 +87,15 @@ class BetService {
                 const potentialWin = Number(data.amount) * this.WIN_MULTIPLIER;
                 // Calculer la date limite d'annulation
                 const canCancelUntil = (0, date_fns_1.addMinutes)(new Date(), this.CANCELLATION_WINDOW_MINUTES);
-                // Vérifier s'il existe déjà un pari similaire non accepté
-                const existingSimilarBet = yield this.prisma.bet.findFirst({
+                // ⭐ LIMITE: Maximum 10 paris PENDING simultanés par utilisateur
+                const pendingBetsCount = yield this.prisma.bet.count({
                     where: {
-                        fightId: data.fightId,
                         creatorId: userId,
-                        chosenFighter: data.chosenFighter,
                         status: 'PENDING'
                     }
                 });
-                if (existingSimilarBet) {
-                    throw new Error('Vous avez déjà un pari en attente sur ce combat avec ce lutteur');
+                if (pendingBetsCount >= 10) {
+                    throw new Error('Vous avez trop de paris en attente. Maximum : 10. Attendez qu\'ils soient acceptés ou annulez-en certains.');
                 }
                 // ========== TRANSACTION (opérations critiques uniquement) ==========
                 const bet = yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
@@ -118,7 +116,8 @@ class BetService {
                             fightId: data.fightId,
                             creatorId: userId,
                             canCancelUntil,
-                            status: 'PENDING'
+                            status: 'PENDING',
+                            potentialWin: BigInt(Math.floor(potentialWin))
                         },
                         include: {
                             creator: {
@@ -160,7 +159,7 @@ class BetService {
                             action: 'CREATE_BET',
                             table: 'bets',
                             recordId: bet.id,
-                            newData: JSON.stringify(bet),
+                            newData: JSON.stringify(bet, (key, value) => typeof value === 'bigint' ? value.toString() : value),
                             userId
                         }
                     });
@@ -181,6 +180,24 @@ class BetService {
                 }
                 catch (notifError) {
                     logger_1.default.error('Erreur notification (non-bloquant):', notifError);
+                }
+                // Diffuser à TOUS les utilisateurs connectés qu'un nouveau pari est disponible
+                try {
+                    const fighterName = bet.chosenFighter === 'A' ? bet.fight.fighterA.name : bet.fight.fighterB.name;
+                    this.webSocketService.broadcastNewBetAvailable({
+                        type: 'NEW_BET_AVAILABLE',
+                        title: 'Nouveau pari disponible !',
+                        message: `${user.name} a misé ${data.amount} FCFA sur ${fighterName}. Relevez le défi !`,
+                        timestamp: new Date().toISOString(),
+                        data: {
+                            betId: bet.id,
+                            fightId: bet.fightId,
+                            amount: data.amount
+                        }
+                    }, userId);
+                }
+                catch (broadcastError) {
+                    logger_1.default.error('Erreur broadcast nouveau pari:', broadcastError);
                 }
                 logger_1.default.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
                 return bet;
@@ -329,7 +346,27 @@ class BetService {
                     if (acceptorWallet.balance < betAmountBigInt) {
                         throw new Error('Solde insuffisant pour accepter ce pari');
                     }
-                    // SOUSTRAIRE DU SOLDE et bloquer les fonds de l'accepteur
+                    // ⭐ CORRECTIF RACE CONDITION: Mise à jour atomique avec condition WHERE
+                    // Utiliser updateMany pour vérifier le statut de manière atomique
+                    const updateResult = yield tx.bet.updateMany({
+                        where: {
+                            id: betId,
+                            status: 'PENDING', // ← Condition atomique: doit être PENDING
+                            acceptorId: null // ← ET ne pas avoir déjà un accepteur
+                        },
+                        data: {
+                            acceptorId: acceptorId,
+                            status: 'ACCEPTED',
+                            acceptedAt: new Date(),
+                            canCancelUntil: null
+                        }
+                    });
+                    // Vérifier si la mise à jour a réussi
+                    if (updateResult.count === 0) {
+                        throw new Error('Ce pari a déjà été accepté par un autre utilisateur');
+                    }
+                    // IMPORTANT: Bloquer les fonds APRÈS avoir confirmé l'acceptation
+                    // Si on arrive ici, c'est que nous sommes le seul accepteur
                     const amountToLock = BigInt(Math.floor(bet.amount));
                     yield tx.wallet.update({
                         where: { userId: acceptorId },
@@ -338,15 +375,9 @@ class BetService {
                             lockedBalance: { increment: amountToLock }
                         }
                     });
-                    // Mettre à jour le pari
-                    const updatedBet = yield tx.bet.update({
+                    // Récupérer le pari mis à jour avec toutes les relations
+                    const updatedBet = yield tx.bet.findUnique({
                         where: { id: betId },
-                        data: {
-                            acceptorId: acceptorId,
-                            status: 'ACCEPTED',
-                            acceptedAt: new Date(),
-                            canCancelUntil: null // Désactiver l'annulation après acceptation
-                        },
                         include: {
                             creator: {
                                 select: {
@@ -371,6 +402,9 @@ class BetService {
                             }
                         }
                     });
+                    if (!updatedBet) {
+                        throw new Error('Erreur lors de la récupération du pari mis à jour');
+                    }
                     // Notifier le créateur (simplifié pour être plus rapide)
                     yield tx.notification.create({
                         data: {
@@ -384,7 +418,8 @@ class BetService {
                     return updatedBet;
                 }), {
                     maxWait: 10000,
-                    timeout: 15000
+                    timeout: 15000,
+                    isolationLevel: 'Serializable' // ← Niveau d'isolation le plus strict
                 });
                 // Notifier l'accepteur (en dehors de la transaction pour la performance)
                 try {
@@ -428,18 +463,21 @@ class BetService {
                     if (!bet) {
                         throw new Error('Pari non trouvé');
                     }
-                    // Vérifier les permissions
-                    if (!isAdmin && bet.creatorId !== userId && bet.acceptorId !== userId) {
-                        throw new Error('Non autorisé à annuler ce pari');
+                    // ⭐ RÈGLE: Seul le créateur peut annuler (sauf si admin)
+                    if (!isAdmin && bet.creatorId !== userId) {
+                        throw new Error('Seul le créateur du pari peut l\'annuler');
                     }
-                    // Vérifier le statut
-                    if (bet.status !== 'PENDING' && bet.status !== 'ACCEPTED') {
-                        throw new Error('Impossible d\'annuler ce pari');
+                    // ⭐ RÈGLE: On ne peut annuler que les paris PENDING (non acceptés)
+                    if (bet.status !== 'PENDING') {
+                        throw new Error('Impossible d\'annuler un pari déjà accepté ou terminé');
                     }
-                    // Vérifier la fenêtre d'annulation (seulement pour le créateur)
+                    // ⭐ RÈGLE: Délai minimum de 30 minutes après création pour annuler
                     const now = new Date();
-                    if (bet.creatorId === userId && bet.canCancelUntil && (0, date_fns_1.isAfter)(now, bet.canCancelUntil)) {
-                        throw new Error('La fenêtre d\'annulation de 20 minutes est expirée');
+                    const betCreatedAt = bet.createdAt;
+                    const thirtyMinutesAfterCreation = (0, date_fns_1.addMinutes)(betCreatedAt, 30);
+                    if (!isAdmin && (0, date_fns_1.isAfter)(thirtyMinutesAfterCreation, now)) {
+                        const minutesRemaining = Math.ceil((thirtyMinutesAfterCreation.getTime() - now.getTime()) / 60000);
+                        throw new Error(`Vous devez attendre ${minutesRemaining} minute(s) avant de pouvoir annuler ce pari`);
                     }
                     // Vérifier si le combat a commencé
                     const fightStartTime = bet.fight.scheduledAt || ((_a = bet.fight.dayEvent) === null || _a === void 0 ? void 0 : _a.date);
@@ -597,11 +635,22 @@ class BetService {
                     if (!bet) {
                         throw new Error('Pari non trouvé');
                     }
-                    if (bet.status !== 'ACCEPTED') {
-                        throw new Error('Pari non accepté, impossible de le régler');
-                    }
                     if (!bet.acceptorId) {
                         throw new Error('Pari sans accepteur, impossible de le régler');
+                    }
+                    // ⭐ PROTECTION: Mise à jour atomique pour éviter double règlement
+                    const updateResult = yield tx.bet.updateMany({
+                        where: {
+                            id: betId,
+                            status: 'ACCEPTED' // ← Condition atomique
+                        },
+                        data: {
+                            status: 'WON' // Temporaire, sera mis à jour après
+                        }
+                    });
+                    // Vérifier si la mise à jour a réussi
+                    if (updateResult.count === 0) {
+                        throw new Error('Ce pari a déjà été réglé ou n\'est pas dans l\'état ACCEPTED');
                     }
                     const now = new Date();
                     let updatedBet;

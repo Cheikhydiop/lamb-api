@@ -113,6 +113,22 @@ let TransactionService = class TransactionService {
             if (data.amount > maxDeposit) {
                 throw new Error(`Montant maximum de dépôt: ${maxDeposit} FCFA`);
             }
+            // ⭐ PROTECTION: Vérifier les dépôts dupliqués dans les 60 dernières secondes
+            const sixtySecondsAgo = new Date(Date.now() - 60000);
+            const recentDuplicate = yield this.prisma.transaction.findFirst({
+                where: {
+                    userId,
+                    type: 'DEPOSIT',
+                    amount: data.amount,
+                    provider: data.provider,
+                    createdAt: { gte: sixtySecondsAgo },
+                    status: { in: ['PENDING', 'CONFIRMED'] }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            if (recentDuplicate) {
+                throw new Error('Vous avez déjà effectué un dépôt identique il y a moins de 60 secondes. Veuillez patienter avant de réessayer.');
+            }
             // Create transaction in PENDING state
             const transaction = yield this.prisma.transaction.create({
                 data: {
@@ -182,6 +198,22 @@ let TransactionService = class TransactionService {
             }
             if (data.amount > maxWithdrawal) {
                 throw new Error(`Montant maximum de retrait: ${maxWithdrawal} FCFA`);
+            }
+            // ⭐ PROTECTION: Vérifier les retraits dupliqués dans les 60 dernières secondes
+            const sixtySecondsAgo = new Date(Date.now() - 60000);
+            const recentDuplicate = yield this.prisma.transaction.findFirst({
+                where: {
+                    userId,
+                    type: 'WITHDRAWAL',
+                    amount: data.amount,
+                    provider: data.provider,
+                    createdAt: { gte: sixtySecondsAgo },
+                    status: { in: ['PENDING', 'CONFIRMED'] }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            if (recentDuplicate) {
+                throw new Error('Vous avez déjà effectué un retrait identique il y a moins de 60 secondes. Veuillez patienter avant de réessayer.');
             }
             // Create transaction in PENDING state
             const transaction = yield this.prisma.transaction.create({
