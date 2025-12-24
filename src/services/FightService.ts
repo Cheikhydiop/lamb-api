@@ -818,6 +818,17 @@ export class FightService {
           data: { betId: bet.id, amount: winAmount },
           timestamp: new Date().toISOString()
         }, winnerId);
+
+        // Envoi explicite de l'événement BET_WON
+        this.webSocketService.broadcastBetUpdate({
+          betId: bet.id,
+          fightId: bet.fightId,
+          userId: winnerId,
+          amount: betAmount,
+          chosenFighter: bet.chosenFighter,
+          status: 'WON',
+          timestamp: new Date().toISOString()
+        });
       }
 
       // Notification WebSocket pour le perdant
@@ -829,6 +840,17 @@ export class FightService {
           data: { betId: bet.id },
           timestamp: new Date().toISOString()
         }, loserId);
+
+        // Envoi explicite de l'événement BET_LOST
+        this.webSocketService.broadcastBetUpdate({
+          betId: bet.id,
+          fightId: bet.fightId,
+          userId: loserId,
+          amount: betAmount,
+          chosenFighter: bet.chosenFighter,
+          status: 'LOST',
+          timestamp: new Date().toISOString()
+        });
       }
 
       // Créer la transaction de gain
