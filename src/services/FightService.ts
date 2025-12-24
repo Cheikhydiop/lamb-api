@@ -242,7 +242,12 @@ export class FightService {
             fighterA: true,
             fighterB: true,
             dayEvent: true,
-            result: true
+            result: true,
+            _count: {
+              select: {
+                bets: true
+              }
+            }
           },
           take: limit,
           skip: offset,
