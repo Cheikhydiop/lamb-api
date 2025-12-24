@@ -87,10 +87,10 @@ export class NotificationService {
         orderBy: { createdAt: 'desc' },
       });
 
-      // Parse JSON data field
+      // Prisma already returns Json fields as objects, no need to parse
       return notifications.map(n => ({
         ...n,
-        data: n.data ? JSON.parse(n.data as string) : null
+        data: n.data || null
       }));
     } catch (error) {
       logger.error('Error fetching notifications', error);
@@ -105,9 +105,10 @@ export class NotificationService {
         orderBy: { createdAt: 'desc' },
       });
 
+      // Prisma already returns Json fields as objects, no need to parse
       return notifications.map(n => ({
         ...n,
-        data: n.data ? JSON.parse(n.data as string) : null
+        data: n.data || null
       }));
     } catch (error) {
       logger.error('Error fetching unread notifications', error);
