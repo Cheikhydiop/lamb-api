@@ -58,7 +58,8 @@ class FightController {
         fighterAId: req.body.fighterAId,
         fighterBId: req.body.fighterBId,
         oddsA: req.body.oddsA,
-        oddsB: req.body.oddsB
+        oddsB: req.body.oddsB,
+        dayEventId: req.body.dayEventId
       };
 
       // Validation basique

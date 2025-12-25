@@ -142,6 +142,7 @@ export class FightService {
           fighterBId: data.fighterBId,
           oddsA: data.oddsA ?? 1.0,
           oddsB: data.oddsB ?? 1.0,
+          dayEventId: data.dayEventId,
           status: FightStatus.SCHEDULED
         },
         include: {

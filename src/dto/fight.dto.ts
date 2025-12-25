@@ -32,6 +32,10 @@ export class CreateFightDTO {
   @Min(1.0)
   @IsOptional()
   oddsB?: number;
+
+  @IsUUID()
+  @IsOptional()
+  dayEventId?: string;
 }
 
 export class UpdateFightStatusDTO {
