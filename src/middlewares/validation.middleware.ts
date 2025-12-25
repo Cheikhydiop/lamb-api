@@ -10,7 +10,9 @@ export const validateRequest = (schema: ZodSchema) => {
       const validatedData = await schema.parseAsync(dataToValidate);
 
       if (isGet) {
-        req.query = validatedData;
+        // req.query is sometimes read-only/getter-only in some Express environments
+        // We update properties instead of replacing the object
+        Object.assign(req.query, validatedData);
       } else {
         req.body = validatedData;
       }
