@@ -163,25 +163,26 @@ export class AuthService {
         const { hasActiveSessions, sessions } = await multiDeviceAuthService.checkActiveSessions(user.id);
 
         // TEMPORARY: Disabled device verification for all users
+        /*
         // The original check was: if (hasActiveSessions || isAdmin)
-        if (false && (hasActiveSessions || isAdmin)) {
-          logger.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
+        if (hasActiveSessions || isAdmin) {
+          logger.info(`🔒 Vérification requise pour ${user?.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
 
           // 4. Créer session en attente + OTP
           const { session, otpCode } = await multiDeviceAuthService.createPendingSession(
-            user.id,
+            user!.id,
             detectedDevice,
             req as any
           );
 
-          if (!user.email) {
+          if (!user!.email) {
             throw new Error('Email requis pour la vérification de l\'appareil');
           }
 
           // 5. Envoyer email
           await this.emailService.sendDeviceVerificationOTP(
-            user.email,
-            user.name || 'Utilisateur',
+            user!.email,
+            user!.name || 'Utilisateur',
             otpCode,
             detectedDevice
           );
@@ -197,6 +198,7 @@ export class AuthService {
             message: 'Vérification requise'
           } as any;
         }
+        */
       }
 
       // === CONNEXION NORMALE (Appareil connu OU Premier appareil) ===
