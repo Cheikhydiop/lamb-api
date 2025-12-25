@@ -98,7 +98,9 @@ export class AdminController {
                 pendingWithdrawals,
                 totalVolumeAgg,
                 todayDepositsAgg,
-                todayWithdrawalsAgg
+                todayWithdrawalsAgg,
+                totalCommissionAgg,
+                todayCommissionAgg
             ] = await Promise.all([
                 prisma.user.count(),
                 prisma.user.count({
@@ -134,6 +136,15 @@ export class AdminController {
                         createdAt: { gte: startOfDay }
                     },
                     _sum: { amount: true }
+                }),
+                prisma.commission.aggregate({
+                    _sum: { amount: true }
+                }),
+                prisma.commission.aggregate({
+                    where: {
+                        deductedAt: { gte: startOfDay }
+                    },
+                    _sum: { amount: true }
                 })
             ]);
 
@@ -151,7 +162,9 @@ export class AdminController {
                     pendingWithdrawals,
                     totalVolume: Number(totalVolumeAgg._sum.amount || 0),
                     todayDeposits: Number(todayDepositsAgg._sum.amount || 0),
-                    todayWithdrawals: Number(todayWithdrawalsAgg._sum.amount || 0)
+                    todayWithdrawals: Number(todayWithdrawalsAgg._sum.amount || 0),
+                    totalCommission: Number(totalCommissionAgg._sum.amount || 0),
+                    todayCommission: Number(todayCommissionAgg._sum.amount || 0)
                 }
             });
         } catch (error) {
