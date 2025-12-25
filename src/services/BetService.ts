@@ -42,9 +42,11 @@ export class BetService {
         throw new Error('Utilisateur non trouvé');
       }
 
+      /*
       if (!user.isActive) {
         throw new Error('Compte utilisateur désactivé');
       }
+      */
 
       // Vérifier le combat
       const fight = await this.prisma.fight.findUnique({
