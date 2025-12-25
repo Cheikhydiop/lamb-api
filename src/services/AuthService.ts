@@ -162,11 +162,10 @@ export class AuthService {
 
         const { hasActiveSessions, sessions } = await multiDeviceAuthService.checkActiveSessions(user.id);
 
-        // TEMPORARY: Disabled device verification for all users
-        /*
-        // The original check was: if (hasActiveSessions || isAdmin)
-        if (hasActiveSessions || isAdmin) {
-          logger.info(`🔒 Vérification requise pour ${user?.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
+        // CORRIGÉ: Vérification active UNIQUEMENT pour les admins
+        // Les parieurs ne sont plus soumis à la vérification d'appareil pour le moment
+        if (isAdmin) {
+          logger.info(`🔒 Vérification requise pour ${user!.email} (Admin: ${isAdmin})`);
 
           // 4. Créer session en attente + OTP
           const { session, otpCode } = await multiDeviceAuthService.createPendingSession(
@@ -198,7 +197,6 @@ export class AuthService {
             message: 'Vérification requise'
           } as any;
         }
-        */
       }
 
       // === CONNEXION NORMALE (Appareil connu OU Premier appareil) ===
