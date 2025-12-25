@@ -162,8 +162,9 @@ export class AuthService {
 
         const { hasActiveSessions, sessions } = await multiDeviceAuthService.checkActiveSessions(user.id);
 
-        // Pour les admins, on exige TOUJOURS la vérification, même si c'est la seule session
-        if (hasActiveSessions || isAdmin) {
+        // TEMPORARY: Disabled device verification for all users
+        // The original check was: if (hasActiveSessions || isAdmin)
+        if (false && (hasActiveSessions || isAdmin)) {
           logger.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
 
           // 4. Créer session en attente + OTP
