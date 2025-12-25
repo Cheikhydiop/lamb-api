@@ -4,8 +4,17 @@ import { ZodSchema } from 'zod';
 export const validateRequest = (schema: ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const validatedData = await schema.parseAsync(req.body);
-      req.body = validatedData;
+      const isGet = req.method === 'GET';
+      const dataToValidate = isGet ? req.query : req.body;
+
+      const validatedData = await schema.parseAsync(dataToValidate);
+
+      if (isGet) {
+        req.query = validatedData;
+      } else {
+        req.body = validatedData;
+      }
+
       next();
     } catch (error: any) {
       const errors = error.errors?.map((e: any) => ({

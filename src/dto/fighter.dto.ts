@@ -25,10 +25,15 @@ export const UpdateFighterDTO = z.object({
 });
 
 export const ListFightersDTO = z.object({
-  isActive: z.boolean().optional(),
+  search: z.string().optional(),
+  status: z.string().optional(),
+  stable: z.string().optional(),
+  isActive: z.coerce.boolean().optional(),
   nationality: z.string().optional(),
-  limit: z.number().int().min(1).max(100).default(20),
-  offset: z.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(1000).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+  orderBy: z.enum(['name', 'wins', 'totalFights']).optional(),
+  orderDirection: z.enum(['asc', 'desc']).optional(),
 });
 
 
