@@ -96,19 +96,18 @@ export class FighterService {
 
   async createFighter(data: CreateFighterDTO) {
     try {
-      if (data.birthDate) {
-        const existing = await this.prisma.fighter.findUnique({
-          where: {
-            name_birthDate: {
-              name: data.name,
-              birthDate: data.birthDate
-            }
+      // Vérifier l'existence d'un lutteur avec le même nom (insensible à la casse)
+      const existing = await this.prisma.fighter.findFirst({
+        where: {
+          name: {
+            equals: data.name,
+            mode: 'insensitive'
           }
-        });
-
-        if (existing) {
-          throw new Error('Un lutteur avec ce nom et cette date de naissance existe déjà');
         }
+      });
+
+      if (existing) {
+        throw new Error(`Un lutteur avec le nom "${data.name}" existe déjà`);
       }
 
       const fighter = await this.prisma.fighter.create({
@@ -179,6 +178,24 @@ export class FighterService {
 
       if (!fighter) {
         throw new Error('Lutteur non trouvé');
+      }
+
+      if (data.name) {
+        const existingName = await this.prisma.fighter.findFirst({
+          where: {
+            name: {
+              equals: data.name,
+              mode: 'insensitive'
+            },
+            id: {
+              not: fighterId
+            }
+          }
+        });
+
+        if (existingName) {
+          throw new Error(`Un lutteur avec le nom "${data.name}" existe déjà`);
+        }
       }
 
       const updated = await this.prisma.fighter.update({
