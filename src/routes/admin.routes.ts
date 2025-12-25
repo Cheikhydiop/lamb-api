@@ -128,6 +128,10 @@ export const createAdminRoutes = () => {
         asyncHandler(AdminController.getDashboardStats)
     );
 
+    router.get('/analytics',
+        asyncHandler(AdminController.getAnalytics)
+    );
+
     // ========== UTILISATEURS ==========
 
     /**

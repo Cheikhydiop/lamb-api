@@ -172,6 +172,63 @@ export class AdminController {
         }
     }
 
+    static async getAnalytics(req: Request, res: Response, next: NextFunction) {
+        try {
+            const prisma = Container.get(PrismaClient);
+            const days = 7;
+            const now = new Date();
+            const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+            // Helper to format BigInt
+            const serialize = (data: any[]) => data.map(row => ({
+                date: row.date.toISOString().split('T')[0],
+                total: Number(row.total || 0)
+            }));
+
+            // 1. Deposits per day
+            const depositsRaw: any[] = await prisma.$queryRaw`
+                SELECT DATE("createdAt") as date, SUM(amount) as total
+                FROM transactions
+                WHERE type = 'DEPOSIT' 
+                AND status = 'CONFIRMED' 
+                AND "createdAt" >= ${startDate}
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
+
+            // 2. Withdrawals per day
+            const withdrawalsRaw: any[] = await prisma.$queryRaw`
+                SELECT DATE("createdAt") as date, SUM(amount) as total
+                FROM transactions
+                WHERE type = 'WITHDRAWAL' 
+                AND status = 'CONFIRMED' 
+                AND "createdAt" >= ${startDate}
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
+
+            // 3. Revenue (Commissions) per day
+            const commissionsRaw: any[] = await prisma.$queryRaw`
+                SELECT DATE("deductedAt") as date, SUM(amount) as total
+                FROM commissions
+                WHERE "deductedAt" >= ${startDate}
+                GROUP BY DATE("deductedAt")
+                ORDER BY date ASC
+            `;
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    deposits: serialize(depositsRaw),
+                    withdrawals: serialize(withdrawalsRaw),
+                    commissions: serialize(commissionsRaw)
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     // ========== USERS ==========
 
     static async getUsers(req: Request, res: Response, next: NextFunction) {
