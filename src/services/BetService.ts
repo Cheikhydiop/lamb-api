@@ -80,9 +80,11 @@ export class BetService {
       const now = new Date();
       const thirtyMinutesBeforeFight = addMinutes(fightStartTime, -30);
 
+      /*
       if (isAfter(now, thirtyMinutesBeforeFight)) {
         throw new Error('Impossible de parier moins de 30 minutes avant le combat');
       }
+      */
 
       // Vérifier les fonds disponibles
       const wallet = await this.prisma.wallet.findUnique({
@@ -230,6 +232,21 @@ export class BetService {
         }, userId);
       } catch (broadcastError) {
         logger.error('Erreur broadcast nouveau pari:', broadcastError);
+      }
+
+      // Broadcast Wallet Update for Creator
+      try {
+        const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId } });
+        if (updatedWallet) {
+          this.webSocketService.broadcastWalletUpdate({
+            userId,
+            balance: Number(updatedWallet.balance),
+            lockedBalance: Number(updatedWallet.lockedBalance),
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (wsError) {
+        logger.error('Erreur broadcast wallet update (createBet):', wsError);
       }
 
       logger.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
@@ -497,6 +514,32 @@ export class BetService {
         logger.error('Erreur notification accepteur:', notifError);
       }
 
+      // Broadcast Wallet Update for Acceptor
+      try {
+        const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId: acceptorId } });
+        if (updatedWallet) {
+          this.webSocketService.broadcastWalletUpdate({
+            userId: acceptorId,
+            balance: Number(updatedWallet.balance),
+            lockedBalance: Number(updatedWallet.lockedBalance),
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (wsError) {
+        logger.error('Erreur broadcast wallet update (acceptBet):', wsError);
+      }
+
+      // Broadcast Bet Update
+      this.webSocketService.broadcastBetUpdate({
+        betId: betId,
+        fightId: bet.fightId,
+        userId: bet.creatorId,
+        amount: Number(bet.amount),
+        chosenFighter: bet.chosenFighter,
+        status: 'ACCEPTED',
+        timestamp: new Date().toISOString()
+      });
+
       return result;
 
     } catch (error: any) {
@@ -682,6 +725,35 @@ export class BetService {
       await Promise.all(notifications);
 
       logger.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
+
+      // Broadcast des mises à jour de portefeuille
+      // Pour le créateur
+      try {
+        const creatorWallet = await this.prisma.wallet.findUnique({ where: { userId: bet.creatorId } });
+        if (creatorWallet) {
+          this.webSocketService.broadcastWalletUpdate({
+            userId: bet.creatorId,
+            balance: Number(creatorWallet.balance),
+            lockedBalance: Number(creatorWallet.lockedBalance),
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (e) { console.error('WS Wallet update error', e); }
+
+      // Pour l'accepteur
+      if (bet.acceptorId) {
+        try {
+          const acceptorWallet = await this.prisma.wallet.findUnique({ where: { userId: bet.acceptorId } });
+          if (acceptorWallet) {
+            this.webSocketService.broadcastWalletUpdate({
+              userId: bet.acceptorId,
+              balance: Number(acceptorWallet.balance),
+              lockedBalance: Number(acceptorWallet.lockedBalance),
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (e) { console.error('WS Wallet update error', e); }
+      }
 
     } catch (error) {
       logger.error('Erreur dans les opérations post-annulation:', error);
@@ -947,6 +1019,36 @@ export class BetService {
       }
 
       logger.info(`Pari traité: ${bet.id} - Statut: ${bet.status}`);
+
+      // Broadcast des mises à jour de portefeuille pour les deux parties
+      // Créateur
+      try {
+        const creatorWallet = await this.prisma.wallet.findUnique({ where: { userId: bet.creatorId } });
+        if (creatorWallet) {
+          this.webSocketService.broadcastWalletUpdate({
+            userId: bet.creatorId,
+            balance: Number(creatorWallet.balance),
+            lockedBalance: Number(creatorWallet.lockedBalance),
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch (e) { console.error('WS Wallet update error', e); }
+
+      // Accepteur (si existe)
+      if (bet.acceptorId) {
+        try {
+          const acceptorWallet = await this.prisma.wallet.findUnique({ where: { userId: bet.acceptorId } });
+          if (acceptorWallet) {
+            this.webSocketService.broadcastWalletUpdate({
+              userId: bet.acceptorId,
+              balance: Number(acceptorWallet.balance),
+              lockedBalance: Number(acceptorWallet.lockedBalance),
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (e) { console.error('WS Wallet update error', e); }
+      }
+
     } catch (error) {
       logger.error('Erreur dans les opérations post-traitement:', error);
     }
