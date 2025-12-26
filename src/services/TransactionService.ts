@@ -1,6 +1,7 @@
 import { Service } from 'typedi';
 import { PrismaClient, TransactionType, TransactionStatus } from '@prisma/client';
 import { CreateTransactionDTOType, WithdrawalDTOType, ConfirmTransactionDTOType, ListTransactionsDTOType } from '../dto/transaction.dto';
+import { WebSocketService } from './WebSocketService';
 
 @Service()
 export class TransactionService {
@@ -41,6 +42,34 @@ export class TransactionService {
         where: { userId },
         data: { balance: { decrement: data.amount } },
       });
+    }
+
+    // Notify via WebSocket
+    try {
+      const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId } });
+      if (updatedWallet) {
+        WebSocketService.getInstance().broadcastWalletUpdate({
+          userId,
+          balance: Number(updatedWallet.balance),
+          lockedBalance: Number(updatedWallet.lockedBalance),
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (e) {
+      console.error('Failed to broadcast wallet update', e);
+    }
+
+    try {
+      WebSocketService.getInstance().broadcastTransactionUpdate({
+        transactionId: transaction.id,
+        userId: transaction.userId,
+        type: transaction.type,
+        amount: Number(transaction.amount),
+        status: (transaction.status || 'CONFIRMED') as any,
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error('Failed to broadcast transaction update', e);
     }
 
     return transaction;
@@ -130,6 +159,15 @@ export class TransactionService {
         },
       });
 
+      WebSocketService.getInstance().broadcastTransactionUpdate({
+        transactionId: transaction.id,
+        userId,
+        type: 'DEPOSIT',
+        amount: Number(data.amount),
+        status: 'PENDING',
+        timestamp: new Date().toISOString()
+      });
+
       return {
         ...transaction,
         externalRef: result.transactionId,
@@ -214,6 +252,17 @@ export class TransactionService {
         data: { balance: { decrement: data.amount } },
       });
 
+      // Notify wallet update (debit)
+      const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId } });
+      if (updatedWallet) {
+        WebSocketService.getInstance().broadcastWalletUpdate({
+          userId,
+          balance: Number(updatedWallet.balance),
+          lockedBalance: Number(updatedWallet.lockedBalance),
+          timestamp: new Date().toISOString()
+        });
+      }
+
       // Initiate payment with provider
       const { PaymentService } = await import('./PaymentService');
       const paymentService = new PaymentService();
@@ -250,6 +299,15 @@ export class TransactionService {
         data: {
           externalRef: result.transactionId,
         },
+      });
+
+      WebSocketService.getInstance().broadcastTransactionUpdate({
+        transactionId: transaction.id,
+        userId,
+        type: 'WITHDRAWAL',
+        amount: Number(data.amount),
+        status: 'PENDING',
+        timestamp: new Date().toISOString()
       });
 
       return {
@@ -306,11 +364,44 @@ export class TransactionService {
           data: { balance: { increment: transaction.amount } },
         });
       } else if (transaction.type === 'DEPOSIT') {
+        // Déjà débité ? Non, un dépôt échoué ne nécessite pas de correction de solde car il n'a pas été crédité (sauf si PENDING -> CONFIRMED -> FAILED ?)
+        // Dans createTransaction (type DEPOSIT), on crédite tout de suite. Mais dans deposit(), on met en PENDING sans créditer.
+        // Si c'était createTransaction, le solde est déjà haut. Si fail, on doit décrémenter.
+        // Mais ici on parle de transactions PENDING venant de deposit().
+        // Donc safe to ignore deposit fail here unless logic changes.
+      }
+    } else if (status === 'CONFIRMED' && transaction.status !== 'CONFIRMED') {
+      // Si c'est un dépôt qui passe de PENDING à CONFIRMED, il faut créditer le wallet !
+      if (transaction.type === 'DEPOSIT') {
         await this.prisma.wallet.update({
           where: { userId: transaction.userId },
-          data: { balance: { decrement: transaction.amount } },
+          data: { balance: { increment: transaction.amount } },
         });
       }
+    }
+
+    // Notify updates
+    try {
+      const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId: transaction.userId } });
+      if (updatedWallet) {
+        WebSocketService.getInstance().broadcastWalletUpdate({
+          userId: transaction.userId,
+          balance: Number(updatedWallet.balance),
+          lockedBalance: Number(updatedWallet.lockedBalance),
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      WebSocketService.getInstance().broadcastTransactionUpdate({
+        transactionId: transaction.id,
+        userId: transaction.userId,
+        type: transaction.type,
+        amount: Number(transaction.amount),
+        status: status as any,
+        timestamp: new Date().toISOString()
+      });
+    } catch (e) {
+      console.error('Failed to broadcast updates', e);
     }
 
     return updatedTransaction;
