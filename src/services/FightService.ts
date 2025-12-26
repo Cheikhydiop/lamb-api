@@ -886,29 +886,17 @@ export class FightService {
       });
       logger.info(`Transaction de gain créée: ${winTransaction.id}`);
 
-      // Créer la transaction de commission (nécessaire pour le modèle Commission)
-      const commissionTransaction = await this.prisma.transaction.create({
-        data: {
-          type: TransactionType.COMMISSION,
-          amount: commissionBigInt,
-          userId: 'system', // ID système pour les commissions
-          status: TransactionStatus.CONFIRMED,
-          notes: `Commission sur pari ${bet.id}`
-        }
-      });
-      logger.info(`Transaction de commission créée: ${commissionTransaction.id}`);
-
-      // Enregistrer la commission dans le modèle Commission
+      // Enregistrer la commission directement (liée à la transaction de gain du gagnant)
       await this.prisma.commission.create({
         data: {
           betId: bet.id,
           amount: commissionBigInt,
           type: 'BET',
           percentage: this.COMMISSION_PERCENTAGE,
-          transactionId: commissionTransaction.id
+          transactionId: winTransaction.id  // Utiliser la transaction de gain du gagnant
         }
       });
-      logger.info(`Commission enregistrée: ${commission} (${this.COMMISSION_PERCENTAGE}%)`);
+      logger.info(`Commission enregistrée: ${commission} FCFA (${this.COMMISSION_PERCENTAGE}%) pour pari ${bet.id}`);
 
       // Créer le winning
       await this.prisma.winning.create({
