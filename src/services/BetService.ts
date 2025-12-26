@@ -900,7 +900,8 @@ export class BetService {
           });
 
           // Enregistrer la commission
-          await tx.commission.create({
+          logger.info(`[COMMISSION DEBUG] Creating commission for bet ${bet.id}: amount=${commission}, converted=${BigInt(Math.floor(commission))}`);
+          const createdCommission = await tx.commission.create({
             data: {
               transactionId: transaction.id,
               type: 'BET',
@@ -908,6 +909,7 @@ export class BetService {
               betId: bet.id
             }
           });
+          logger.info(`[COMMISSION DEBUG] Commission created successfully: ${createdCommission.id}`);
         }
 
         return updatedBet;
