@@ -5,6 +5,9 @@ import { WebSocketService } from './WebSocketService';
 
 @Service()
 export class TransactionService {
+  // Seuil pour validation automatique (100 000 FCFA)
+  private static readonly AUTO_APPROVE_THRESHOLD = BigInt(100000);
+
   constructor(private prisma: PrismaClient) { }
 
   async createTransaction(userId: string, data: CreateTransactionDTOType) {
@@ -159,21 +162,73 @@ export class TransactionService {
         },
       });
 
-      WebSocketService.getInstance().broadcastTransactionUpdate({
-        transactionId: transaction.id,
-        userId,
-        type: 'DEPOSIT',
-        amount: Number(data.amount),
-        status: 'PENDING',
-        timestamp: new Date().toISOString()
-      });
+      // 🎯 AUTO-VALIDATION: Valider automatiquement si montant < 100 000 FCFA
+      const requiresAdminApproval = data.amount >= TransactionService.AUTO_APPROVE_THRESHOLD;
 
-      return {
-        ...transaction,
-        externalRef: result.transactionId,
-        message: result.message,
-        requiresUserAction: result.requiresUserAction
-      };
+      if (!requiresAdminApproval) {
+        // Auto-approuver et créditer le wallet
+        await this.prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            status: 'CONFIRMED',
+            processedAt: new Date(),
+            notes: `Auto-approved (< 100k). ${transaction.notes || ''}`
+          },
+        });
+
+        // Créditer le wallet
+        await this.prisma.wallet.update({
+          where: { userId },
+          data: { balance: { increment: data.amount } },
+        });
+
+        // Notifier mise à jour wallet
+        const updatedWallet = await this.prisma.wallet.findUnique({ where: { userId } });
+        if (updatedWallet) {
+          WebSocketService.getInstance().broadcastWalletUpdate({
+            userId,
+            balance: Number(updatedWallet.balance),
+            lockedBalance: Number(updatedWallet.lockedBalance),
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        WebSocketService.getInstance().broadcastTransactionUpdate({
+          transactionId: transaction.id,
+          userId,
+          type: 'DEPOSIT',
+          amount: Number(data.amount),
+          status: 'CONFIRMED',
+          timestamp: new Date().toISOString()
+        });
+
+        return {
+          ...transaction,
+          status: 'CONFIRMED',
+          externalRef: result.transactionId,
+          message: result.message + ' Dépôt validé automatiquement.',
+          requiresUserAction: result.requiresUserAction,
+          autoApproved: true
+        };
+      } else {
+        // Montant élevé - Nécessite validation admin
+        WebSocketService.getInstance().broadcastTransactionUpdate({
+          transactionId: transaction.id,
+          userId,
+          type: 'DEPOSIT',
+          amount: Number(data.amount),
+          status: 'PENDING',
+          timestamp: new Date().toISOString()
+        });
+
+        return {
+          ...transaction,
+          externalRef: result.transactionId,
+          message: result.message + ' En attente de validation admin (montant ≥ 100 000 FCFA).',
+          requiresUserAction: result.requiresUserAction,
+          requiresAdminApproval: true
+        };
+      }
 
     } catch (error: any) {
       await this.prisma.transaction.update({
@@ -301,20 +356,63 @@ export class TransactionService {
         },
       });
 
-      WebSocketService.getInstance().broadcastTransactionUpdate({
-        transactionId: transaction.id,
-        userId,
-        type: 'WITHDRAWAL',
-        amount: Number(data.amount),
-        status: 'PENDING',
-        timestamp: new Date().toISOString()
-      });
+      // 🎯 AUTO-VALIDATION: Valider automatiquement si montant < 100 000 FCFA
+      const requiresAdminApproval = data.amount >= TransactionService.AUTO_APPROVE_THRESHOLD;
 
-      return {
-        ...transaction,
-        externalRef: result.transactionId,
-        message: result.message
-      };
+      if (!requiresAdminApproval) {
+        // Auto-approuver le retrait
+        await this.prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            status: 'CONFIRMED',
+            processedAt: new Date(),
+            notes: `Auto-approved (< 100k). ${transaction.notes || ''}`
+          },
+        });
+
+        WebSocketService.getInstance().broadcastTransactionUpdate({
+          transactionId: transaction.id,
+          userId,
+          type: 'WITHDRAWAL',
+          amount: Number(data.amount),
+          status: 'CONFIRMED',
+          timestamp: new Date().toISOString()
+        });
+
+        return {
+          ...transaction,
+          status: 'CONFIRMED',
+          externalRef: result.transactionId,
+          message: result.message + ' Retrait validé automatiquement.',
+          autoApproved: true
+        };
+      } else {
+        // Montant élevé - Nécessite validation admin
+        // Note: Le wallet a déjà été débité ligne 250-253
+        // En attente de validation admin, sinon rollback
+        await this.prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            notes: `${transaction.notes || ''} - En attente validation admin (≥100k)`
+          },
+        });
+
+        WebSocketService.getInstance().broadcastTransactionUpdate({
+          transactionId: transaction.id,
+          userId,
+          type: 'WITHDRAWAL',
+          amount: Number(data.amount),
+          status: 'PENDING',
+          timestamp: new Date().toISOString()
+        });
+
+        return {
+          ...transaction,
+          externalRef: result.transactionId,
+          message: result.message + ' En attente de validation admin (montant ≥ 100 000 FCFA).',
+          requiresAdminApproval: true
+        };
+      }
 
     } catch (error: any) {
       // Ensure rollback on any error
