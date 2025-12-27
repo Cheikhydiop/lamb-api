@@ -123,6 +123,13 @@ router.get('/', requireAuth, validateRequest(ListTransactionsDTO), (req, res, ne
   transactionController.listTransactions(req, res, next);
 });
 
+// Alias /history pour rétrocompatibilité avec ancien frontend
+// TODO: Supprimer après que Vercel ait redéployé le nouveau frontend
+router.get('/history', requireAuth, validateRequest(ListTransactionsDTO), (req, res, next) => {
+  const transactionController = Container.get(TransactionController);
+  transactionController.listTransactions(req, res, next);
+});
+
 // Get wallet balance
 router.get('/wallet/balance', requireAuth, (req, res, next) => {
   const transactionController = Container.get(TransactionController);
