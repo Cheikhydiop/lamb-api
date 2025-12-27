@@ -103,6 +103,7 @@ const createAdminRoutes = () => {
      *         description: Dashboard statistics
      */
     router.get('/stats', (0, asyncHandler_1.asyncHandler)(AdminController_1.AdminController.getDashboardStats));
+    router.get('/analytics', (0, asyncHandler_1.asyncHandler)(AdminController_1.AdminController.getAnalytics));
     // ========== UTILISATEURS ==========
     /**
      * @swagger

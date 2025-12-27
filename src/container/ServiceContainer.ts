@@ -13,6 +13,7 @@ import { EmailVerificationService } from '../services/EmailVerificationService';
 import { AuditService } from '../services/AuditService';
 import { BetService } from '../services/BetService';
 import { MultiDeviceAuthService } from '../services/MultiDeviceAuthService';
+import { UserSettingsService } from '../services/UserSettingsService';
 
 // Import Repositories
 import { UserRepository } from '../repositories/UserRepository';
@@ -157,6 +158,10 @@ export class ServiceContainer {
     Container.set(MultiDeviceAuthService, multiDeviceAuthService);
     Container.set('multiDeviceAuthService', multiDeviceAuthService);
 
+    const userSettingsService = new UserSettingsService(this.prisma);
+    Container.set(UserSettingsService, userSettingsService);
+    Container.set('userSettingsService', userSettingsService);
+
     logger.info('Services initialized');
   }
 
@@ -176,6 +181,7 @@ export class ServiceContainer {
   public get auditMiddleware(): AuditMiddleware { return Container.get(AuditMiddleware); }
   public get betService(): BetService { return Container.get(BetService); }
   public get multiDeviceAuthService(): MultiDeviceAuthService { return Container.get(MultiDeviceAuthService); }
+  public get userSettingsService(): UserSettingsService { return Container.get(UserSettingsService); }
 }
 
 export const initializeServices = async (): Promise<ServiceContainer> => {

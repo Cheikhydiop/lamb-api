@@ -118,9 +118,10 @@ class AuthService {
                     // 3. Vérifier s'il y a d'autres sessions actives
                     const multiDeviceAuthService = new MultiDeviceAuthService_1.MultiDeviceAuthService(this.prisma, this.emailService, this.webSocketService);
                     const { hasActiveSessions, sessions } = yield multiDeviceAuthService.checkActiveSessions(user.id);
-                    // Pour les admins, on exige TOUJOURS la vérification, même si c'est la seule session
-                    if (hasActiveSessions || isAdmin) {
-                        logger_1.default.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin}, NewDevice: ${!isKnownDevice})`);
+                    // CORRIGÉ: Vérification active UNIQUEMENT pour les admins
+                    // Les parieurs ne sont plus soumis à la vérification d'appareil pour le moment
+                    if (isAdmin) {
+                        logger_1.default.info(`🔒 Vérification requise pour ${user.email} (Admin: ${isAdmin})`);
                         // 4. Créer session en attente + OTP
                         const { session, otpCode } = yield multiDeviceAuthService.createPendingSession(user.id, detectedDevice, req);
                         if (!user.email) {

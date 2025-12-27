@@ -17,6 +17,7 @@ const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const EmailService_1 = require("./EmailService");
 const BetService_1 = require("./BetService");
+const NotificationService_1 = require("./NotificationService");
 const logger_1 = __importDefault(require("../utils/logger"));
 const date_fns_1 = require("date-fns");
 class FightService {
@@ -36,6 +37,10 @@ class FightService {
         }
         this.webSocketService = webSocketService;
         this.emailService = emailService || new EmailService_1.EmailService();
+        // Initialize NotificationService for DB persistence + WebSocket
+        if (webSocketService) {
+            this.notificationService = new NotificationService_1.NotificationService(this.prisma, webSocketService);
+        }
     }
     requestFightValidationOTP(adminId, fightId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -73,8 +78,17 @@ class FightService {
                         userId: adminId
                     }
                 });
+                // En DEV, logger le code pour faciliter les tests
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log('🔓 [DEV] OTP Code pour validation:', code);
+                }
                 // Envoyer l'email
-                yield this.emailService.sendFightValidationOTP(admin.email, code, fight.title);
+                try {
+                    yield this.emailService.sendFightValidationOTP(admin.email, code, fight.title);
+                }
+                catch (e) {
+                    logger_1.default.warn('Erreur envoi email OTP (ignoré en dev):', e);
+                }
                 return { success: true, message: 'OTP envoyé avec succès' };
             }
             catch (error) {
@@ -86,6 +100,7 @@ class FightService {
     // ========== COMBATS INDIVIDUELS ==========
     createFight(data) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
                 // Vérifier que les deux lutteurs existent et sont actifs
                 const fighters = yield this.prisma.fighter.findMany({
@@ -109,6 +124,9 @@ class FightService {
                         scheduledAt: new Date(data.scheduledAt),
                         fighterAId: data.fighterAId,
                         fighterBId: data.fighterBId,
+                        oddsA: (_a = data.oddsA) !== null && _a !== void 0 ? _a : 1.0,
+                        oddsB: (_b = data.oddsB) !== null && _b !== void 0 ? _b : 1.0,
+                        dayEventId: data.dayEventId,
                         status: client_1.FightStatus.SCHEDULED
                     },
                     include: {
@@ -202,7 +220,12 @@ class FightService {
                             fighterA: true,
                             fighterB: true,
                             dayEvent: true,
-                            result: true
+                            result: true,
+                            _count: {
+                                select: {
+                                    bets: true
+                                }
+                            }
                         },
                         take: limit,
                         skip: offset,
@@ -590,18 +613,19 @@ class FightService {
                         }
                     });
                 }));
-                // Notification WebSocket
-                if (this.webSocketService && this.webSocketService.isInitialized()) {
+                // Notification (sauvegarde DB + WebSocket)
+                if (this.notificationService) {
                     try {
-                        this.webSocketService.broadcastNotification({
+                        yield this.notificationService.sendNotification({
+                            userId: bet.creatorId,
                             type: 'BET_CANCELLED',
                             title: 'Pari remboursé',
                             message: `Votre pari de ${bet.amount} F a été annulé (combat terminé).`,
-                            timestamp: new Date().toISOString()
-                        }, bet.creatorId);
+                            data: { betId: bet.id, reason: 'FIGHT_FINISHED' }
+                        });
                     }
                     catch (wsError) {
-                        logger_1.default.warn(`Erreur envoi notif WS pour pari ${bet.id}:`, wsError);
+                        logger_1.default.warn(`Erreur envoi notif pour pari ${bet.id}:`, wsError);
                     }
                 }
             }
@@ -654,24 +678,26 @@ class FightService {
                             notes: `Remboursement match nul - Pari ${bet.id}`
                         }
                     });
-                    // Notification WebSocket pour l'accepteur
-                    if (this.webSocketService && this.webSocketService.isInitialized()) {
-                        this.webSocketService.broadcastNotification({
+                    // Notification pour l'accepteur (sauvegarde DB + WebSocket)
+                    if (this.notificationService) {
+                        yield this.notificationService.sendNotification({
+                            userId: bet.acceptorId,
                             type: 'BET_REFUNDED',
                             title: 'Pari remboursé',
                             message: `Votre pari de ${betAmount} F sur le combat a été remboursé (match nul).`,
-                            timestamp: new Date().toISOString()
-                        }, bet.acceptorId);
+                            data: { betId: bet.id, reason: 'DRAW' }
+                        });
                     }
                 }
-                // Notification WebSocket pour le créateur
-                if (this.webSocketService && this.webSocketService.isInitialized()) {
-                    this.webSocketService.broadcastNotification({
+                // Notification pour le créateur (sauvegarde DB + WebSocket)
+                if (this.notificationService) {
+                    yield this.notificationService.sendNotification({
+                        userId: bet.creatorId,
                         type: 'BET_REFUNDED',
                         title: 'Pari remboursé',
                         message: `Votre pari de ${betAmount} F sur le combat a été remboursé (match nul).`,
-                        timestamp: new Date().toISOString()
-                    }, bet.creatorId);
+                        data: { betId: bet.id, reason: 'DRAW' }
+                    });
                 }
                 // Mettre à jour le pari
                 yield this.prisma.bet.update({
@@ -728,25 +754,49 @@ class FightService {
                 });
                 logger_1.default.info(`Wallet gagnant ${winnerId} mis à jour`);
                 logger_1.default.info(`Wallet gagnant ${winnerId} mis à jour`);
-                // Notification WebSocket pour le gagnant
-                if (this.webSocketService && this.webSocketService.isInitialized()) {
-                    this.webSocketService.broadcastNotification({
-                        type: 'BET_WON',
+                // Notification pour le gagnant (sauvegarde DB + WebSocket)
+                if (this.notificationService) {
+                    yield this.notificationService.sendNotification({
+                        userId: winnerId,
+                        type: 'BET_WON', // NotificationType.BET_WON si l'enum l'a
                         title: 'Vous avez gagné !',
                         message: `Félicitations ! Vous avez remporté ${winAmount} F sur votre pari.`,
-                        data: { betId: bet.id, amount: winAmount },
-                        timestamp: new Date().toISOString()
-                    }, winnerId);
+                        data: { betId: bet.id, amount: winAmount }
+                    });
                 }
-                // Notification WebSocket pour le perdant
-                if (loserId && this.webSocketService && this.webSocketService.isInitialized()) {
-                    this.webSocketService.broadcastNotification({
+                // Envoi explicite de l'événement BET_WON pour mise à jour structurée
+                if (this.webSocketService && this.webSocketService.isInitialized()) {
+                    this.webSocketService.broadcastBetUpdate({
+                        betId: bet.id,
+                        fightId: bet.fightId,
+                        userId: winnerId,
+                        amount: betAmount,
+                        chosenFighter: bet.chosenFighter,
+                        status: 'WON',
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                // Notification pour le perdant (sauvegarde DB + WebSocket)
+                if (loserId && this.notificationService) {
+                    yield this.notificationService.sendNotification({
+                        userId: loserId,
                         type: 'BET_LOST',
                         title: 'Pari perdu',
                         message: `Désolé, votre pari de ${betAmount} F est perdant.`,
-                        data: { betId: bet.id },
+                        data: { betId: bet.id }
+                    });
+                }
+                // Envoi explicite de l'événement BET_LOST
+                if (loserId && this.webSocketService && this.webSocketService.isInitialized()) {
+                    this.webSocketService.broadcastBetUpdate({
+                        betId: bet.id,
+                        fightId: bet.fightId,
+                        userId: loserId,
+                        amount: betAmount,
+                        chosenFighter: bet.chosenFighter,
+                        status: 'LOST',
                         timestamp: new Date().toISOString()
-                    }, loserId);
+                    });
                 }
                 // Créer la transaction de gain
                 const winTransaction = yield this.prisma.transaction.create({
@@ -759,28 +809,17 @@ class FightService {
                     }
                 });
                 logger_1.default.info(`Transaction de gain créée: ${winTransaction.id}`);
-                // Créer la transaction de commission (nécessaire pour le modèle Commission)
-                const commissionTransaction = yield this.prisma.transaction.create({
-                    data: {
-                        type: client_1.TransactionType.COMMISSION,
-                        amount: commissionBigInt,
-                        userId: 'system', // ID système pour les commissions
-                        status: client_1.TransactionStatus.CONFIRMED,
-                        notes: `Commission sur pari ${bet.id}`
-                    }
-                });
-                logger_1.default.info(`Transaction de commission créée: ${commissionTransaction.id}`);
-                // Enregistrer la commission dans le modèle Commission
+                // Enregistrer la commission directement (liée à la transaction de gain du gagnant)
                 yield this.prisma.commission.create({
                     data: {
                         betId: bet.id,
                         amount: commissionBigInt,
                         type: 'BET',
                         percentage: this.COMMISSION_PERCENTAGE,
-                        transactionId: commissionTransaction.id
+                        transactionId: winTransaction.id // Utiliser la transaction de gain du gagnant
                     }
                 });
-                logger_1.default.info(`Commission enregistrée: ${commission} (${this.COMMISSION_PERCENTAGE}%)`);
+                logger_1.default.info(`Commission enregistrée: ${commission} FCFA (${this.COMMISSION_PERCENTAGE}%) pour pari ${bet.id}`);
                 // Créer le winning
                 yield this.prisma.winning.create({
                     data: {
@@ -923,24 +962,26 @@ class FightService {
     createDayEvent(data) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Validation pour 5 combats
-                if (!data.fights || data.fights.length !== 5) {
-                    throw new Error('Une journée de lutte doit avoir exactement 5 combats');
-                }
-                const fighterIds = data.fights.flatMap(f => [f.fighterAId, f.fighterBId]);
-                const uniqueFighters = new Set(fighterIds);
-                if (uniqueFighters.size !== 10) {
-                    throw new Error('Chaque lutteur ne doit combattre qu\'une seule fois dans la journée (10 lutteurs attendus)');
+                // Validation pour 5 combats (si fournis)
+                if (data.fights) {
+                    if (data.fights.length !== 5) {
+                        throw new Error('Une journée de lutte doit avoir exactement 5 combats si spécifiés');
+                    }
+                    const fighterIds = data.fights.flatMap(f => [f.fighterAId, f.fighterBId]);
+                    const uniqueFighters = new Set(fighterIds);
+                    if (uniqueFighters.size !== 10) {
+                        throw new Error('Chaque lutteur ne doit combattre qu\'une seule fois dans la journée (10 lutteurs attendus)');
+                    }
+                    const orders = data.fights.map(f => f.order);
+                    const uniqueOrders = new Set(orders);
+                    if (uniqueOrders.size !== 5 || Math.min(...orders) !== 1 || Math.max(...orders) !== 5) {
+                        throw new Error('Les combats doivent être numérotés de 1 à 5 sans répétition');
+                    }
                 }
                 const eventDate = new Date(data.date);
                 const now = new Date();
                 if (eventDate <= now) {
                     throw new Error('La date de la journée doit être dans le futur');
-                }
-                const orders = data.fights.map(f => f.order);
-                const uniqueOrders = new Set(orders);
-                if (uniqueOrders.size !== 5 || Math.min(...orders) !== 1 || Math.max(...orders) !== 5) {
-                    throw new Error('Les combats doivent être numérotés de 1 à 5 sans répétition');
                 }
                 // 1. Créez la journée
                 const dayEvent = yield this.prisma.dayEvent.create({
@@ -955,31 +996,33 @@ class FightService {
                         isFeatured: data.isFeatured || false
                     }
                 });
-                // 2. Créez les combats un par un
+                // 2. Créez les combats un par un (si fournis)
                 const fights = [];
-                for (const fightData of data.fights) {
-                    // Heure simple basée sur l'ordre
-                    const fightDateTime = new Date(eventDate);
-                    const baseHour = 20;
-                    const hourIncrement = fightData.order - 1; // 20:00, 21:00, 22:00...
-                    fightDateTime.setHours(baseHour + hourIncrement, 0, 0, 0);
-                    const fight = yield this.prisma.fight.create({
-                        data: {
-                            dayEventId: dayEvent.id,
-                            fighterAId: fightData.fighterAId,
-                            fighterBId: fightData.fighterBId,
-                            title: `Combat ${fightData.order}`,
-                            location: data.location,
-                            order: fightData.order,
-                            scheduledAt: fightDateTime,
-                            status: client_1.FightStatus.SCHEDULED
-                        },
-                        include: {
-                            fighterA: true,
-                            fighterB: true
-                        }
-                    });
-                    fights.push(fight);
+                if (data.fights) {
+                    for (const fightData of data.fights) {
+                        // Heure simple basée sur l'ordre
+                        const fightDateTime = new Date(eventDate);
+                        const baseHour = 20;
+                        const hourIncrement = fightData.order - 1; // 20:00, 21:00, 22:00...
+                        fightDateTime.setHours(baseHour + hourIncrement, 0, 0, 0);
+                        const fight = yield this.prisma.fight.create({
+                            data: {
+                                dayEventId: dayEvent.id,
+                                fighterAId: fightData.fighterAId,
+                                fighterBId: fightData.fighterBId,
+                                title: `Combat ${fightData.order}`,
+                                location: data.location,
+                                order: fightData.order,
+                                scheduledAt: fightDateTime,
+                                status: client_1.FightStatus.SCHEDULED
+                            },
+                            include: {
+                                fighterA: true,
+                                fighterB: true
+                            }
+                        });
+                        fights.push(fight);
+                    }
                 }
                 logger_1.default.info(`Journée créée: ${dayEvent.id} - ${dayEvent.title}`);
                 return Object.assign(Object.assign({}, dayEvent), { fights });

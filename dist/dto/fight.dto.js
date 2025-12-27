@@ -42,6 +42,23 @@ __decorate([
     (0, class_validator_1.IsUUID)(),
     __metadata("design:type", String)
 ], CreateFightDTO.prototype, "fighterBId", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1.0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateFightDTO.prototype, "oddsA", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1.0),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreateFightDTO.prototype, "oddsB", void 0);
+__decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateFightDTO.prototype, "dayEventId", void 0);
 class UpdateFightStatusDTO {
 }
 exports.UpdateFightStatusDTO = UpdateFightStatusDTO;
@@ -192,6 +209,7 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_transformer_1.Type)(() => FightInDayEventDTO),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Array)
 ], CreateDayEventDTO.prototype, "fights", void 0);
 class UpdateDayEventDTO {

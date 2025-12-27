@@ -36,9 +36,11 @@ class BetService {
                 if (!user) {
                     throw new Error('Utilisateur non trouvé');
                 }
+                /*
                 if (!user.isActive) {
-                    throw new Error('Compte utilisateur désactivé');
+                  throw new Error('Compte utilisateur désactivé');
                 }
+                */
                 // Vérifier le combat
                 const fight = yield this.prisma.fight.findUnique({
                     where: { id: data.fightId },
@@ -65,9 +67,11 @@ class BetService {
                 const fightStartTime = fight.scheduledAt || fight.dayEvent.date;
                 const now = new Date();
                 const thirtyMinutesBeforeFight = (0, date_fns_1.addMinutes)(fightStartTime, -30);
-                if ((0, date_fns_1.isAfter)(now, thirtyMinutesBeforeFight)) {
-                    throw new Error('Impossible de parier moins de 30 minutes avant le combat');
+                /*
+                if (isAfter(now, thirtyMinutesBeforeFight)) {
+                  throw new Error('Impossible de parier moins de 30 minutes avant le combat');
                 }
+                */
                 // Vérifier les fonds disponibles
                 const wallet = yield this.prisma.wallet.findUnique({
                     where: { userId }
@@ -198,6 +202,21 @@ class BetService {
                 }
                 catch (broadcastError) {
                     logger_1.default.error('Erreur broadcast nouveau pari:', broadcastError);
+                }
+                // Broadcast Wallet Update for Creator
+                try {
+                    const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId } });
+                    if (updatedWallet) {
+                        this.webSocketService.broadcastWalletUpdate({
+                            userId,
+                            balance: Number(updatedWallet.balance),
+                            lockedBalance: Number(updatedWallet.lockedBalance),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+                catch (wsError) {
+                    logger_1.default.error('Erreur broadcast wallet update (createBet):', wsError);
                 }
                 logger_1.default.info(`Pari créé: ${bet.id} par ${user.name} pour ${bet.amount} FCFA`);
                 return bet;
@@ -435,6 +454,31 @@ class BetService {
                 catch (notifError) {
                     logger_1.default.error('Erreur notification accepteur:', notifError);
                 }
+                // Broadcast Wallet Update for Acceptor
+                try {
+                    const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId: acceptorId } });
+                    if (updatedWallet) {
+                        this.webSocketService.broadcastWalletUpdate({
+                            userId: acceptorId,
+                            balance: Number(updatedWallet.balance),
+                            lockedBalance: Number(updatedWallet.lockedBalance),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+                catch (wsError) {
+                    logger_1.default.error('Erreur broadcast wallet update (acceptBet):', wsError);
+                }
+                // Broadcast Bet Update
+                this.webSocketService.broadcastBetUpdate({
+                    betId: betId,
+                    fightId: bet.fightId,
+                    userId: bet.creatorId,
+                    amount: Number(bet.amount),
+                    chosenFighter: bet.chosenFighter,
+                    status: 'ACCEPTED',
+                    timestamp: new Date().toISOString()
+                });
                 return result;
             }
             catch (error) {
@@ -608,6 +652,39 @@ class BetService {
                 }
                 yield Promise.all(notifications);
                 logger_1.default.info(`Pari annulé: ${bet.id} par ${isAdmin ? 'admin' : 'utilisateur'} ${userId}`);
+                // Broadcast des mises à jour de portefeuille
+                // Pour le créateur
+                try {
+                    const creatorWallet = yield this.prisma.wallet.findUnique({ where: { userId: bet.creatorId } });
+                    if (creatorWallet) {
+                        this.webSocketService.broadcastWalletUpdate({
+                            userId: bet.creatorId,
+                            balance: Number(creatorWallet.balance),
+                            lockedBalance: Number(creatorWallet.lockedBalance),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+                catch (e) {
+                    console.error('WS Wallet update error', e);
+                }
+                // Pour l'accepteur
+                if (bet.acceptorId) {
+                    try {
+                        const acceptorWallet = yield this.prisma.wallet.findUnique({ where: { userId: bet.acceptorId } });
+                        if (acceptorWallet) {
+                            this.webSocketService.broadcastWalletUpdate({
+                                userId: bet.acceptorId,
+                                balance: Number(acceptorWallet.balance),
+                                lockedBalance: Number(acceptorWallet.lockedBalance),
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    }
+                    catch (e) {
+                        console.error('WS Wallet update error', e);
+                    }
+                }
             }
             catch (error) {
                 logger_1.default.error('Erreur dans les opérations post-annulation:', error);
@@ -740,7 +817,8 @@ class BetService {
                             }
                         });
                         // Enregistrer la commission
-                        yield tx.commission.create({
+                        logger_1.default.info(`[COMMISSION DEBUG] Creating commission for bet ${bet.id}: amount=${commission}, converted=${BigInt(Math.floor(commission))}`);
+                        const createdCommission = yield tx.commission.create({
                             data: {
                                 transactionId: transaction.id,
                                 type: 'BET',
@@ -748,6 +826,7 @@ class BetService {
                                 betId: bet.id
                             }
                         });
+                        logger_1.default.info(`[COMMISSION DEBUG] Commission created successfully: ${createdCommission.id}`);
                     }
                     return updatedBet;
                 }), {
@@ -853,6 +932,39 @@ class BetService {
                     ]);
                 }
                 logger_1.default.info(`Pari traité: ${bet.id} - Statut: ${bet.status}`);
+                // Broadcast des mises à jour de portefeuille pour les deux parties
+                // Créateur
+                try {
+                    const creatorWallet = yield this.prisma.wallet.findUnique({ where: { userId: bet.creatorId } });
+                    if (creatorWallet) {
+                        this.webSocketService.broadcastWalletUpdate({
+                            userId: bet.creatorId,
+                            balance: Number(creatorWallet.balance),
+                            lockedBalance: Number(creatorWallet.lockedBalance),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }
+                catch (e) {
+                    console.error('WS Wallet update error', e);
+                }
+                // Accepteur (si existe)
+                if (bet.acceptorId) {
+                    try {
+                        const acceptorWallet = yield this.prisma.wallet.findUnique({ where: { userId: bet.acceptorId } });
+                        if (acceptorWallet) {
+                            this.webSocketService.broadcastWalletUpdate({
+                                userId: bet.acceptorId,
+                                balance: Number(acceptorWallet.balance),
+                                lockedBalance: Number(acceptorWallet.lockedBalance),
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    }
+                    catch (e) {
+                        console.error('WS Wallet update error', e);
+                    }
+                }
             }
             catch (error) {
                 logger_1.default.error('Erreur dans les opérations post-traitement:', error);

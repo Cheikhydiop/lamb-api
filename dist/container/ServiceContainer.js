@@ -27,6 +27,7 @@ const EmailVerificationService_1 = require("../services/EmailVerificationService
 const AuditService_1 = require("../services/AuditService");
 const BetService_1 = require("../services/BetService");
 const MultiDeviceAuthService_1 = require("../services/MultiDeviceAuthService");
+const UserSettingsService_1 = require("../services/UserSettingsService");
 // Import Repositories
 const UserRepository_1 = require("../repositories/UserRepository");
 const WalletRepository_1 = require("../repositories/WalletRepository");
@@ -119,6 +120,9 @@ class ServiceContainer {
         const multiDeviceAuthService = new MultiDeviceAuthService_1.MultiDeviceAuthService(this.prisma, emailService, webSocketService);
         typedi_1.Container.set(MultiDeviceAuthService_1.MultiDeviceAuthService, multiDeviceAuthService);
         typedi_1.Container.set('multiDeviceAuthService', multiDeviceAuthService);
+        const userSettingsService = new UserSettingsService_1.UserSettingsService(this.prisma);
+        typedi_1.Container.set(UserSettingsService_1.UserSettingsService, userSettingsService);
+        typedi_1.Container.set('userSettingsService', userSettingsService);
         logger_1.default.info('Services initialized');
     }
     // Getters for public access (Backward Compatibility)
@@ -136,6 +140,7 @@ class ServiceContainer {
     get auditMiddleware() { return typedi_1.Container.get(AuditMiddleware_1.AuditMiddleware); }
     get betService() { return typedi_1.Container.get(BetService_1.BetService); }
     get multiDeviceAuthService() { return typedi_1.Container.get(MultiDeviceAuthService_1.MultiDeviceAuthService); }
+    get userSettingsService() { return typedi_1.Container.get(UserSettingsService_1.UserSettingsService); }
 }
 exports.ServiceContainer = ServiceContainer;
 const initializeServices = () => __awaiter(void 0, void 0, void 0, function* () {

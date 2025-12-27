@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { ServiceContainer } from '../container/ServiceContainer';
 import { requireAuth, requireRole } from '../middlewares/authMiddleware';
 import { asyncHandler } from '../middlewares/asyncHandler';
+import { UserSettingsController } from '../controllers/UserSettingsController';
 
 const router = Router();
 
@@ -43,6 +44,12 @@ router.get('/profile', requireAuth, asyncHandler(async (req: Request, res: Respo
   }
 }));
 
+// Get user settings (profile + wallet + preferences)
+router.get('/settings', requireAuth, UserSettingsController.getSettings);
+
+// Update user preferences
+router.patch('/preferences', requireAuth, UserSettingsController.updatePreferences);
+
 /**
  * @swagger
  * /api/user/profile:
@@ -65,20 +72,9 @@ router.get('/profile', requireAuth, asyncHandler(async (req: Request, res: Respo
  *       200:
  *         description: Profile updated successfully
  */
+
 // Update user profile
-router.patch('/profile', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = (req as any).user.userId;
-    const user = await getUserService().updateUser(userId, req.body);
-    res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      data: user,
-    });
-  } catch (error) {
-    next(error);
-  }
-}));
+router.patch('/profile', requireAuth, UserSettingsController.updateProfile);
 
 // Change password
 router.post('/change-password', requireAuth, asyncHandler(async (req: Request, res: Response, next: NextFunction) => {

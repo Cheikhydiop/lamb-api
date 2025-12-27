@@ -63,18 +63,17 @@ class FighterService {
     createFighter(data) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (data.birthDate) {
-                    const existing = yield this.prisma.fighter.findUnique({
-                        where: {
-                            name_birthDate: {
-                                name: data.name,
-                                birthDate: data.birthDate
-                            }
+                // Vérifier l'existence d'un lutteur avec le même nom (insensible à la casse)
+                const existing = yield this.prisma.fighter.findFirst({
+                    where: {
+                        name: {
+                            equals: data.name,
+                            mode: 'insensitive'
                         }
-                    });
-                    if (existing) {
-                        throw new Error('Un lutteur avec ce nom et cette date de naissance existe déjà');
                     }
+                });
+                if (existing) {
+                    throw new Error(`Un lutteur avec le nom "${data.name}" existe déjà`);
                 }
                 const fighter = yield this.prisma.fighter.create({
                     data: {
@@ -144,6 +143,22 @@ class FighterService {
                 });
                 if (!fighter) {
                     throw new Error('Lutteur non trouvé');
+                }
+                if (data.name) {
+                    const existingName = yield this.prisma.fighter.findFirst({
+                        where: {
+                            name: {
+                                equals: data.name,
+                                mode: 'insensitive'
+                            },
+                            id: {
+                                not: fighterId
+                            }
+                        }
+                    });
+                    if (existingName) {
+                        throw new Error(`Un lutteur avec le nom "${data.name}" existe déjà`);
+                    }
                 }
                 const updated = yield this.prisma.fighter.update({
                     where: { id: fighterId },

@@ -93,10 +93,10 @@ BetController.acceptBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
  * Annuler un pari
  */
 BetController.cancelBet = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _b, _c, _d;
     const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
     const { betId } = req.params;
-    const isAdmin = ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) === 'ADMIN';
+    const isAdmin = ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) === 'ADMIN' || ((_d = req.user) === null || _d === void 0 ? void 0 : _d.role) === 'SUPER_ADMIN';
     if (!userId) {
         res.status(401).json({
             success: false,
@@ -275,8 +275,8 @@ BetController.getBetStats = (0, asyncHandler_1.asyncHandler)((req, res) => __awa
  * Régler un pari (admin seulement)
  */
 BetController.settleBet = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    const isAdmin = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === 'ADMIN';
+    var _b, _c;
+    const isAdmin = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === 'ADMIN' || ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) === 'SUPER_ADMIN';
     const { betId } = req.params;
     const { winner } = req.body;
     if (!isAdmin) {
@@ -312,8 +312,8 @@ BetController.settleBet = (0, asyncHandler_1.asyncHandler)((req, res) => __await
  * Vérifier et expirer les paris (tâche cron/admin)
  */
 BetController.checkExpiredBets = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
-    const isAdmin = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === 'ADMIN';
+    var _b, _c;
+    const isAdmin = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === 'ADMIN' || ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) === 'SUPER_ADMIN';
     if (!isAdmin) {
         res.status(403).json({
             success: false,

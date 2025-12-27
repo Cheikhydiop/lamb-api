@@ -115,8 +115,15 @@ router.post('/:transactionId/confirm', authMiddleware_1.requireAdmin, (req, res,
  *       200:
  *         description: List of transactions
  */
+// ⚠️ IMPORTANT: Routes statiques AVANT routes dynamiques
 // List transactions
 router.get('/', authMiddleware_1.requireAuth, (0, validation_middleware_1.validateRequest)(transaction_dto_1.ListTransactionsDTO), (req, res, next) => {
+    const transactionController = typedi_1.Container.get(transaction_controller_1.TransactionController);
+    transactionController.listTransactions(req, res, next);
+});
+// Alias /history pour rétrocompatibilité avec ancien frontend
+// TODO: Supprimer après que Vercel ait redéployé le nouveau frontend
+router.get('/history', authMiddleware_1.requireAuth, (0, validation_middleware_1.validateRequest)(transaction_dto_1.ListTransactionsDTO), (req, res, next) => {
     const transactionController = typedi_1.Container.get(transaction_controller_1.TransactionController);
     transactionController.listTransactions(req, res, next);
 });
@@ -125,7 +132,8 @@ router.get('/wallet/balance', authMiddleware_1.requireAuth, (req, res, next) => 
     const transactionController = typedi_1.Container.get(transaction_controller_1.TransactionController);
     transactionController.getWalletBalance(req, res, next);
 });
-// Get transaction by ID
+// Get transaction by ID - DOIT ÊTRE EN DERNIER
+// Sinon '/history' serait traité comme un ID
 router.get('/:transactionId', authMiddleware_1.requireAuth, (req, res, next) => {
     const transactionController = typedi_1.Container.get(transaction_controller_1.TransactionController);
     transactionController.getTransactionById(req, res, next);

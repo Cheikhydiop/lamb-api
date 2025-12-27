@@ -95,7 +95,7 @@ class AdminController {
                 const now = new Date();
                 const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 const startOfDay = new Date(now.setHours(0, 0, 0, 0));
-                const [totalUsers, activeUsers, totalFights, upcomingFights, totalBets, pendingBets, acceptedBets, cancelledBets, pendingWithdrawals, totalVolumeAgg, todayDepositsAgg, todayWithdrawalsAgg] = yield Promise.all([
+                const [totalUsers, activeUsers, totalFights, upcomingFights, totalBets, pendingBets, acceptedBets, cancelledBets, pendingWithdrawals, totalVolumeAgg, todayDepositsAgg, todayWithdrawalsAgg, totalCommissionAgg, todayCommissionAgg] = yield Promise.all([
                     prisma.user.count(),
                     prisma.user.count({
                         where: {
@@ -130,6 +130,15 @@ class AdminController {
                             createdAt: { gte: startOfDay }
                         },
                         _sum: { amount: true }
+                    }),
+                    prisma.commission.aggregate({
+                        _sum: { amount: true }
+                    }),
+                    prisma.commission.aggregate({
+                        where: {
+                            deductedAt: { gte: startOfDay }
+                        },
+                        _sum: { amount: true }
                     })
                 ]);
                 res.status(200).json({
@@ -146,7 +155,63 @@ class AdminController {
                         pendingWithdrawals,
                         totalVolume: Number(totalVolumeAgg._sum.amount || 0),
                         todayDeposits: Number(todayDepositsAgg._sum.amount || 0),
-                        todayWithdrawals: Number(todayWithdrawalsAgg._sum.amount || 0)
+                        todayWithdrawals: Number(todayWithdrawalsAgg._sum.amount || 0),
+                        totalCommission: Number(totalCommissionAgg._sum.amount || 0),
+                        todayCommission: Number(todayCommissionAgg._sum.amount || 0)
+                    }
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    static getAnalytics(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const prisma = typedi_1.default.get(client_1.PrismaClient);
+                const days = 7;
+                const now = new Date();
+                const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+                // Helper to format BigInt
+                const serialize = (data) => data.map(row => ({
+                    date: row.date.toISOString().split('T')[0],
+                    total: Number(row.total || 0)
+                }));
+                // 1. Deposits per day
+                const depositsRaw = yield prisma.$queryRaw `
+                SELECT DATE("createdAt") as date, SUM(amount) as total
+                FROM transactions
+                WHERE type = 'DEPOSIT' 
+                AND status = 'CONFIRMED' 
+                AND "createdAt" >= ${startDate}
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
+                // 2. Withdrawals per day
+                const withdrawalsRaw = yield prisma.$queryRaw `
+                SELECT DATE("createdAt") as date, SUM(amount) as total
+                FROM transactions
+                WHERE type = 'WITHDRAWAL' 
+                AND status = 'CONFIRMED' 
+                AND "createdAt" >= ${startDate}
+                GROUP BY DATE("createdAt")
+                ORDER BY date ASC
+            `;
+                // 3. Revenue (Commissions) per day
+                const commissionsRaw = yield prisma.$queryRaw `
+                SELECT DATE("deductedAt") as date, SUM(amount) as total
+                FROM commissions
+                WHERE "deductedAt" >= ${startDate}
+                GROUP BY DATE("deductedAt")
+                ORDER BY date ASC
+            `;
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        deposits: serialize(depositsRaw),
+                        withdrawals: serialize(withdrawalsRaw),
+                        commissions: serialize(commissionsRaw)
                     }
                 });
             }

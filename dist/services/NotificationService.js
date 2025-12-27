@@ -99,8 +99,8 @@ let NotificationService = class NotificationService {
                     skip: offset,
                     orderBy: { createdAt: 'desc' },
                 });
-                // Parse JSON data field
-                return notifications.map(n => (Object.assign(Object.assign({}, n), { data: n.data ? JSON.parse(n.data) : null })));
+                // Prisma already returns Json fields as objects, no need to parse
+                return notifications.map(n => (Object.assign(Object.assign({}, n), { data: n.data || null })));
             }
             catch (error) {
                 logger_1.default.error('Error fetching notifications', error);
@@ -115,7 +115,8 @@ let NotificationService = class NotificationService {
                     where: { userId, isRead: false },
                     orderBy: { createdAt: 'desc' },
                 });
-                return notifications.map(n => (Object.assign(Object.assign({}, n), { data: n.data ? JSON.parse(n.data) : null })));
+                // Prisma already returns Json fields as objects, no need to parse
+                return notifications.map(n => (Object.assign(Object.assign({}, n), { data: n.data || null })));
             }
             catch (error) {
                 logger_1.default.error('Error fetching unread notifications', error);

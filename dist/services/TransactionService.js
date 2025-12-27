@@ -50,11 +50,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var TransactionService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionService = void 0;
 const typedi_1 = require("typedi");
 const client_1 = require("@prisma/client");
-let TransactionService = class TransactionService {
+const WebSocketService_1 = require("./WebSocketService");
+let TransactionService = TransactionService_1 = class TransactionService {
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -91,6 +93,34 @@ let TransactionService = class TransactionService {
                     where: { userId },
                     data: { balance: { decrement: data.amount } },
                 });
+            }
+            // Notify via WebSocket
+            try {
+                const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId } });
+                if (updatedWallet) {
+                    WebSocketService_1.WebSocketService.getInstance().broadcastWalletUpdate({
+                        userId,
+                        balance: Number(updatedWallet.balance),
+                        lockedBalance: Number(updatedWallet.lockedBalance),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+            catch (e) {
+                console.error('Failed to broadcast wallet update', e);
+            }
+            try {
+                WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                    transactionId: transaction.id,
+                    userId: transaction.userId,
+                    type: transaction.type,
+                    amount: Number(transaction.amount),
+                    status: (transaction.status || 'CONFIRMED'),
+                    timestamp: new Date().toISOString()
+                });
+            }
+            catch (e) {
+                console.error('Failed to broadcast transaction update', e);
             }
             return transaction;
         });
@@ -163,7 +193,55 @@ let TransactionService = class TransactionService {
                         externalRef: result.transactionId,
                     },
                 });
-                return Object.assign(Object.assign({}, transaction), { externalRef: result.transactionId, message: result.message, requiresUserAction: result.requiresUserAction });
+                // 🎯 AUTO-VALIDATION: Valider automatiquement si montant < 100 000 FCFA
+                const requiresAdminApproval = data.amount >= TransactionService_1.AUTO_APPROVE_THRESHOLD;
+                if (!requiresAdminApproval) {
+                    // Auto-approuver et créditer le wallet
+                    yield this.prisma.transaction.update({
+                        where: { id: transaction.id },
+                        data: {
+                            status: 'CONFIRMED',
+                            processedAt: new Date(),
+                            notes: `Auto-approved (< 100k). ${transaction.notes || ''}`
+                        },
+                    });
+                    // Créditer le wallet
+                    yield this.prisma.wallet.update({
+                        where: { userId },
+                        data: { balance: { increment: data.amount } },
+                    });
+                    // Notifier mise à jour wallet
+                    const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId } });
+                    if (updatedWallet) {
+                        WebSocketService_1.WebSocketService.getInstance().broadcastWalletUpdate({
+                            userId,
+                            balance: Number(updatedWallet.balance),
+                            lockedBalance: Number(updatedWallet.lockedBalance),
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                    WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                        transactionId: transaction.id,
+                        userId,
+                        type: 'DEPOSIT',
+                        amount: Number(data.amount),
+                        status: 'CONFIRMED',
+                        timestamp: new Date().toISOString()
+                    });
+                    return Object.assign(Object.assign({}, transaction), { status: 'CONFIRMED', externalRef: result.transactionId, message: result.message + ' Dépôt validé automatiquement.', requiresUserAction: result.requiresUserAction, autoApproved: true });
+                }
+                else {
+                    // Montant élevé - Nécessite validation admin
+                    WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                        transactionId: transaction.id,
+                        userId,
+                        type: 'DEPOSIT',
+                        amount: Number(data.amount),
+                        status: 'PENDING',
+                        timestamp: new Date().toISOString()
+                    });
+                    return Object.assign(Object.assign({}, transaction), { externalRef: result.transactionId, message: result.message + ' En attente de validation admin (montant ≥ 100 000 FCFA).', requiresUserAction: result.requiresUserAction, requiresAdminApproval: true });
+                }
             }
             catch (error) {
                 yield this.prisma.transaction.update({
@@ -232,6 +310,16 @@ let TransactionService = class TransactionService {
                     where: { userId },
                     data: { balance: { decrement: data.amount } },
                 });
+                // Notify wallet update (debit)
+                const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId } });
+                if (updatedWallet) {
+                    WebSocketService_1.WebSocketService.getInstance().broadcastWalletUpdate({
+                        userId,
+                        balance: Number(updatedWallet.balance),
+                        lockedBalance: Number(updatedWallet.lockedBalance),
+                        timestamp: new Date().toISOString()
+                    });
+                }
                 // Initiate payment with provider
                 const { PaymentService } = yield Promise.resolve().then(() => __importStar(require('./PaymentService')));
                 const paymentService = new PaymentService();
@@ -259,7 +347,48 @@ let TransactionService = class TransactionService {
                         externalRef: result.transactionId,
                     },
                 });
-                return Object.assign(Object.assign({}, transaction), { externalRef: result.transactionId, message: result.message });
+                // 🎯 AUTO-VALIDATION: Valider automatiquement si montant < 100 000 FCFA
+                const requiresAdminApproval = data.amount >= TransactionService_1.AUTO_APPROVE_THRESHOLD;
+                if (!requiresAdminApproval) {
+                    // Auto-approuver le retrait
+                    yield this.prisma.transaction.update({
+                        where: { id: transaction.id },
+                        data: {
+                            status: 'CONFIRMED',
+                            processedAt: new Date(),
+                            notes: `Auto-approved (< 100k). ${transaction.notes || ''}`
+                        },
+                    });
+                    WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                        transactionId: transaction.id,
+                        userId,
+                        type: 'WITHDRAWAL',
+                        amount: Number(data.amount),
+                        status: 'CONFIRMED',
+                        timestamp: new Date().toISOString()
+                    });
+                    return Object.assign(Object.assign({}, transaction), { status: 'CONFIRMED', externalRef: result.transactionId, message: result.message + ' Retrait validé automatiquement.', autoApproved: true });
+                }
+                else {
+                    // Montant élevé - Nécessite validation admin
+                    // Note: Le wallet a déjà été débité ligne 250-253
+                    // En attente de validation admin, sinon rollback
+                    yield this.prisma.transaction.update({
+                        where: { id: transaction.id },
+                        data: {
+                            notes: `${transaction.notes || ''} - En attente validation admin (≥100k)`
+                        },
+                    });
+                    WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                        transactionId: transaction.id,
+                        userId,
+                        type: 'WITHDRAWAL',
+                        amount: Number(data.amount),
+                        status: 'PENDING',
+                        timestamp: new Date().toISOString()
+                    });
+                    return Object.assign(Object.assign({}, transaction), { externalRef: result.transactionId, message: result.message + ' En attente de validation admin (montant ≥ 100 000 FCFA).', requiresAdminApproval: true });
+                }
             }
             catch (error) {
                 // Ensure rollback on any error
@@ -305,11 +434,44 @@ let TransactionService = class TransactionService {
                     });
                 }
                 else if (transaction.type === 'DEPOSIT') {
+                    // Déjà débité ? Non, un dépôt échoué ne nécessite pas de correction de solde car il n'a pas été crédité (sauf si PENDING -> CONFIRMED -> FAILED ?)
+                    // Dans createTransaction (type DEPOSIT), on crédite tout de suite. Mais dans deposit(), on met en PENDING sans créditer.
+                    // Si c'était createTransaction, le solde est déjà haut. Si fail, on doit décrémenter.
+                    // Mais ici on parle de transactions PENDING venant de deposit().
+                    // Donc safe to ignore deposit fail here unless logic changes.
+                }
+            }
+            else if (status === 'CONFIRMED' && transaction.status !== 'CONFIRMED') {
+                // Si c'est un dépôt qui passe de PENDING à CONFIRMED, il faut créditer le wallet !
+                if (transaction.type === 'DEPOSIT') {
                     yield this.prisma.wallet.update({
                         where: { userId: transaction.userId },
-                        data: { balance: { decrement: transaction.amount } },
+                        data: { balance: { increment: transaction.amount } },
                     });
                 }
+            }
+            // Notify updates
+            try {
+                const updatedWallet = yield this.prisma.wallet.findUnique({ where: { userId: transaction.userId } });
+                if (updatedWallet) {
+                    WebSocketService_1.WebSocketService.getInstance().broadcastWalletUpdate({
+                        userId: transaction.userId,
+                        balance: Number(updatedWallet.balance),
+                        lockedBalance: Number(updatedWallet.lockedBalance),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                WebSocketService_1.WebSocketService.getInstance().broadcastTransactionUpdate({
+                    transactionId: transaction.id,
+                    userId: transaction.userId,
+                    type: transaction.type,
+                    amount: Number(transaction.amount),
+                    status: status,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            catch (e) {
+                console.error('Failed to broadcast updates', e);
             }
             return updatedTransaction;
         });
@@ -357,7 +519,9 @@ let TransactionService = class TransactionService {
     }
 };
 exports.TransactionService = TransactionService;
-exports.TransactionService = TransactionService = __decorate([
+// Seuil pour validation automatique (100 000 FCFA)
+TransactionService.AUTO_APPROVE_THRESHOLD = BigInt(100000);
+exports.TransactionService = TransactionService = TransactionService_1 = __decorate([
     (0, typedi_1.Service)(),
     __metadata("design:paramtypes", [client_1.PrismaClient])
 ], TransactionService);

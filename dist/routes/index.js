@@ -13,6 +13,7 @@ const transaction_routes_1 = __importDefault(require("./transaction.routes"));
 const user_routes_1 = __importDefault(require("./user.routes"));
 const walletRoutes_1 = __importDefault(require("./walletRoutes"));
 const notificationRoutes_1 = __importDefault(require("./notificationRoutes"));
+const mockWaveRoutes_1 = __importDefault(require("./mockWaveRoutes"));
 const security_1 = require("../middlewares/security");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 function Routes(app) {
@@ -24,6 +25,10 @@ function Routes(app) {
     app.use('/api/fighter', fighterRoutes_1.default);
     // Routes des combats (lecture publique, création admin)
     app.use('/api/fight', fightRoutes_1.default);
+    // Routes de test Wave Mock (si WAVE_MOCK_MODE activé)
+    if (process.env.WAVE_MOCK_MODE === 'true') {
+        app.use('/api/mock-wave', mockWaveRoutes_1.default);
+    }
     // ==================== ROUTES PROTÉGÉES ====================
     // Routes utilisateur (Profil, etc.)
     app.use('/api/user', authMiddleware_1.requireAuth, user_routes_1.default);

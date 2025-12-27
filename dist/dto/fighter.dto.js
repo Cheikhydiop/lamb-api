@@ -25,8 +25,13 @@ exports.UpdateFighterDTO = zod_1.z.object({
     draws: zod_1.z.number().int().min(0).optional(),
 });
 exports.ListFightersDTO = zod_1.z.object({
-    isActive: zod_1.z.boolean().optional(),
+    search: zod_1.z.string().optional(),
+    status: zod_1.z.string().optional(),
+    stable: zod_1.z.string().optional(),
+    isActive: zod_1.z.coerce.boolean().optional(),
     nationality: zod_1.z.string().optional(),
-    limit: zod_1.z.number().int().min(1).max(100).default(20),
-    offset: zod_1.z.number().int().min(0).default(0),
+    limit: zod_1.z.coerce.number().int().min(1).max(1000).default(50),
+    offset: zod_1.z.coerce.number().int().min(0).default(0),
+    orderBy: zod_1.z.enum(['name', 'wins', 'totalFights']).optional(),
+    orderDirection: zod_1.z.enum(['asc', 'desc']).optional(),
 });

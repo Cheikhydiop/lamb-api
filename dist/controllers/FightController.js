@@ -30,7 +30,7 @@ class FightController {
     // ========== COMBATS INDIVIDUELS ==========
     createFight(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 if (!adminId) {
@@ -40,7 +40,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -53,7 +53,10 @@ class FightController {
                     location: req.body.location,
                     scheduledAt: req.body.scheduledAt,
                     fighterAId: req.body.fighterAId,
-                    fighterBId: req.body.fighterBId
+                    fighterBId: req.body.fighterBId,
+                    oddsA: req.body.oddsA,
+                    oddsB: req.body.oddsB,
+                    dayEventId: req.body.dayEventId
                 };
                 // Validation basique
                 if (!fightData.title || !fightData.scheduledAt || !fightData.fighterAId || !fightData.fighterBId) {
@@ -147,7 +150,7 @@ class FightController {
     }
     updateFightStatus(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { fightId } = req.params;
@@ -158,7 +161,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -200,7 +203,7 @@ class FightController {
     }
     requestFightValidationOTP(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { fightId } = req.params;
@@ -208,7 +211,7 @@ class FightController {
                     res.status(401).json({ success: false, message: 'Non authentifié' });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({ success: false, message: 'Accès réservé aux administrateurs' });
                     return;
                 }
@@ -223,7 +226,7 @@ class FightController {
     }
     validateFightResult(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { fightId } = req.params;
@@ -234,7 +237,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -322,7 +325,7 @@ class FightController {
     // ========== JOURNÉES DE LUTTE ==========
     createDayEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 if (!adminId) {
@@ -332,7 +335,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -349,17 +352,17 @@ class FightController {
                     fights: req.body.fights
                 };
                 // Validation basique
-                if (!dayEventData.title || !dayEventData.date || !dayEventData.location || !dayEventData.fights) {
+                if (!dayEventData.title || !dayEventData.date || !dayEventData.location) {
                     res.status(400).json({
                         success: false,
-                        message: 'Champs requis manquants: title, date, location, fights'
+                        message: 'Champs requis manquants: title, date, location'
                     });
                     return;
                 }
-                if (dayEventData.fights.length !== 5) {
+                if (dayEventData.fights && dayEventData.fights.length !== 5) {
                     res.status(400).json({
                         success: false,
-                        message: 'Une journée doit avoir exactement 5 combats'
+                        message: 'Une journée doit avoir exactement 5 combats si spécifiés'
                     });
                     return;
                 }
@@ -491,7 +494,7 @@ class FightController {
     }
     updateDayEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { eventId } = req.params;
@@ -502,7 +505,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -543,7 +546,7 @@ class FightController {
     }
     deleteDayEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 const { eventId } = req.params;
@@ -554,7 +557,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'
@@ -586,7 +589,7 @@ class FightController {
     }
     expirePastFights(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c;
             try {
                 const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
                 if (!adminId) {
@@ -596,7 +599,7 @@ class FightController {
                     });
                     return;
                 }
-                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN') {
+                if (((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) !== 'ADMIN' && ((_c = req.user) === null || _c === void 0 ? void 0 : _c.role) !== 'SUPER_ADMIN') {
                     res.status(403).json({
                         success: false,
                         message: 'Accès réservé aux administrateurs'

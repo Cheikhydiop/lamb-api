@@ -14,8 +14,17 @@ const validateRequest = (schema) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         try {
-            const validatedData = yield schema.parseAsync(req.body);
-            req.body = validatedData;
+            const isGet = req.method === 'GET';
+            const dataToValidate = isGet ? req.query : req.body;
+            const validatedData = yield schema.parseAsync(dataToValidate);
+            if (isGet) {
+                // req.query is sometimes read-only/getter-only in some Express environments
+                // We update properties instead of replacing the object
+                Object.assign(req.query, validatedData);
+            }
+            else {
+                req.body = validatedData;
+            }
             next();
         }
         catch (error) {

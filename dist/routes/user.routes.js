@@ -13,6 +13,7 @@ const express_1 = require("express");
 const ServiceContainer_1 = require("../container/ServiceContainer");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const asyncHandler_1 = require("../middlewares/asyncHandler");
+const UserSettingsController_1 = require("../controllers/UserSettingsController");
 const router = (0, express_1.Router)();
 // Helper to get service instance safely
 const getUserService = () => ServiceContainer_1.ServiceContainer.getInstance().userService;
@@ -50,6 +51,10 @@ router.get('/profile', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHan
         next(error);
     }
 })));
+// Get user settings (profile + wallet + preferences)
+router.get('/settings', authMiddleware_1.requireAuth, UserSettingsController_1.UserSettingsController.getSettings);
+// Update user preferences
+router.patch('/preferences', authMiddleware_1.requireAuth, UserSettingsController_1.UserSettingsController.updatePreferences);
 /**
  * @swagger
  * /api/user/profile:
@@ -73,20 +78,7 @@ router.get('/profile', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHan
  *         description: Profile updated successfully
  */
 // Update user profile
-router.patch('/profile', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const userId = req.user.userId;
-        const user = yield getUserService().updateUser(userId, req.body);
-        res.json({
-            success: true,
-            message: 'Profile updated successfully',
-            data: user,
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-})));
+router.patch('/profile', authMiddleware_1.requireAuth, UserSettingsController_1.UserSettingsController.updateProfile);
 // Change password
 router.post('/change-password', authMiddleware_1.requireAuth, (0, asyncHandler_1.asyncHandler)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
