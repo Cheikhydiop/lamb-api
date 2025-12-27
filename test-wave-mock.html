@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Wave Mock - Lamb Ji</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .status.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🧪 Test Wave Mock</h1>
+            <span class="badge">MODE TEST - NO REAL API</span>
+
+            <div class="info">
+                ℹ️ Cette page vous permet de tester les dépôts et retraits sans avoir besoin de l'API Wave réelle.
+                Assurez-vous que le serveur est démarré avec <strong>WAVE_MOCK_MODE=true</strong>.
+            </div>
+
+            <!-- Configuration -->
+            <div class="section">
+                <div class="section-title">🔧 Configuration</div>
+                <div class="input-group">
+                    <label>URL du serveur</label>
+                    <input type="text" id="apiUrl" value="http://localhost:5000" placeholder="http://localhost:5000">
+                </div>
+                <div class="input-group">
+                    <label>Token d'authentification</label>
+                    <input type="text" id="token" placeholder="Bearer token (optionnel pour certains tests)">
+                </div>
+            </div>
+
+            <!-- Test Dépôt -->
+            <div class="section">
+                <div class="section-title">💳 Test Dépôt (Checkout)</div>
+                <div class="input-group">
+                    <label>Montant (FCFA)</label>
+                    <input type="number" id="depositAmount" value="1000" min="100" max="1500000">
+                </div>
+                <button onclick="testDeposit()">Créer un dépôt</button>
+                <div id="depositStatus" class="status"></div>
+            </div>
+
+            <!-- Test Retrait -->
+            <div class="section">
+                <div class="section-title">💸 Test Retrait (Payout)</div>
+                <div class="input-group">
+                    <label>Montant (FCFA)</label>
+                    <input type="number" id="withdrawalAmount" value="500" min="100" max="1500000">
+                </div>
+                <button onclick="testWithdrawal()">Créer un retrait</button>
+                <div id="withdrawalStatus" class="status"></div>
+            </div>
+
+            <!-- État du Mock -->
+            <div class="section">
+                <div class="section-title">📊 État du Mock</div>
+                <button onclick="getMockStatus()">Rafraîchir</button>
+                <div id="mockStats"></div>
+                <div id="mockStatus" class="status"></div>
+            </div>
+
+            <!-- Configuration Mock -->
+            <div class="section">
+                <div class="section-title">⚙️ Contrôle du Mock</div>
+                <div class="button-group">
+                    <button onclick="setSuccessRate(100)">✅ Forcer succès (100%)</button>
+                    <button onclick="setSuccessRate(0)">❌ Forcer échecs (0%)</button>
+                    <button onclick="setSuccessRate(95)">🎲 Normal (95%)</button>
+                    <button onclick="resetMock()">🔄 Réinitialiser</button>
+                </div>
+                <div id="configStatus" class="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = () => document.getElementById('apiUrl').value;
+        const TOKEN = () => document.getElementById('token').value;
+
+        function showStatus(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            el.className = `status show ${type}`;
+            el.innerHTML = message;
+        }
+
+        function getAuthHeader() {
+            const token = TOKEN();
+            if (!token) return 'Bearer demo-token';
+            // Ajouter 'Bearer ' si pas déjà présent
+            return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        }
+
+        async function testDeposit() {
+            const amount = parseInt(document.getElementById('depositAmount').value);
+            const url = `${API_URL()}/api/wallet/deposit`;
+
+            showStatus('deposit Status', '⏳ Création du dépôt en cours...', 'info');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getAuthHeader()
+                    },
+                    body: JSON.stringify({ amount })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.checkoutUrl) {
+                    showStatus('depositStatus', `
+                        ✅ Dépôt créé avec succès!<br>
+                        <strong>Transaction ID:</strong> ${data.transactionId}<br>
+                        <strong>URL:</strong> <a href="${data.checkoutUrl}" target="_blank">${data.checkoutUrl}</a><br>
+                        <br>
+                        <button onclick="window.open('${data.checkoutUrl}', '_blank')">Ouvrir la page de paiement</button>
+                    `, 'success');
+                } else {
+                    // Meilleure gestion des erreurs
+                    let errorMsg = 'Erreur inconnue';
+                    if (data.error) {
+                        if (typeof data.error === 'object') {
+                            errorMsg = data.error.message || JSON.stringify(data.error);
+                        } else {
+                            errorMsg = data.error;
+                        }
+                    } else if (data.message) {
+                        errorMsg = data.message;
+                    }
+                    showStatus('depositStatus', `❌ Erreur: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                showStatus('depositStatus', `❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        async function testWithdrawal() {
+            const amount = parseInt(document.getElementById('withdrawalAmount').value);
+            const url = `${API_URL()}/api/wallet/withdrawal`;
+
+            showStatus('withdrawalStatus', '⏳ Création du retrait en cours...', 'info');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getAuthHeader()
+                    },
+                    body: JSON.stringify({ amount })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('withdrawalStatus', `
+                        ✅ Retrait effectué avec succès!<br>
+                        <strong>Transaction ID:</strong> ${data.transactionId}<br>
+                        <strong>Statut:</strong> ${data.status}<br>
+                        <strong>Message:</strong> ${data.message}
+                    `, 'success');
+                } else {
+                    // Meilleure gestion des erreurs
+                    let errorMsg = 'Erreur inconnue';
+                    if (data.error) {
+                        if (typeof data.error === 'object') {
+                            errorMsg = data.error.message || JSON.stringify(data.error);
+                        } else {
+                            errorMsg = data.error;
+                        }
+                    } else if (data.message) {
+                        errorMsg = data.message;
+                    }
+                    showStatus('withdrawalStatus', `❌ Erreur: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                showStatus('withdrawalStatus', `❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        async function getMockStatus() {
+            const url = `${API_URL()}/api/mock-wave/status`;
+
+            showStatus('mockStatus', '⏳ Récupération de l\'état...', 'info');
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Afficher les stats
+                    document.getElementById('mockStats').innerHTML = `
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-value">${data.balance.formatted}</div>
+                                <div class="stat-label">Solde Mock</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.stats.sessions}</div>
+                                <div class="stat-label">Sessions totales</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.stats.completedSessions}</div>
+                                <div class="stat-label">Complétées</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${data.stats.payouts}</div>
+                                <div class="stat-label">Retraits totaux</div>
+                            </div>
+                        </div>
+                    `;
+
+                    showStatus('mockStatus', `
+                        ✅ État récupéré avec succès!<br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showStatus('mockStatus', `❌ Erreur: ${data.error || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (error) {
+                showStatus('mockStatus', `❌ Erreur réseau: ${error.message}<br>Assurez-vous que WAVE_MOCK_MODE=true dans .env`, 'error');
+            }
+        }
+
+        async function setSuccessRate(rate) {
+            const url = `${API_URL()}/api/mock-wave/config`;
+
+            showStatus('configStatus', `⏳ Configuration du taux de succès à ${rate}%...`, 'info');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ successRate: rate })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('configStatus', `✅ Taux de succès configuré à ${rate}%`, 'success');
+                } else {
+                    showStatus('configStatus', `❌ Erreur: ${data.error || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (error) {
+                showStatus('configStatus', `❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        async function resetMock() {
+            const url = `${API_URL()}/api/mock-wave/reset`;
+
+            showStatus('configStatus', '⏳ Réinitialisation en cours...', 'info');
+
+            try {
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('configStatus', `✅ Mock réinitialisé!`, 'success');
+                    getMockStatus(); // Rafraîchir les stats
+                } else {
+                    showStatus('configStatus', `❌ Erreur: ${data.error || 'Erreur inconnue'}`, 'error');
+                }
+            } catch (error) {
+                showStatus('configStatus', `❌ Erreur réseau: ${error.message}`, 'error');
+            }
+        }
+
+        // Charger l'état au démarrage
+        window.addEventListener('load', () => {
+            getMockStatus();
+        });
+    </script>
+</body>
+
+</html>

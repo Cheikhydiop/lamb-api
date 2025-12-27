@@ -8,8 +8,10 @@ import transactionRoutes from './transaction.routes';
 import userRoutes from './user.routes';
 import walletRoutes from './walletRoutes';
 import notificationRoutes from './notificationRoutes';
+import mockWaveRoutes from './mockWaveRoutes';
 import { transactionSecurity } from '../middlewares/security';
 import { requireAuth } from '../middlewares/authMiddleware';
+
 
 export default function Routes(app: Express) {
   // ==================== ROUTES PUBLIQUES ====================
@@ -23,6 +25,11 @@ export default function Routes(app: Express) {
 
   // Routes des combats (lecture publique, création admin)
   app.use('/api/fight', fightRoutes);
+
+  // Routes de test Wave Mock (si WAVE_MOCK_MODE activé)
+  if (process.env.WAVE_MOCK_MODE === 'true') {
+    app.use('/api/mock-wave', mockWaveRoutes);
+  }
 
   // ==================== ROUTES PROTÉGÉES ====================
 
