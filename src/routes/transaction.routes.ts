@@ -116,6 +116,7 @@ router.post('/:transactionId/confirm', requireAdmin, (req, res, next) => {
  *       200:
  *         description: List of transactions
  */
+// ⚠️ IMPORTANT: Routes statiques AVANT routes dynamiques
 // List transactions
 router.get('/', requireAuth, validateRequest(ListTransactionsDTO), (req, res, next) => {
   const transactionController = Container.get(TransactionController);
@@ -128,7 +129,8 @@ router.get('/wallet/balance', requireAuth, (req, res, next) => {
   transactionController.getWalletBalance(req, res, next);
 });
 
-// Get transaction by ID
+// Get transaction by ID - DOIT ÊTRE EN DERNIER
+// Sinon '/history' serait traité comme un ID
 router.get('/:transactionId', requireAuth, (req, res, next) => {
   const transactionController = Container.get(TransactionController);
   transactionController.getTransactionById(req, res, next);
